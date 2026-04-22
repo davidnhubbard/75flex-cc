@@ -157,18 +157,21 @@ export default function OnboardingContent() {
     const isLast = slideIndex === SLIDES.length - 1
 
     return (
-      <div className="min-h-screen bg-green-900 flex flex-col max-w-xl mx-auto px-6">
+      <div
+        className="min-h-screen bg-green-900 flex flex-col max-w-xl mx-auto px-6 cursor-pointer select-none"
+        onClick={!isLast ? nextSlide : undefined}
+      >
         {/* Logo */}
         <div className="pt-12 pb-2 flex items-center gap-2">
           <Image src="/brand/75flex-logo-heart.png" alt="75 Flex" width={24} height={24} className="opacity-80" />
-          <Eyebrow color="green" className="text-[10px]">75 Flex</Eyebrow>
+          <Eyebrow color="green" className="text-[11px]">75 Flex</Eyebrow>
         </div>
 
         {/* Content */}
         <div className="flex-1 flex flex-col justify-center pb-10">
-          <Eyebrow color="green" className="mb-2">{slide.eyebrow}</Eyebrow>
-          <h1 className="font-display text-[32px] font-semibold tracking-tight text-surface leading-tight mb-5">{slide.title}</h1>
-          <p className="font-sans text-sm text-green-200 leading-relaxed">{slide.body}</p>
+          <Eyebrow color="green" className="text-[11px] mb-3">{slide.eyebrow}</Eyebrow>
+          <h1 className="font-display text-[36px] font-semibold tracking-tight text-surface leading-tight mb-6">{slide.title}</h1>
+          <p className="font-sans text-base text-green-200 leading-relaxed">{slide.body}</p>
         </div>
 
         {/* Dots */}
@@ -185,13 +188,12 @@ export default function OnboardingContent() {
 
         {/* Nav */}
         <div className="pb-10 flex flex-col gap-3">
-          <Btn variant="primary" onClick={nextSlide}>
-            {isLast ? (slide.cta ?? 'Next') : 'Next'}
-          </Btn>
-          {slideIndex > 0 && (
-            <button onClick={prevSlide} className="text-green-400 font-sans text-sm text-center py-1">
-              Back
-            </button>
+          {isLast ? (
+            <Btn variant="primary" onClick={e => { e.stopPropagation(); nextSlide() }}>
+              {slide.cta ?? 'Build my challenge'}
+            </Btn>
+          ) : (
+            <p className="text-center font-sans text-xs text-green-600">Tap to continue</p>
           )}
         </div>
       </div>

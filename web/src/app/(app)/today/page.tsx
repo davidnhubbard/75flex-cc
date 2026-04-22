@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import CommitmentCard from '@/components/CommitmentCard'
 import CompleteAllSheet from '@/components/CompleteAllSheet'
-import HelpButton from '@/components/HelpButton'
+import PageHeader from '@/components/PageHeader'
 
 type State = 'none' | 'partial' | 'complete'
 type Tab = 'today' | 'yesterday' | 'daybefore'
@@ -60,27 +60,13 @@ export default function TodayPage() {
   return (
     <div className="flex flex-col min-h-full">
       {/* Header */}
-      <div className="bg-green-800 px-5 pt-8 pb-4">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="font-mono text-[10px] text-green-400 uppercase tracking-widest">
-              Day {DAY_NUMBER} of 75
-            </p>
-            <h1 className="font-display text-[22px] font-bold text-surface mt-0.5">
-              {greet}
-            </h1>
-          </div>
-          <HelpButton variant="dark" />
-        </div>
-        {/* Progress bar */}
+      <PageHeader eyebrow={`Day ${DAY_NUMBER} of 75`}>
+        <h1 className="font-display text-[22px] font-bold text-surface">{greet}</h1>
         <div className="mt-4 bg-green-900 rounded-full h-[3px]">
-          <div
-            className="bg-citrus h-[3px] rounded-full transition-all"
-            style={{ width: `${progress}%` }}
-          />
+          <div className="bg-citrus h-[3px] rounded-full transition-all" style={{ width: `${progress}%` }} />
         </div>
         <p className="font-mono text-[9px] text-green-400 mt-1">{progress}% complete</p>
-      </div>
+      </PageHeader>
 
       {/* Tab row */}
       {tabs.length > 0 && (

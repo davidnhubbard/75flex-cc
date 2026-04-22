@@ -346,7 +346,7 @@ export default function OnboardingContent() {
 
   // Plan Step 3 — Define commitments
   if (step === 'plan-3') {
-    const allNamed = selectedCategories.every(cat => commitments[cat.id]?.name?.trim())
+    const allNamed = selectedCategories.length > 0
 
     return (
       <div className="min-h-screen bg-green-900 flex flex-col max-w-xl mx-auto">
@@ -362,12 +362,6 @@ export default function OnboardingContent() {
             return (
               <div key={cat.id} className="bg-green-800 border-[1.5px] border-green-700 rounded-card px-4 py-3 flex flex-col gap-2">
                 <p className="font-mono text-[9px] text-green-400 uppercase tracking-widest">{cat.label}</p>
-                <input
-                  value={c.name}
-                  onChange={e => updateCommitment(cat.id, 'name', e.target.value)}
-                  placeholder="Commitment name"
-                  className="bg-green-700/50 border-[1.5px] border-green-600 rounded-lg px-3 py-2 font-sans text-sm text-surface placeholder:text-green-500 outline-none focus:border-ember"
-                />
                 <textarea
                   value={c.definition}
                   onChange={e => updateCommitment(cat.id, 'definition', e.target.value)}

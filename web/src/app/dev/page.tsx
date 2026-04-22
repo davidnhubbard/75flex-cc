@@ -33,7 +33,8 @@ const SECTIONS: { title: string; screens: Screen[] }[] = [
   {
     title: 'Profile & Plan',
     screens: [
-      { id: '05–06', label: 'Profile',                  description: 'Benchmark + plan management',      href: '/profile' },
+      { id: '06.2', label: 'Profile — no benchmark',    description: 'Empty benchmark nudge card',       href: '/profile' },
+      { id: '05.1', label: 'Plan — tap to edit',        description: 'Commitment list, tap any card',    href: '/profile' },
     ],
   },
 ]

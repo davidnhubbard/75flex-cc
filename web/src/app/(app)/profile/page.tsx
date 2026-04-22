@@ -1,13 +1,5 @@
-import PageHeader from '@/components/PageHeader'
+import ProfileContent from './ProfileContent'
 
 export default function ProfilePage() {
-  return (
-    <div>
-      <PageHeader title="Profile" />
-      <div className="p-4">
-        {/* benchmark + plan management go here */}
-        <p className="text-ink-soft text-sm">Profile coming soon.</p>
-      </div>
-    </div>
-  )
+  return <ProfileContent />
 }

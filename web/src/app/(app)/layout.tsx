@@ -1,4 +1,5 @@
 import BottomNav from '@/components/BottomNav'
+import DevSwitcher from '@/components/DevSwitcher'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -7,6 +8,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
       <BottomNav />
+      {process.env.NODE_ENV === 'development' && <DevSwitcher />}
     </div>
   )
 }

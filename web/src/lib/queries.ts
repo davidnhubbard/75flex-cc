@@ -22,9 +22,13 @@ export async function createChallenge(db: DB, payload: {
   const end = new Date(payload.startDate)
   end.setDate(end.getDate() + 74)
 
+  const { data: { user } } = await db.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
   const { data, error } = await db
     .from('challenges')
     .insert({
+      user_id:    user.id,
       title:      payload.title,
       template:   payload.template,
       start_date: payload.startDate,

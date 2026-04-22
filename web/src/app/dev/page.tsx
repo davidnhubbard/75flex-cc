@@ -60,7 +60,7 @@ export default function DevNavPage() {
     <div className="min-h-screen bg-green-50 pb-10">
       <div className="bg-green-800 px-5 pt-10 pb-5">
         <Eyebrow color="green" className="text-[9px]">Dev only</Eyebrow>
-        <h1 className="font-display text-2xl font-bold text-surface mt-0.5">Screen Navigator</h1>
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-surface mt-0.5">Screen Navigator</h1>
         <p className="font-sans text-xs text-green-300 mt-1">Jump directly to any screen or state</p>
       </div>
 

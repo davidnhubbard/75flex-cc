@@ -167,7 +167,7 @@ export default function OnboardingContent() {
         {/* Content */}
         <div className="flex-1 flex flex-col justify-center pb-10">
           <Eyebrow color="green" className="mb-2">{slide.eyebrow}</Eyebrow>
-          <h1 className="font-display text-[32px] font-black text-surface leading-tight mb-5">{slide.title}</h1>
+          <h1 className="font-display text-[32px] font-semibold tracking-tight text-surface leading-tight mb-5">{slide.title}</h1>
           <p className="font-sans text-sm text-green-200 leading-relaxed">{slide.body}</p>
         </div>
 
@@ -177,7 +177,7 @@ export default function OnboardingContent() {
             <div
               key={i}
               className={`rounded-full transition-all ${
-                i === slideIndex ? 'w-4 h-1.5 bg-citrus' : 'w-1.5 h-1.5 bg-green-700'
+                i === slideIndex ? 'w-4 h-1.5 bg-ember' : 'w-1.5 h-1.5 bg-green-700'
               }`}
             />
           ))}
@@ -204,7 +204,7 @@ export default function OnboardingContent() {
       <div className="min-h-screen bg-green-900 flex flex-col max-w-xl mx-auto px-6">
         <div className="pt-12">
           <Eyebrow color="green" className="text-[10px]">Step 1 of 3</Eyebrow>
-          <h1 className="font-display text-2xl font-bold text-surface mt-1 mb-1">Choose a starting point</h1>
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-surface mt-1 mb-1">Choose a starting point</h1>
           <p className="font-sans text-xs text-green-300 mb-6">You can customize everything on the next step.</p>
         </div>
 
@@ -229,17 +229,17 @@ export default function OnboardingContent() {
               key={t.id}
               onClick={() => setTemplate(t.id)}
               className={`w-full text-left rounded-card border-[1.5px] px-4 py-4 transition-colors ${
-                template === t.id ? 'border-citrus bg-green-800' : 'border-green-700 bg-green-800/50'
+                template === t.id ? 'border-ember bg-green-800' : 'border-green-700 bg-green-800/50'
               }`}
             >
               <div className="flex items-center gap-2 mb-1">
                 <p className="font-display text-base font-bold text-surface">{t.name}</p>
                 <span className={`font-mono text-[8px] px-1.5 py-0.5 rounded uppercase tracking-widest ${
-                  t.id === '75_soft' ? 'bg-citrus/20 text-citrus' : 'bg-green-700 text-green-300'
+                  t.id === '75_soft' ? 'bg-ember/20 text-ember' : 'bg-green-700 text-green-300'
                 }`}>
                   {t.tag}
                 </span>
-                {template === t.id && <span className="ml-auto text-citrus text-sm">✓</span>}
+                {template === t.id && <span className="ml-auto text-ember text-sm">✓</span>}
               </div>
               <p className="font-sans text-xs text-green-300 leading-relaxed mb-2">{t.desc}</p>
               <div className="flex flex-wrap gap-1">
@@ -298,11 +298,11 @@ export default function OnboardingContent() {
       <div className="min-h-screen bg-green-900 flex flex-col max-w-xl mx-auto px-6">
         <div className="pt-12">
           <Eyebrow color="green" className="text-[10px]">Step 2 of 3</Eyebrow>
-          <h1 className="font-display text-2xl font-bold text-surface mt-1 mb-1">Choose your commitments</h1>
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-surface mt-1 mb-1">Choose your commitments</h1>
           <p className="font-sans text-xs text-green-300 mb-1">
             Select at least 2.
             {selected.size < 2 && (
-              <span className="text-citrus"> Select at least {2 - selected.size} more to continue.</span>
+              <span className="text-ember"> Select at least {2 - selected.size} more to continue.</span>
             )}
           </p>
         </div>
@@ -315,11 +315,11 @@ export default function OnboardingContent() {
                 key={cat.id}
                 onClick={() => toggleCategory(cat.id)}
                 className={`rounded-card border-[1.5px] px-4 py-3 text-left transition-colors ${
-                  isSelected ? 'border-citrus bg-green-800' : 'border-green-700 bg-green-800/50'
+                  isSelected ? 'border-ember bg-green-800' : 'border-green-700 bg-green-800/50'
                 }`}
               >
                 <p className="font-sans text-sm font-medium text-surface">{cat.label}</p>
-                {isSelected && <p className="font-mono text-[8px] text-citrus mt-0.5">✓ selected</p>}
+                {isSelected && <p className="font-mono text-[8px] text-ember mt-0.5">✓ selected</p>}
               </button>
             )
           })}
@@ -330,7 +330,7 @@ export default function OnboardingContent() {
             variant="primary"
             onClick={() => setStep('plan-3')}
             disabled={!canContinueStep2}
-            className={!canContinueStep2 ? 'bg-citrus/30 text-ink/40' : ''}
+            className={!canContinueStep2 ? 'bg-ember/30 text-ink/40' : ''}
           >
             Continue
           </Btn>
@@ -350,7 +350,7 @@ export default function OnboardingContent() {
       <div className="min-h-screen bg-green-900 flex flex-col max-w-xl mx-auto">
         <div className="px-6 pt-12">
           <Eyebrow color="green" className="text-[10px]">Step 3 of 3</Eyebrow>
-          <h1 className="font-display text-2xl font-bold text-surface mt-1 mb-1">Define your commitments</h1>
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-surface mt-1 mb-1">Define your commitments</h1>
           <p className="font-sans text-xs text-green-300 mb-5">You can change these any time during your challenge.</p>
         </div>
 
@@ -364,14 +364,14 @@ export default function OnboardingContent() {
                   value={c.name}
                   onChange={e => updateCommitment(cat.id, 'name', e.target.value)}
                   placeholder="Commitment name"
-                  className="bg-green-700/50 border-[1.5px] border-green-600 rounded-lg px-3 py-2 font-sans text-sm text-surface placeholder:text-green-500 outline-none focus:border-citrus"
+                  className="bg-green-700/50 border-[1.5px] border-green-600 rounded-lg px-3 py-2 font-sans text-sm text-surface placeholder:text-green-500 outline-none focus:border-ember"
                 />
                 <textarea
                   value={c.definition}
                   onChange={e => updateCommitment(cat.id, 'definition', e.target.value)}
                   placeholder="What does this mean to you? (optional)"
                   rows={2}
-                  className="bg-green-700/50 border-[1.5px] border-green-600 rounded-lg px-3 py-2 font-sans text-xs text-surface placeholder:text-green-500 outline-none resize-none focus:border-citrus"
+                  className="bg-green-700/50 border-[1.5px] border-green-600 rounded-lg px-3 py-2 font-sans text-xs text-surface placeholder:text-green-500 outline-none resize-none focus:border-ember"
                 />
               </div>
             )
@@ -384,7 +384,7 @@ export default function OnboardingContent() {
             variant="primary"
             onClick={handleStart}
             disabled={!allNamed || saving}
-            className={(!allNamed || saving) ? 'bg-citrus/30 text-ink/40' : ''}
+            className={(!allNamed || saving) ? 'bg-ember/30 text-ink/40' : ''}
           >
             {saving ? 'Starting…' : 'Start my challenge'}
           </Btn>

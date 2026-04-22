@@ -9,8 +9,8 @@ interface BtnProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses: Record<BtnVariant, string> = {
-  primary: 'bg-citrus text-ink font-sans text-sm font-semibold py-3.5 rounded-xl w-full',
-  dark: 'bg-green-800 text-citrus font-sans text-sm font-semibold py-3 rounded-xl w-full',
+  primary: 'bg-ember text-ink font-sans text-sm font-semibold py-3.5 rounded-xl w-full',
+  dark: 'bg-green-800 text-ember font-sans text-sm font-semibold py-3 rounded-xl w-full',
   outline: 'border-[1.5px] border-green-700 text-green-700 font-sans text-sm font-medium rounded-xl',
   ghost: 'text-green-700 font-sans text-sm font-medium',
 };

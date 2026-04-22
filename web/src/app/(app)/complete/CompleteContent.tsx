@@ -34,7 +34,7 @@ export default function CompleteContent() {
     <div className="min-h-screen bg-green-900 flex flex-col max-w-xl mx-auto px-6">
       <div className="flex-1 flex flex-col justify-center items-center text-center py-16">
         <p className="font-mono text-[10px] text-green-400 uppercase tracking-widest mb-4">Day 75 complete</p>
-        <h1 className="font-display text-[40px] font-black text-citrus leading-tight mb-4">
+        <h1 className="font-display text-[40px] font-semibold tracking-tight text-ember leading-tight mb-4">
           You did it.
         </h1>
         <p className="font-sans text-sm text-green-200 leading-relaxed max-w-xs mb-10">
@@ -44,7 +44,7 @@ export default function CompleteContent() {
         <div className="w-full grid grid-cols-3 gap-3 mb-10">
           {stats.map(([val, label]) => (
             <div key={label} className="bg-green-800 border-[1.5px] border-green-700 rounded-card py-4 text-center">
-              <p className="font-display text-2xl font-black text-citrus">{val}</p>
+              <p className="font-display text-2xl font-medium tabular-nums tracking-tighter text-ember">{val}</p>
               <p className="font-mono text-[8px] text-green-400 uppercase tracking-widest mt-0.5">{label}</p>
             </div>
           ))}

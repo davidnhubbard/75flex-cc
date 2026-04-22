@@ -17,7 +17,7 @@ export default function PageHeader({ title, eyebrow, children }: Props) {
             </p>
           )}
           {children ?? (
-            <h1 className="font-display text-[22px] font-bold text-surface">{title}</h1>
+            <h1 className="font-display text-[22px] font-semibold tracking-tight text-surface">{title}</h1>
           )}
         </div>
         <HelpButton variant="dark" />

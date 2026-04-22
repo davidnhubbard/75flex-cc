@@ -283,9 +283,9 @@ export default function TodayContent() {
     return (
       <div className="flex flex-col min-h-full">
         <PageHeader eyebrow="Challenge complete">
-          <h1 className="font-display text-[22px] font-bold text-surface">75 days. Done.</h1>
+          <h1 className="font-display text-[22px] font-semibold tracking-tight text-surface">75 days. Done.</h1>
           <div className="mt-4 bg-green-900 rounded-full h-[3px]">
-            <div className="bg-citrus h-[3px] rounded-full w-full" />
+            <div className="bg-ember h-[3px] rounded-full w-full" />
           </div>
           <p className="font-mono text-[9px] text-green-400 mt-1">100% complete</p>
         </PageHeader>
@@ -320,9 +320,9 @@ export default function TodayContent() {
 
       {/* Header */}
       <PageHeader eyebrow={`Day ${currentDay} of 75`}>
-        <h1 className="font-display text-[22px] font-bold text-surface">{greet}</h1>
+        <h1 className="font-display text-[22px] font-semibold tracking-tight text-surface">{greet}</h1>
         <div className="mt-4 bg-green-900 rounded-full h-[3px]">
-          <div className="bg-citrus h-[3px] rounded-full transition-all" style={{ width: `${progress}%` }} />
+          <div className="bg-ember h-[3px] rounded-full transition-all" style={{ width: `${progress}%` }} />
         </div>
         <p className="font-mono text-[9px] text-green-400 mt-1">{progress}% complete</p>
       </PageHeader>
@@ -330,7 +330,7 @@ export default function TodayContent() {
       {/* Re-engagement card (C29, C30) */}
       {reengaged && (
         <div className="mx-4 mt-4 rounded-card border-[1.5px] border-green-700 bg-surface p-4">
-          <p className="font-mono text-[9px] text-citrus uppercase tracking-widest mb-1">Still here</p>
+          <p className="font-mono text-[9px] text-ember uppercase tracking-widest mb-1">Still here</p>
           <p className="font-display text-[15px] font-bold text-ink leading-snug mb-3">
             You've logged {daysLogged} {daysLogged === 1 ? 'day' : 'days'}. That's real progress.
           </p>

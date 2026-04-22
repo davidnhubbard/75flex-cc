@@ -31,7 +31,7 @@ function formatDate(date: Date) {
 }
 
 const CELL_STATE: Record<DayState, string> = {
-  complete: 'bg-citrus',
+  complete: 'bg-ember',
   partial:  'bg-amber',
   none:     'bg-surface border-[1.5px] border-border',
   future:   'bg-border/40',
@@ -120,7 +120,7 @@ export default function ProgressContent() {
       <div className="px-4 py-4 grid grid-cols-3 gap-3">
         {/* Streak (C17) */}
         <div className={`rounded-card px-3 py-3 text-center ${streak > 0 ? 'bg-green-800' : 'bg-surface border-[1.5px] border-border'}`}>
-          <p className={`font-display text-2xl font-black ${streak > 0 ? 'text-citrus' : 'text-ink-faint'}`}>
+          <p className={`font-display text-2xl font-medium tabular-nums tracking-tighter ${streak > 0 ? 'text-ember' : 'text-ink-faint'}`}>
             {streak > 0 ? streak : '—'}
           </p>
           <p className={`font-mono text-[8px] uppercase tracking-widest mt-0.5 ${streak > 0 ? 'text-green-400' : 'text-ink-faint'}`}>
@@ -133,7 +133,7 @@ export default function ProgressContent() {
 
         {/* Show-up rate (C18: hidden until Day 4) */}
         <div className="bg-surface border-[1.5px] border-border rounded-card px-3 py-3 text-center">
-          <p className="font-display text-2xl font-black text-ink">
+          <p className="font-display text-2xl font-medium tabular-nums tracking-tighter text-ink">
             {dayNumber >= 4 ? `${showUpRate}%` : '—'}
           </p>
           <p className="font-mono text-[8px] text-ink-faint uppercase tracking-widest mt-0.5">Show-up rate</p>
@@ -141,7 +141,7 @@ export default function ProgressContent() {
 
         {/* Days remaining */}
         <div className="bg-surface border-[1.5px] border-border rounded-card px-3 py-3 text-center">
-          <p className="font-display text-2xl font-black text-ink">{daysRemaining}</p>
+          <p className="font-display text-2xl font-medium tabular-nums tracking-tighter text-ink">{daysRemaining}</p>
           <p className="font-mono text-[8px] text-ink-faint uppercase tracking-widest mt-0.5">Days left</p>
         </div>
       </div>

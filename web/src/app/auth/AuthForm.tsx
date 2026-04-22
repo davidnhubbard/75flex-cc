@@ -65,7 +65,7 @@ export default function AuthForm({ mode }: Props) {
       </div>
 
       {/* Heading */}
-      <h1 className="font-display text-[28px] font-black text-surface leading-tight mb-1">
+      <h1 className="font-display text-[28px] font-semibold tracking-tight text-surface leading-tight mb-1">
         {isLogin ? 'Welcome back.' : 'Create your account.'}
       </h1>
       <p className="font-sans text-sm text-green-300 mb-8">
@@ -136,7 +136,7 @@ export default function AuthForm({ mode }: Props) {
         {isLogin ? "Don't have an account? " : 'Already have an account? '}
         <Link
           href={isLogin ? '/auth/signup' : '/auth/login'}
-          className="text-citrus underline"
+          className="text-ember underline"
         >
           {isLogin ? 'Sign up' : 'Sign in'}
         </Link>

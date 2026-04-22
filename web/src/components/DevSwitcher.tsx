@@ -41,7 +41,7 @@ export default function DevSwitcher() {
     <div className="fixed bottom-16 right-3 z-50 flex flex-col items-end gap-2">
       {open && (
         <div className="bg-white border border-border rounded-card shadow-lg p-3 w-48 flex flex-col gap-1.5">
-          <Link href="/dev" className="block text-citrus mb-2 hover:underline">
+          <Link href="/dev" className="block text-ember mb-2 hover:underline">
             <Eyebrow color="green" className="text-[9px]">← Screen navigator</Eyebrow>
           </Link>
           <Eyebrow className="mb-1">Switch persona</Eyebrow>
@@ -60,7 +60,7 @@ export default function DevSwitcher() {
       )}
       <button
         onClick={() => setOpen(o => !o)}
-        className="bg-green-800 text-citrus font-mono text-[10px] px-3 py-1.5 rounded-full shadow-lg hover:bg-green-700 transition-colors"
+        className="bg-green-800 text-ember font-mono text-[10px] px-3 py-1.5 rounded-full shadow-lg hover:bg-green-700 transition-colors"
       >
         {open ? '× close' : '⚙ dev'}
       </button>

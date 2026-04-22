@@ -1,0 +1,86 @@
+import Link from 'next/link'
+
+if (process.env.NODE_ENV === 'production') {
+  throw new Error('Dev nav is not available in production')
+}
+
+interface Screen {
+  id: string
+  label: string
+  description: string
+  href: string
+}
+
+const SECTIONS: { title: string; screens: Screen[] }[] = [
+  {
+    title: 'Daily Logging',
+    screens: [
+      { id: '03.1', label: 'Today — in progress',      description: 'Mixed completion states',           href: '/today?day=3&preset=partial' },
+      { id: '03.2', label: 'Today — all complete',      description: 'Every commitment done',             href: '/today?day=3&preset=complete' },
+      { id: '03.3', label: 'Day 1',                     description: 'No tab row, fresh start',           href: '/today?day=1' },
+      { id: '03.4', label: 'Day 2',                     description: 'Two-tab row',                       href: '/today?day=2' },
+      { id: '03.5', label: 'Backdate — yesterday',      description: 'Yesterday tab selected',            href: '/today?day=3&tab=yesterday' },
+      { id: '03.7', label: 'Note expanded',             description: 'Inline note field open',            href: '/today?day=3&note=open' },
+      { id: '03.9', label: 'Re-engagement card',        description: '3+ missed days nudge',              href: '/today?day=15&reengagement=true' },
+    ],
+  },
+  {
+    title: 'Progress',
+    screens: [
+      { id: '04.x', label: 'Progress — mid challenge',  description: '75-day calendar',                  href: '/progress' },
+    ],
+  },
+  {
+    title: 'Profile & Plan',
+    screens: [
+      { id: '05–06', label: 'Profile',                  description: 'Benchmark + plan management',      href: '/profile' },
+    ],
+  },
+]
+
+export default function DevNavPage() {
+  return (
+    <div className="min-h-screen bg-green-50 pb-10">
+      <div className="bg-green-800 px-5 pt-10 pb-5">
+        <p className="font-mono text-[9px] text-green-400 uppercase tracking-widest">Dev only</p>
+        <h1 className="font-display text-2xl font-bold text-surface mt-0.5">Screen Navigator</h1>
+        <p className="font-sans text-xs text-green-300 mt-1">Jump directly to any screen or state</p>
+      </div>
+
+      <div className="px-4 pt-5 flex flex-col gap-6 max-w-xl mx-auto">
+        {SECTIONS.map(section => (
+          <div key={section.title}>
+            <p className="font-mono text-[9px] text-ink-soft uppercase tracking-widest mb-2">
+              {section.title}
+            </p>
+            <div className="flex flex-col gap-2">
+              {section.screens.map(screen => (
+                <Link
+                  key={screen.id}
+                  href={screen.href}
+                  className="flex items-center justify-between bg-surface border-[1.5px] border-border rounded-card px-4 py-3 hover:border-green-400 transition-colors"
+                >
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[9px] text-ink-faint">{screen.id}</span>
+                      <p className="font-sans text-sm font-medium text-ink">{screen.label}</p>
+                    </div>
+                    <p className="font-sans text-[11px] text-ink-soft mt-0.5">{screen.description}</p>
+                  </div>
+                  <span className="text-ink-faint text-sm ml-3">›</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        ))}
+
+        <div className="mt-2 border-t border-border pt-4">
+          <p className="font-mono text-[9px] text-ink-faint uppercase tracking-widest mb-2">Personas</p>
+          <p className="font-sans text-xs text-ink-soft">
+            Use the <span className="font-mono bg-green-100 px-1 rounded">⚙ dev</span> button on any screen to switch between seeded test users.
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}

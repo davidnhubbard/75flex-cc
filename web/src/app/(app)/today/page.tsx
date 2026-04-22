@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import CommitmentCard from '@/components/CommitmentCard'
 import CompleteAllSheet from '@/components/CompleteAllSheet'
 import PageHeader from '@/components/PageHeader'
@@ -8,14 +9,19 @@ import PageHeader from '@/components/PageHeader'
 type State = 'none' | 'partial' | 'complete'
 type Tab = 'today' | 'yesterday' | 'daybefore'
 
-// Mock data — replace with Supabase queries once auth is wired
-const DAY_NUMBER = 3
 const MOCK_COMMITMENTS = [
   { id: '1', category: 'Physical',     name: 'One workout',   definition: 'At least 30 minutes of intentional movement' },
   { id: '2', category: 'Nutrition',    name: 'Nutrition',     definition: 'Follow your plan, no junk food' },
   { id: '3', category: 'Hydration',    name: 'Water',         definition: 'Drink at least 64 oz of water' },
   { id: '4', category: 'Personal dev', name: 'Personal dev',  definition: '10 minutes of reading or a podcast' },
 ]
+
+// Preset initial card states
+const PRESETS: Record<string, State[]> = {
+  none:     ['none',     'none',     'none',     'none'],
+  partial:  ['complete', 'partial',  'none',     'complete'],
+  complete: ['complete', 'complete', 'complete', 'complete'],
+}
 
 function greeting() {
   const h = new Date().getHours()
@@ -31,25 +37,31 @@ function tabLabel(tab: Tab) {
 }
 
 export default function TodayPage() {
-  const [tab, setTab] = useState<Tab>('today')
-  const [states, setStates] = useState<Record<string, State>>(
-    Object.fromEntries(MOCK_COMMITMENTS.map(c => [c.id, 'none']))
+  const params = useSearchParams()
+  const dayNumber  = Math.min(75, Math.max(1, Number(params.get('day') ?? 3)))
+  const preset     = params.get('preset') ?? 'none'
+  const initTab    = (params.get('tab') as Tab | null) ?? 'today'
+  const reengaged  = params.get('reengagement') === 'true'
+  const notePreset = params.get('note') === 'open'
+
+  const initStates = PRESETS[preset] ?? PRESETS.none
+  const [tab, setTab]               = useState<Tab>(initTab)
+  const [states, setStates]         = useState<Record<string, State>>(
+    Object.fromEntries(MOCK_COMMITMENTS.map((c, i) => [c.id, initStates[i]]))
   )
   const [showCompleteAll, setShowCompleteAll] = useState(false)
-  const [noteOpen, setNoteOpen] = useState(false)
-  const [note, setNote] = useState('')
-  const [greet, setGreet] = useState('Good morning')
+  const [noteOpen, setNoteOpen]     = useState(notePreset)
+  const [note, setNote]             = useState('')
+  const [greet, setGreet]           = useState('Good morning')
 
   useEffect(() => { setGreet(greeting()) }, [])
 
-  const progress = Math.round((DAY_NUMBER / 75) * 100)
-  const allDone = Object.values(states).every(s => s === 'complete')
-
-  const tabs: Tab[] = DAY_NUMBER === 1 ? [] : DAY_NUMBER === 2 ? ['today', 'yesterday'] : ['today', 'yesterday', 'daybefore']
+  const progress = Math.round((dayNumber / 75) * 100)
+  const allDone  = Object.values(states).every(s => s === 'complete')
+  const tabs: Tab[] = dayNumber === 1 ? [] : dayNumber === 2 ? ['today', 'yesterday'] : ['today', 'yesterday', 'daybefore']
 
   function updateState(id: string, next: State) {
     setStates(prev => ({ ...prev, [id]: next }))
-    // TODO: persist to Supabase (instant-save for today, queue for backdate)
   }
 
   function handleCompleteAll() {
@@ -60,7 +72,7 @@ export default function TodayPage() {
   return (
     <div className="flex flex-col min-h-full">
       {/* Header */}
-      <PageHeader eyebrow={`Day ${DAY_NUMBER} of 75`}>
+      <PageHeader eyebrow={`Day ${dayNumber} of 75`}>
         <h1 className="font-display text-[22px] font-bold text-surface">{greet}</h1>
         <div className="mt-4 bg-green-900 rounded-full h-[3px]">
           <div className="bg-citrus h-[3px] rounded-full transition-all" style={{ width: `${progress}%` }} />
@@ -68,7 +80,31 @@ export default function TodayPage() {
         <p className="font-mono text-[9px] text-green-400 mt-1">{progress}% complete</p>
       </PageHeader>
 
-      {/* Tab row */}
+      {/* Re-engagement card (C29, C30) */}
+      {reengaged && (
+        <div className="mx-4 mt-4 rounded-card border-[1.5px] border-green-700 bg-surface p-4">
+          <p className="font-mono text-[9px] text-citrus uppercase tracking-widest mb-1">Still here</p>
+          <p className="font-display text-[15px] font-bold text-ink leading-snug mb-3">
+            You've logged {dayNumber - 4} days. That's real progress.
+          </p>
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            {[['Days logged', dayNumber - 4], ['Show-up rate', '73%'], ['Days left', 75 - dayNumber + 1]].map(([label, val]) => (
+              <div key={label as string} className="bg-green-50 rounded-xl p-2 text-center">
+                <p className="font-display text-base font-bold text-ink">{val}</p>
+                <p className="font-mono text-[8px] text-ink-soft">{label}</p>
+              </div>
+            ))}
+          </div>
+          <p className="font-sans text-xs text-ink-soft leading-relaxed">
+            Life got in the way — that happens. Log something today and keep going.
+          </p>
+          <button className="mt-3 w-full bg-green-800 text-citrus font-sans text-sm font-semibold py-2.5 rounded-xl">
+            Log today
+          </button>
+        </div>
+      )}
+
+      {/* Tab row (C6) */}
       {tabs.length > 0 && (
         <div className="flex border-b border-border bg-surface">
           {tabs.map(t => (
@@ -76,9 +112,7 @@ export default function TodayPage() {
               key={t}
               onClick={() => setTab(t)}
               className={`flex-1 py-2.5 font-sans text-xs font-medium transition-colors ${
-                tab === t
-                  ? 'text-ink border-b-2 border-green-700'
-                  : 'text-ink-faint'
+                tab === t ? 'text-ink border-b-2 border-green-700' : 'text-ink-faint'
               }`}
             >
               {tabLabel(t)}
@@ -100,7 +134,6 @@ export default function TodayPage() {
           />
         ))}
 
-        {/* Note field */}
         {noteOpen && (
           <div className="mt-1">
             <textarea
@@ -136,10 +169,9 @@ export default function TodayPage() {
         </button>
       </div>
 
-      {/* Complete All sheet */}
       {showCompleteAll && (
         <CompleteAllSheet
-          dayNumber={DAY_NUMBER}
+          dayNumber={dayNumber}
           onConfirm={handleCompleteAll}
           onCancel={() => setShowCompleteAll(false)}
         />

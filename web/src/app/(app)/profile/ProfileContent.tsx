@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import EditCommitmentSheet from '@/components/EditCommitmentSheet'
 import PageHeader from '@/components/PageHeader'
+import { createClient } from '@/lib/supabase'
 
 type Commitment = {
   id: string
@@ -25,9 +27,17 @@ const FREE_TIER_MAX = 4
 const TODAY_LOGGED = true // mock: today already logged
 
 export default function ProfileContent() {
+  const router = useRouter()
+  const supabase = createClient()
   const [commitments, setCommitments] = useState<Commitment[]>(MOCK_COMMITMENTS)
   const [editing, setEditing] = useState<Commitment | null>(null)
   const atCap = commitments.length >= FREE_TIER_MAX
+
+  async function handleSignOut() {
+    await supabase.auth.signOut()
+    router.push('/auth/login')
+    router.refresh()
+  }
 
   function handleSave(id: string, definition: string) {
     setCommitments(prev => prev.map(c => c.id === id ? { ...c, definition } : c))
@@ -100,9 +110,15 @@ export default function ProfileContent() {
         </section>
 
         {/* Restart */}
-        <section className="border-t border-border pt-4">
+        <section className="border-t border-border pt-4 flex flex-col gap-1">
           <button className="w-full text-center font-sans text-xs text-ink-soft hover:text-ink transition-colors py-2">
             Restart challenge from Day 1
+          </button>
+          <button
+            onClick={handleSignOut}
+            className="w-full text-center font-sans text-xs text-ink-faint hover:text-ink-soft transition-colors py-2"
+          >
+            Sign out
           </button>
         </section>
 

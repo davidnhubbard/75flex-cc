@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import CommitmentCard from '@/components/CommitmentCard'
 import CompleteAllSheet from '@/components/CompleteAllSheet'
+import LockedDayOverlay from '@/components/LockedDayOverlay'
 import PageHeader from '@/components/PageHeader'
 import { createClient } from '@/lib/supabase'
 import {
@@ -219,6 +220,7 @@ export default function TodayContent() {
   // ── Derived ───────────────────────────────────────────────────────────────
 
   const isToday    = tab === 'today'
+  const isLocked   = !isToday && activeData.dayNumber > 0 && activeData.dayNumber < currentDay - 2
   const activeData = tabData[tab]
   const liveStates = isToday ? activeData.states : { ...activeData.states, ...pendingStates }
   const allDone    = commitments.length > 0 && commitments.every(c => liveStates[c.id] === 'complete')
@@ -297,85 +299,96 @@ export default function TodayContent() {
         </div>
       )}
 
-      {/* Backdate context note (C26) */}
-      {!isToday && activeData.dayNumber > 0 && (
-        <p className="font-mono text-[9px] text-ink-faint uppercase tracking-widest px-4 pt-3">
-          Day {activeData.dayNumber} · {new Date(activeData.logDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-        </p>
+      {/* Locked day (C15) */}
+      {isLocked ? (
+        <LockedDayOverlay
+          dayNumber={activeData.dayNumber}
+          logDate={activeData.logDate}
+          onDismiss={() => switchTab('today')}
+        />
+      ) : (
+        <>
+          {/* Backdate context note (C26) */}
+          {!isToday && activeData.dayNumber > 0 && (
+            <p className="font-mono text-[9px] text-ink-faint uppercase tracking-widest px-4 pt-3">
+              Day {activeData.dayNumber} · {new Date(activeData.logDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            </p>
+          )}
+
+          {/* Cards */}
+          <div className="flex-1 px-4 py-4 flex flex-col gap-3">
+            {commitments.map(c => (
+              <CommitmentCard
+                key={c.id}
+                category={c.category}
+                name={c.name}
+                definition={c.definition}
+                state={liveStates[c.id] ?? 'none'}
+                onChange={next => isToday ? updateToday(c.id, next) : stageBackdate(c.id, next)}
+              />
+            ))}
+
+            {noteOpen && (
+              <textarea
+                autoFocus
+                value={activeData.note}
+                onChange={e => setTabData(prev => ({ ...prev, [tab]: { ...prev[tab], note: e.target.value } }))}
+                onBlur={() => activeData.dailyLogId && saveNote(supabase, activeData.dailyLogId, activeData.note)}
+                placeholder="Add a note about this day…"
+                rows={3}
+                className="w-full bg-green-50 border-[1.5px] border-green-200 focus:border-green-600 rounded-xl px-3 py-2.5 font-sans text-sm text-ink placeholder:text-ink-faint outline-none resize-none"
+              />
+            )}
+          </div>
+
+          {/* Footer (C10: Complete All disabled on locked days) */}
+          <div className="sticky bottom-0 bg-surface border-t border-border px-4 py-3 flex gap-2">
+            <button
+              onClick={() => setNoteOpen(o => !o)}
+              className="flex-1 py-2.5 rounded-xl border-[1.5px] border-green-700 text-green-700 font-sans text-sm font-medium"
+            >
+              {noteOpen ? 'Hide note' : 'Add note'}
+            </button>
+
+            {isToday ? (
+              <button
+                onClick={() => !allDone && setShowCompleteAll(true)}
+                disabled={allDone}
+                className={`flex-1 py-2.5 rounded-xl font-sans text-sm font-semibold transition-colors ${
+                  allDone
+                    ? 'bg-green-100 text-green-700 border-[1.5px] border-green-200 cursor-default'
+                    : 'bg-citrus text-ink'
+                }`}
+              >
+                {allDone ? 'All done ✓' : 'Complete all'}
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={() => !allDone && setShowCompleteAll(true)}
+                  disabled={allDone}
+                  className={`py-2.5 px-3 rounded-xl font-sans text-sm font-medium border-[1.5px] transition-colors ${
+                    allDone ? 'border-border text-ink-faint cursor-default' : 'border-green-700 text-green-700'
+                  }`}
+                >
+                  All
+                </button>
+                <button
+                  onClick={saveBackdate}
+                  disabled={!hasChanges || saving}
+                  className={`flex-1 py-2.5 rounded-xl font-sans text-sm font-semibold transition-colors ${
+                    savedFlash            ? 'bg-green-100 text-green-700 border-[1.5px] border-green-200' :
+                    hasChanges && !saving ? 'bg-citrus text-ink' :
+                                            'bg-border/50 text-ink-faint cursor-default'
+                  }`}
+                >
+                  {savedFlash ? 'Saved ✓' : saving ? 'Saving…' : 'Save'}
+                </button>
+              </>
+            )}
+          </div>
+        </>
       )}
-
-      {/* Cards */}
-      <div className="flex-1 px-4 py-4 flex flex-col gap-3">
-        {commitments.map(c => (
-          <CommitmentCard
-            key={c.id}
-            category={c.category}
-            name={c.name}
-            definition={c.definition}
-            state={liveStates[c.id] ?? 'none'}
-            onChange={next => isToday ? updateToday(c.id, next) : stageBackdate(c.id, next)}
-          />
-        ))}
-
-        {noteOpen && (
-          <textarea
-            autoFocus
-            value={activeData.note}
-            onChange={e => setTabData(prev => ({ ...prev, [tab]: { ...prev[tab], note: e.target.value } }))}
-            onBlur={() => activeData.dailyLogId && saveNote(supabase, activeData.dailyLogId, activeData.note)}
-            placeholder="Add a note about this day…"
-            rows={3}
-            className="w-full bg-green-50 border-[1.5px] border-green-200 focus:border-green-600 rounded-xl px-3 py-2.5 font-sans text-sm text-ink placeholder:text-ink-faint outline-none resize-none"
-          />
-        )}
-      </div>
-
-      {/* Footer */}
-      <div className="sticky bottom-0 bg-surface border-t border-border px-4 py-3 flex gap-2">
-        <button
-          onClick={() => setNoteOpen(o => !o)}
-          className="flex-1 py-2.5 rounded-xl border-[1.5px] border-green-700 text-green-700 font-sans text-sm font-medium"
-        >
-          {noteOpen ? 'Hide note' : 'Add note'}
-        </button>
-
-        {isToday ? (
-          <button
-            onClick={() => !allDone && setShowCompleteAll(true)}
-            disabled={allDone}
-            className={`flex-1 py-2.5 rounded-xl font-sans text-sm font-semibold transition-colors ${
-              allDone
-                ? 'bg-green-100 text-green-700 border-[1.5px] border-green-200 cursor-default'
-                : 'bg-citrus text-ink'
-            }`}
-          >
-            {allDone ? 'All done ✓' : 'Complete all'}
-          </button>
-        ) : (
-          <>
-            <button
-              onClick={() => !allDone && setShowCompleteAll(true)}
-              disabled={allDone}
-              className={`py-2.5 px-3 rounded-xl font-sans text-sm font-medium border-[1.5px] transition-colors ${
-                allDone ? 'border-border text-ink-faint cursor-default' : 'border-green-700 text-green-700'
-              }`}
-            >
-              All
-            </button>
-            <button
-              onClick={saveBackdate}
-              disabled={!hasChanges || saving}
-              className={`flex-1 py-2.5 rounded-xl font-sans text-sm font-semibold transition-colors ${
-                savedFlash            ? 'bg-green-100 text-green-700 border-[1.5px] border-green-200' :
-                hasChanges && !saving ? 'bg-citrus text-ink' :
-                                        'bg-border/50 text-ink-faint cursor-default'
-              }`}
-            >
-              {savedFlash ? 'Saved ✓' : saving ? 'Saving…' : 'Save'}
-            </button>
-          </>
-        )}
-      </div>
 
       {showCompleteAll && (
         <CompleteAllSheet

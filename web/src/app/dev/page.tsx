@@ -13,6 +13,15 @@ interface Screen {
 
 const SECTIONS: { title: string; screens: Screen[] }[] = [
   {
+    title: 'Onboarding',
+    screens: [
+      { id: '01.1', label: 'Intro slides',             description: 'Welcome → Your rules → No resets → Ready', href: '/onboarding' },
+      { id: '01.5', label: 'Plan builder — template',  description: '75 Soft vs 75 Hard picker',                href: '/onboarding' },
+      { id: '01.6', label: 'Plan builder — categories',description: 'Select 2+ commitment categories',          href: '/onboarding' },
+      { id: '01.7', label: 'Plan builder — define',    description: 'Name and define each commitment',          href: '/onboarding' },
+    ],
+  },
+  {
     title: 'Daily Logging',
     screens: [
       { id: '03.1', label: 'Today — in progress',      description: 'Mixed completion states',           href: '/today?day=3&preset=partial' },

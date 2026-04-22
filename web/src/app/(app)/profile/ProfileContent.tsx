@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import EditCommitmentSheet from '@/components/EditCommitmentSheet'
 import PageHeader from '@/components/PageHeader'
+import Btn from '@/components/ui/Btn'
+import Eyebrow from '@/components/ui/Eyebrow'
 import { createClient } from '@/lib/supabase'
 import {
   getActiveChallenge, getCommitments, updateCommitmentDefinition,
@@ -94,19 +96,19 @@ export default function ProfileContent() {
 
         {/* Benchmark (C33, C34) */}
         <section>
-          <p className="font-mono text-[9px] text-ink-faint uppercase tracking-widest mb-2">Starting benchmark</p>
+          <Eyebrow>Starting benchmark</Eyebrow>
           <div className="bg-surface border-[1.5px] border-dashed border-border rounded-card px-4 py-5 flex flex-col items-center text-center gap-2">
             <p className="font-sans text-sm font-medium text-ink">No starting benchmark</p>
             <p className="font-sans text-xs text-ink-soft">Add one anytime — photos and notes to track where you started.</p>
-            <button className="mt-1 px-4 py-2 rounded-xl border-[1.5px] border-green-700 text-green-700 font-sans text-xs font-medium">
+            <Btn variant="outline" className="mt-1 px-4 py-2 w-auto text-xs">
               Add benchmark
-            </button>
+            </Btn>
           </div>
         </section>
 
         {/* My Plan */}
         <section>
-          <p className="font-mono text-[9px] text-ink-faint uppercase tracking-widest mb-2">My plan</p>
+          <Eyebrow className="mb-2">My plan</Eyebrow>
           <div className="flex flex-col gap-2">
             {commitments.map(c => (
               <button
@@ -125,16 +127,17 @@ export default function ProfileContent() {
               </button>
             ))}
 
-            <button
+            <Btn
+              variant="outline"
               disabled={atCap}
-              className={`w-full flex items-center justify-center gap-2 py-3 rounded-card border-[1.5px] border-dashed font-sans text-sm font-medium transition-colors ${
-                atCap ? 'border-border text-ink-faint' : 'border-green-700 text-green-700 hover:bg-green-50'
+              className={`flex items-center justify-center gap-2 py-3 rounded-card border-[1.5px] border-dashed ${
+                atCap ? 'border-border text-ink-faint' : ''
               }`}
             >
               {atCap ? (
                 <><span>Add commitment</span><span className="font-mono text-[9px] bg-ink-faint/10 text-ink-faint px-1.5 py-0.5 rounded">FREE</span></>
               ) : '+ Add commitment'}
-            </button>
+            </Btn>
           </div>
         </section>
 

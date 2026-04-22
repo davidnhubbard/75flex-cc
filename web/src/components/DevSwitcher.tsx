@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
+import Eyebrow from '@/components/ui/Eyebrow'
 
 const PERSONAS = [
   { email: 'new@75flex.dev',           password: 'testtest', label: 'New User',       description: 'No challenge started' },
@@ -40,10 +41,10 @@ export default function DevSwitcher() {
     <div className="fixed bottom-16 right-3 z-50 flex flex-col items-end gap-2">
       {open && (
         <div className="bg-white border border-border rounded-card shadow-lg p-3 w-48 flex flex-col gap-1.5">
-          <Link href="/dev" className="block font-mono text-[9px] text-citrus uppercase tracking-widest mb-2 hover:underline">
-            ← Screen navigator
+          <Link href="/dev" className="block text-citrus mb-2 hover:underline">
+            <Eyebrow color="green" className="text-[9px]">← Screen navigator</Eyebrow>
           </Link>
-          <p className="font-mono text-[9px] text-ink-faint uppercase tracking-widest mb-1">Switch persona</p>
+          <Eyebrow className="mb-1">Switch persona</Eyebrow>
           {PERSONAS.map(p => (
             <button
               key={p.email}

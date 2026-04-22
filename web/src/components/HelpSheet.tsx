@@ -1,5 +1,8 @@
 'use client'
 
+import Sheet from '@/components/ui/Sheet'
+import Eyebrow from '@/components/ui/Eyebrow'
+
 interface Props {
   onClose: () => void
   onAbout: () => void
@@ -14,18 +17,11 @@ const LINKS = [
 
 export default function HelpSheet({ onClose, onAbout }: Props) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/40" />
-      <div
-        className="relative bg-surface rounded-t-2xl w-full max-w-xl shadow-xl pb-10"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="w-10 h-1 bg-border rounded-full mx-auto mt-4 mb-5" />
-
-        <div className="px-5 mb-4">
-          <p className="font-mono text-[9px] text-ink-faint uppercase tracking-widest">Help</p>
-          <p className="font-display text-xl font-bold text-ink mt-0.5">75 Flex</p>
-        </div>
+    <Sheet onClose={onClose}>
+      <div className="px-5 mb-4 -mx-6 mt-4">
+        <Eyebrow>Help</Eyebrow>
+        <p className="font-display text-xl font-bold text-ink mt-0.5">75 Flex</p>
+      </div>
 
         {/* How this works — opens About */}
         <button
@@ -54,7 +50,6 @@ export default function HelpSheet({ onClose, onAbout }: Props) {
             <span className="text-ink-faint text-sm">›</span>
           </a>
         ))}
-      </div>
-    </div>
+    </Sheet>
   )
 }

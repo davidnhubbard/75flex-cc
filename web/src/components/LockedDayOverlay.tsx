@@ -1,3 +1,5 @@
+import Btn from '@/components/ui/Btn'
+
 interface Props {
   dayNumber: number
   logDate: string
@@ -21,12 +23,9 @@ export default function LockedDayOverlay({ dayNumber, logDate, onDismiss }: Prop
       <p className="font-sans text-xs text-ink-faint leading-relaxed mb-8">
         Outside the 3-day logging window. Your progress on this day has been recorded as-is.
       </p>
-      <button
-        onClick={onDismiss}
-        className="px-6 py-2.5 rounded-xl bg-green-800 text-citrus font-sans text-sm font-semibold"
-      >
+      <Btn variant="dark" onClick={onDismiss} className="px-6 py-2.5 w-auto">
         Got it
-      </button>
+      </Btn>
     </div>
   )
 }

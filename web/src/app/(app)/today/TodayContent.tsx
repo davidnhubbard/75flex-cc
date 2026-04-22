@@ -6,6 +6,7 @@ import CommitmentCard from '@/components/CommitmentCard'
 import CompleteAllSheet from '@/components/CompleteAllSheet'
 import LockedDayOverlay from '@/components/LockedDayOverlay'
 import PageHeader from '@/components/PageHeader'
+import Btn from '@/components/ui/Btn'
 import { createClient } from '@/lib/supabase'
 import {
   getActiveChallenge, getCommitments, getOrCreateDailyLog,
@@ -303,12 +304,12 @@ export default function TodayContent() {
         </div>
 
         <div className="sticky bottom-0 bg-surface border-t border-border px-4 py-3">
-          <button
+          <Btn
+            variant="primary"
             onClick={() => router.push('/onboarding')}
-            className="w-full py-3 rounded-xl bg-citrus text-ink font-sans text-sm font-semibold"
           >
             Start a new challenge
-          </button>
+          </Btn>
         </div>
       </div>
     )
@@ -344,9 +345,9 @@ export default function TodayContent() {
           <p className="font-sans text-xs text-ink-soft leading-relaxed mb-3">
             Life got in the way — that happens. Log something today and keep going.
           </p>
-          <button onClick={() => setReengaged(false)} className="w-full bg-green-800 text-citrus font-sans text-sm font-semibold py-2.5 rounded-xl">
+          <Btn variant="dark" onClick={() => setReengaged(false)}>
             Log today
-          </button>
+          </Btn>
         </div>
       )}
 
@@ -411,47 +412,45 @@ export default function TodayContent() {
 
           {/* Footer (C10: Complete All disabled on locked days) */}
           <div className="sticky bottom-0 bg-surface border-t border-border px-4 py-3 flex gap-2">
-            <button
+            <Btn
+              variant="outline"
               onClick={() => setNoteOpen(o => !o)}
-              className="flex-1 py-2.5 rounded-xl border-[1.5px] border-green-700 text-green-700 font-sans text-sm font-medium"
+              className="flex-1"
             >
               {noteOpen ? 'Hide note' : 'Add note'}
-            </button>
+            </Btn>
 
             {isToday ? (
-              <button
+              <Btn
+                variant="primary"
                 onClick={() => !allDone && setShowCompleteAll(true)}
                 disabled={allDone}
-                className={`flex-1 py-2.5 rounded-xl font-sans text-sm font-semibold transition-colors ${
-                  allDone
-                    ? 'bg-green-100 text-green-700 border-[1.5px] border-green-200 cursor-default'
-                    : 'bg-citrus text-ink'
-                }`}
+                className={allDone ? 'bg-green-100 text-green-700 border-[1.5px] border-green-200' : ''}
               >
                 {allDone ? 'All done ✓' : 'Complete all'}
-              </button>
+              </Btn>
             ) : (
               <>
-                <button
+                <Btn
+                  variant="outline"
                   onClick={() => !allDone && setShowCompleteAll(true)}
                   disabled={allDone}
-                  className={`py-2.5 px-3 rounded-xl font-sans text-sm font-medium border-[1.5px] transition-colors ${
-                    allDone ? 'border-border text-ink-faint cursor-default' : 'border-green-700 text-green-700'
-                  }`}
+                  className={`py-2.5 px-3 ${allDone ? 'border-border text-ink-faint' : ''}`}
                 >
                   All
-                </button>
-                <button
+                </Btn>
+                <Btn
+                  variant="primary"
                   onClick={saveBackdate}
                   disabled={!hasChanges || saving}
-                  className={`flex-1 py-2.5 rounded-xl font-sans text-sm font-semibold transition-colors ${
+                  className={`flex-1 ${
                     savedFlash            ? 'bg-green-100 text-green-700 border-[1.5px] border-green-200' :
-                    hasChanges && !saving ? 'bg-citrus text-ink' :
-                                            'bg-border/50 text-ink-faint cursor-default'
+                    !hasChanges || saving ? 'bg-border/50 text-ink-faint' :
+                                            ''
                   }`}
                 >
                   {savedFlash ? 'Saved ✓' : saving ? 'Saving…' : 'Save'}
-                </button>
+                </Btn>
               </>
             )}
           </div>

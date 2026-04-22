@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Eyebrow from '@/components/ui/Eyebrow'
 
 if (process.env.NODE_ENV === 'production') {
   throw new Error('Dev nav is not available in production')
@@ -58,7 +59,7 @@ export default function DevNavPage() {
   return (
     <div className="min-h-screen bg-green-50 pb-10">
       <div className="bg-green-800 px-5 pt-10 pb-5">
-        <p className="font-mono text-[9px] text-green-400 uppercase tracking-widest">Dev only</p>
+        <Eyebrow color="green" className="text-[9px]">Dev only</Eyebrow>
         <h1 className="font-display text-2xl font-bold text-surface mt-0.5">Screen Navigator</h1>
         <p className="font-sans text-xs text-green-300 mt-1">Jump directly to any screen or state</p>
       </div>
@@ -66,9 +67,9 @@ export default function DevNavPage() {
       <div className="px-4 pt-5 flex flex-col gap-6 max-w-xl mx-auto">
         {SECTIONS.map(section => (
           <div key={section.title}>
-            <p className="font-mono text-[9px] text-ink-soft uppercase tracking-widest mb-2">
+            <Eyebrow className="mb-2 text-ink-soft">
               {section.title}
-            </p>
+            </Eyebrow>
             <div className="flex flex-col gap-2">
               {section.screens.map(screen => (
                 <Link
@@ -91,7 +92,7 @@ export default function DevNavPage() {
         ))}
 
         <div className="mt-2 border-t border-border pt-4">
-          <p className="font-mono text-[9px] text-ink-faint uppercase tracking-widest mb-2">Personas</p>
+          <Eyebrow className="mb-2">Personas</Eyebrow>
           <p className="font-sans text-xs text-ink-soft">
             Use the <span className="font-mono bg-green-100 px-1 rounded">⚙ dev</span> button on any screen to switch between seeded test users.
           </p>

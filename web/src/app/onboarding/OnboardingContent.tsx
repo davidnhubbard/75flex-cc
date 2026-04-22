@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase'
 import { createChallenge, createCommitments, todayISO } from '@/lib/queries'
+import Btn from '@/components/ui/Btn'
+import Eyebrow from '@/components/ui/Eyebrow'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -159,12 +161,12 @@ export default function OnboardingContent() {
         {/* Logo */}
         <div className="pt-12 pb-2 flex items-center gap-2">
           <Image src="/brand/75flex-logo-heart.png" alt="75 Flex" width={24} height={24} className="opacity-80" />
-          <span className="font-mono text-[10px] text-green-400 uppercase tracking-widest">75 Flex</span>
+          <Eyebrow color="green" className="text-[10px]">75 Flex</Eyebrow>
         </div>
 
         {/* Content */}
         <div className="flex-1 flex flex-col justify-center pb-10">
-          <p className="font-mono text-[10px] text-citrus uppercase tracking-widest mb-2">{slide.eyebrow}</p>
+          <Eyebrow color="green" className="mb-2">{slide.eyebrow}</Eyebrow>
           <h1 className="font-display text-[32px] font-black text-surface leading-tight mb-5">{slide.title}</h1>
           <p className="font-sans text-sm text-green-200 leading-relaxed">{slide.body}</p>
         </div>
@@ -183,12 +185,9 @@ export default function OnboardingContent() {
 
         {/* Nav */}
         <div className="pb-10 flex flex-col gap-3">
-          <button
-            onClick={nextSlide}
-            className="w-full bg-citrus text-ink font-sans text-sm font-semibold py-3.5 rounded-xl"
-          >
+          <Btn variant="primary" onClick={nextSlide}>
             {isLast ? (slide.cta ?? 'Next') : 'Next'}
-          </button>
+          </Btn>
           {slideIndex > 0 && (
             <button onClick={prevSlide} className="text-green-400 font-sans text-sm text-center py-1">
               Back
@@ -204,7 +203,7 @@ export default function OnboardingContent() {
     return (
       <div className="min-h-screen bg-green-900 flex flex-col max-w-xl mx-auto px-6">
         <div className="pt-12">
-          <p className="font-mono text-[10px] text-green-400 uppercase tracking-widest">Step 1 of 3</p>
+          <Eyebrow color="green" className="text-[10px]">Step 1 of 3</Eyebrow>
           <h1 className="font-display text-2xl font-bold text-surface mt-1 mb-1">Choose a starting point</h1>
           <p className="font-sans text-xs text-green-300 mb-6">You can customize everything on the next step.</p>
         </div>
@@ -255,7 +254,8 @@ export default function OnboardingContent() {
         </div>
 
         <div className="py-8 flex flex-col gap-3">
-          <button
+          <Btn
+            variant="primary"
             onClick={() => {
               // Pre-select default categories for the chosen template
               if (template === '75_soft') {
@@ -281,10 +281,9 @@ export default function OnboardingContent() {
               }
               setStep('plan-2')
             }}
-            className="w-full bg-citrus text-ink font-sans text-sm font-semibold py-3.5 rounded-xl"
           >
             Continue
-          </button>
+          </Btn>
           <button onClick={() => { setSlide(SLIDES.length - 1); setStep('slides') }} className="text-green-400 font-sans text-sm text-center py-1">
             Back
           </button>
@@ -298,7 +297,7 @@ export default function OnboardingContent() {
     return (
       <div className="min-h-screen bg-green-900 flex flex-col max-w-xl mx-auto px-6">
         <div className="pt-12">
-          <p className="font-mono text-[10px] text-green-400 uppercase tracking-widest">Step 2 of 3</p>
+          <Eyebrow color="green" className="text-[10px]">Step 2 of 3</Eyebrow>
           <h1 className="font-display text-2xl font-bold text-surface mt-1 mb-1">Choose your commitments</h1>
           <p className="font-sans text-xs text-green-300 mb-1">
             Select at least 2.
@@ -327,15 +326,14 @@ export default function OnboardingContent() {
         </div>
 
         <div className="py-8 flex flex-col gap-3">
-          <button
+          <Btn
+            variant="primary"
             onClick={() => setStep('plan-3')}
             disabled={!canContinueStep2}
-            className={`w-full font-sans text-sm font-semibold py-3.5 rounded-xl transition-opacity ${
-              canContinueStep2 ? 'bg-citrus text-ink' : 'bg-citrus/30 text-ink/40 cursor-default'
-            }`}
+            className={!canContinueStep2 ? 'bg-citrus/30 text-ink/40' : ''}
           >
             Continue
-          </button>
+          </Btn>
           <button onClick={() => setStep('plan-1')} className="text-green-400 font-sans text-sm text-center py-1">
             Back
           </button>
@@ -351,7 +349,7 @@ export default function OnboardingContent() {
     return (
       <div className="min-h-screen bg-green-900 flex flex-col max-w-xl mx-auto">
         <div className="px-6 pt-12">
-          <p className="font-mono text-[10px] text-green-400 uppercase tracking-widest">Step 3 of 3</p>
+          <Eyebrow color="green" className="text-[10px]">Step 3 of 3</Eyebrow>
           <h1 className="font-display text-2xl font-bold text-surface mt-1 mb-1">Define your commitments</h1>
           <p className="font-sans text-xs text-green-300 mb-5">You can change these any time during your challenge.</p>
         </div>
@@ -382,15 +380,14 @@ export default function OnboardingContent() {
 
         <div className="px-6 py-8 flex flex-col gap-3">
           {saveError && <p className="font-sans text-xs text-amber text-center">{saveError}</p>}
-          <button
+          <Btn
+            variant="primary"
             onClick={handleStart}
             disabled={!allNamed || saving}
-            className={`w-full font-sans text-sm font-semibold py-3.5 rounded-xl transition-opacity ${
-              allNamed && !saving ? 'bg-citrus text-ink' : 'bg-citrus/30 text-ink/40 cursor-default'
-            }`}
+            className={(!allNamed || saving) ? 'bg-citrus/30 text-ink/40' : ''}
           >
             {saving ? 'Starting…' : 'Start my challenge'}
-          </button>
+          </Btn>
           <button onClick={() => setStep('plan-2')} className="text-green-400 font-sans text-sm text-center py-1">
             Back
           </button>

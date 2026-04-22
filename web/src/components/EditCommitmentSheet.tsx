@@ -1,6 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import Sheet from '@/components/ui/Sheet'
+import Btn from '@/components/ui/Btn'
+import Eyebrow from '@/components/ui/Eyebrow'
 
 interface Commitment {
   id: string
@@ -31,27 +34,23 @@ export default function EditCommitmentSheet({ commitment, totalCommitments, toda
 
   if (showRemoveConfirm) {
     return (
-      <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
-        <div className="absolute inset-0 bg-black/40" />
-        <div className="relative bg-surface rounded-t-2xl w-full max-w-xl px-6 pt-6 pb-10 shadow-xl" onClick={e => e.stopPropagation()}>
-          <div className="w-10 h-1 bg-border rounded-full mx-auto mb-6" />
-          <p className="font-display text-lg font-bold text-ink text-center">Remove "{commitment.name}"?</p>
-          <p className="font-sans text-sm text-ink-soft text-center mt-2">
-            This commitment will be removed from your plan starting tomorrow.
-          </p>
-          <div className="flex flex-col gap-3 mt-8">
-            <button
-              onClick={() => onRemove(commitment.id)}
-              className="w-full bg-red-500 text-white font-sans text-sm font-semibold py-3 rounded-xl"
-            >
-              Remove commitment
-            </button>
-            <button onClick={() => setShowRemoveConfirm(false)} className="w-full text-green-700 font-sans text-sm font-medium py-2">
-              Cancel
-            </button>
-          </div>
+      <Sheet onClose={onClose}>
+        <p className="font-display text-lg font-bold text-ink text-center">Remove "{commitment.name}"?</p>
+        <p className="font-sans text-sm text-ink-soft text-center mt-2">
+          This commitment will be removed from your plan starting tomorrow.
+        </p>
+        <div className="flex flex-col gap-3 mt-8">
+          <button
+            onClick={() => onRemove(commitment.id)}
+            className="w-full bg-red-500 text-white font-sans text-sm font-semibold py-3 rounded-xl"
+          >
+            Remove commitment
+          </button>
+          <Btn variant="ghost" onClick={() => setShowRemoveConfirm(false)}>
+            Cancel
+          </Btn>
         </div>
-      </div>
+      </Sheet>
     )
   }
 
@@ -62,15 +61,15 @@ export default function EditCommitmentSheet({ commitment, totalCommitments, toda
         <div className="w-10 h-1 bg-border rounded-full mx-auto mt-4 mb-1" />
 
         <div className="px-5 py-4 border-b border-border">
-          <p className="font-mono text-[9px] text-ink-faint uppercase tracking-widest">{commitment.category}</p>
+          <Eyebrow>{commitment.category}</Eyebrow>
           <p className="font-display text-lg font-bold text-ink mt-0.5">{commitment.name}</p>
         </div>
 
         <div className="px-5 py-4 flex flex-col gap-4">
           <div>
-            <label className="font-mono text-[9px] text-ink-soft uppercase tracking-widest block mb-1.5">
+            <Eyebrow color="faint" className="block mb-1.5 text-ink-soft">
               Your definition
-            </label>
+            </Eyebrow>
             <textarea
               value={definition}
               onChange={e => setDefinition(e.target.value)}
@@ -80,18 +79,15 @@ export default function EditCommitmentSheet({ commitment, totalCommitments, toda
             />
           </div>
 
-          <button
-            onClick={() => onSave(commitment.id, definition)}
-            className="w-full bg-citrus text-ink font-sans text-sm font-semibold py-3 rounded-xl"
-          >
+          <Btn variant="primary" onClick={() => onSave(commitment.id, definition)}>
             Save changes
-          </button>
+          </Btn>
           <p className="font-sans text-[11px] text-ink-soft text-center -mt-2">{effectNote}</p>
 
           {/* Change log (C25) */}
           {log.length > 0 && (
             <div className="border-t border-border pt-4">
-              <p className="font-mono text-[9px] text-ink-faint uppercase tracking-widest mb-2">Change log</p>
+              <Eyebrow className="mb-2">Change log</Eyebrow>
               <div className="flex flex-col gap-2">
                 {visibleLog.map((entry, i) => (
                   <div key={i} className="text-xs">

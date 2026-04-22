@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { getActiveChallenge, getAllDailyLogs, calcStreak, calcShowUpRate } from '@/lib/queries'
+import Btn from '@/components/ui/Btn'
 
 export default function CompleteContent() {
   const supabase = createClient()
@@ -50,18 +51,20 @@ export default function CompleteContent() {
         </div>
 
         <div className="w-full flex flex-col gap-3">
-          <Link
-            href="/progress"
-            className="w-full bg-citrus text-ink font-sans text-sm font-semibold py-3.5 rounded-xl text-center"
+          <Btn
+            variant="primary"
+            onClick={() => window.location.href = '/progress'}
+            className="text-center"
           >
             See full calendar
-          </Link>
-          <Link
-            href="/onboarding"
-            className="w-full border-[1.5px] border-green-600 text-green-300 font-sans text-sm font-medium py-3.5 rounded-xl text-center"
+          </Btn>
+          <Btn
+            variant="outline"
+            onClick={() => window.location.href = '/onboarding'}
+            className="text-center"
           >
             Start a new challenge
-          </Link>
+          </Btn>
         </div>
       </div>
     </div>

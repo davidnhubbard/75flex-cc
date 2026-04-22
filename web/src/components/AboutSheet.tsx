@@ -1,5 +1,7 @@
 'use client'
 
+import Eyebrow from '@/components/ui/Eyebrow'
+
 interface Props {
   onClose: () => void
 }
@@ -29,7 +31,7 @@ export default function AboutSheet({ onClose }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-10 pb-6">
         <div>
-          <p className="font-mono text-[9px] text-green-400 uppercase tracking-widest">About</p>
+          <Eyebrow color="green">About</Eyebrow>
           <p className="font-display text-2xl font-bold text-surface mt-0.5">75 Flex</p>
         </div>
         <button
@@ -52,7 +54,7 @@ export default function AboutSheet({ onClose }: Props) {
         ))}
 
         <div className="mt-4 border-t border-green-800 pt-6">
-          <p className="font-mono text-[9px] text-green-500 uppercase tracking-widest mb-1">Version</p>
+          <Eyebrow color="green" className="mb-1 text-[9px]">Version</Eyebrow>
           <p className="font-sans text-xs text-green-400">75 Flex · Early access</p>
         </div>
       </div>

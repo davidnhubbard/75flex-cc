@@ -1,0 +1,161 @@
+import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Database, DayState } from './database.types'
+
+type DB = SupabaseClient<Database>
+
+// ─── Challenge ────────────────────────────────────────────────────────────────
+
+export async function getActiveChallenge(db: DB) {
+  const { data } = await db
+    .from('challenges')
+    .select('*')
+    .eq('status', 'active')
+    .maybeSingle()
+  return data
+}
+
+export async function createChallenge(db: DB, payload: {
+  title: string
+  template: Database['public']['Tables']['challenges']['Insert']['template']
+  startDate: string
+}) {
+  const end = new Date(payload.startDate)
+  end.setDate(end.getDate() + 74)
+
+  const { data, error } = await db
+    .from('challenges')
+    .insert({
+      title:      payload.title,
+      template:   payload.template,
+      start_date: payload.startDate,
+      end_date:   end.toISOString().split('T')[0],
+      status:     'active',
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+// ─── Commitments ─────────────────────────────────────────────────────────────
+
+export async function getCommitments(db: DB, challengeId: string) {
+  const { data } = await db
+    .from('commitments')
+    .select('*')
+    .eq('challenge_id', challengeId)
+    .order('sort_order')
+  return data ?? []
+}
+
+export async function createCommitments(db: DB, challengeId: string, items: {
+  category: string
+  name: string
+  definition: string
+  sortOrder: number
+}[]) {
+  const { error } = await db.from('commitments').insert(
+    items.map(c => ({
+      challenge_id: challengeId,
+      category:     c.category,
+      name:         c.name,
+      definition:   c.definition || null,
+      sort_order:   c.sortOrder,
+      active_from:  1,
+    }))
+  )
+  if (error) throw error
+}
+
+export async function updateCommitmentDefinition(db: DB, commitmentId: string, definition: string, dayNumber: number) {
+  const { data: existing } = await db
+    .from('commitments')
+    .select('definition')
+    .eq('id', commitmentId)
+    .single()
+
+  await db.from('commitment_history').insert({
+    commitment_id:   commitmentId,
+    old_definition:  existing?.definition ?? null,
+    new_definition:  definition,
+    changed_on_day:  dayNumber,
+    changed_at:      new Date().toISOString(),
+  })
+
+  const { error } = await db
+    .from('commitments')
+    .update({ definition })
+    .eq('id', commitmentId)
+
+  if (error) throw error
+}
+
+// ─── Daily logs ───────────────────────────────────────────────────────────────
+
+export function calcDayNumber(startDate: string): number {
+  const start = new Date(startDate)
+  const today = new Date()
+  start.setHours(0, 0, 0, 0)
+  today.setHours(0, 0, 0, 0)
+  const diff = Math.floor((today.getTime() - start.getTime()) / 86_400_000)
+  return Math.min(75, Math.max(1, diff + 1))
+}
+
+export function todayISO(): string {
+  return new Date().toISOString().split('T')[0]
+}
+
+export async function getOrCreateDailyLog(db: DB, challengeId: string, dayNumber: number, logDate: string) {
+  const { data: existing } = await db
+    .from('daily_logs')
+    .select('*')
+    .eq('challenge_id', challengeId)
+    .eq('day_number', dayNumber)
+    .maybeSingle()
+
+  if (existing) return existing
+
+  const { data, error } = await db
+    .from('daily_logs')
+    .insert({ challenge_id: challengeId, day_number: dayNumber, log_date: logDate, overall_state: 'none' })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+// ─── Commitment logs ──────────────────────────────────────────────────────────
+
+export async function getCommitmentLogs(db: DB, dailyLogId: string) {
+  const { data } = await db
+    .from('commitment_logs')
+    .select('*')
+    .eq('daily_log_id', dailyLogId)
+  return data ?? []
+}
+
+export async function saveCommitmentLog(db: DB, dailyLogId: string, commitmentId: string, state: DayState) {
+  const { error } = await db
+    .from('commitment_logs')
+    .upsert(
+      { daily_log_id: dailyLogId, commitment_id: commitmentId, state },
+      { onConflict: 'daily_log_id,commitment_id' }
+    )
+  if (error) throw error
+}
+
+export async function recalcOverallState(db: DB, dailyLogId: string, allStates: DayState[]) {
+  const overall: DayState =
+    allStates.every(s => s === 'complete') ? 'complete'
+    : allStates.every(s => s === 'none')   ? 'none'
+    : 'partial'
+
+  await db
+    .from('daily_logs')
+    .update({ overall_state: overall, logged_at: new Date().toISOString() })
+    .eq('id', dailyLogId)
+
+  return overall
+}

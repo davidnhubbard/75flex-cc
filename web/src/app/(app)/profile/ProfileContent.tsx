@@ -1,37 +1,69 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import EditCommitmentSheet from '@/components/EditCommitmentSheet'
 import PageHeader from '@/components/PageHeader'
 import { createClient } from '@/lib/supabase'
+import {
+  getActiveChallenge, getCommitments, updateCommitmentDefinition,
+  calcDayNumber,
+} from '@/lib/queries'
+import type { Database } from '@/lib/database.types'
 
-type Commitment = {
-  id: string
-  category: string
-  name: string
-  definition: string
+type Commitment = Database['public']['Tables']['commitments']['Row'] & {
   changeLog?: { day: number; from: string; to: string }[]
 }
 
-// Mock data — replace with Supabase queries once auth is wired
-const MOCK_COMMITMENTS: Commitment[] = [
-  { id: '1', category: 'Physical',     name: 'One workout',   definition: 'At least 30 minutes of intentional movement' },
-  { id: '2', category: 'Nutrition',    name: 'Nutrition',     definition: 'Follow your plan, no junk food' },
-  { id: '3', category: 'Hydration',    name: 'Water',         definition: 'Drink at least 64 oz of water' },
-  { id: '4', category: 'Personal dev', name: 'Personal dev',  definition: '10 minutes of reading or a podcast',
-    changeLog: [{ day: 4, from: 'Read 10 pages', to: '10 minutes of reading or a podcast' }] },
-]
-
 const FREE_TIER_MAX = 4
-const TODAY_LOGGED = true // mock: today already logged
 
 export default function ProfileContent() {
-  const router = useRouter()
+  const router   = useRouter()
   const supabase = createClient()
-  const [commitments, setCommitments] = useState<Commitment[]>(MOCK_COMMITMENTS)
-  const [editing, setEditing] = useState<Commitment | null>(null)
-  const atCap = commitments.length >= FREE_TIER_MAX
+
+  const [loading,     setLoading]     = useState(true)
+  const [dayNumber,   setDayNumber]   = useState(1)
+  const [commitments, setCommitments] = useState<Commitment[]>([])
+  const [challengeId, setChallengeId] = useState<string | null>(null)
+  const [editing,     setEditing]     = useState<Commitment | null>(null)
+  const [todayLogged, setTodayLogged] = useState(false)
+
+  useEffect(() => { load() }, [])
+
+  async function load() {
+    const challenge = await getActiveChallenge(supabase)
+    if (!challenge) { router.push('/onboarding'); return }
+
+    const day   = calcDayNumber(challenge.start_date)
+    const comms = await getCommitments(supabase, challenge.id)
+
+    // Check if today already has a log
+    const today = new Date().toISOString().split('T')[0]
+    const { data: log } = await supabase
+      .from('daily_logs')
+      .select('id')
+      .eq('challenge_id', challenge.id)
+      .eq('log_date', today)
+      .maybeSingle()
+
+    setChallengeId(challenge.id)
+    setDayNumber(day)
+    setCommitments(comms)
+    setTodayLogged(!!log)
+    setLoading(false)
+  }
+
+  async function handleSave(id: string, definition: string) {
+    await updateCommitmentDefinition(supabase, id, definition, dayNumber)
+    setCommitments(prev => prev.map(c => c.id === id ? { ...c, definition } : c))
+    setEditing(null)
+  }
+
+  async function handleRemove(id: string) {
+    await supabase.from('commitments').delete().eq('id', id)
+    setCommitments(prev => prev.filter(c => c.id !== id))
+    setEditing(null)
+  }
 
   async function handleSignOut() {
     await supabase.auth.signOut()
@@ -39,14 +71,19 @@ export default function ProfileContent() {
     router.refresh()
   }
 
-  function handleSave(id: string, definition: string) {
-    setCommitments(prev => prev.map(c => c.id === id ? { ...c, definition } : c))
-    setEditing(null)
-  }
+  const atCap = commitments.length >= FREE_TIER_MAX
 
-  function handleRemove(id: string) {
-    setCommitments(prev => prev.filter(c => c.id !== id))
-    setEditing(null)
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-full">
+        <div className="bg-green-800 px-5 pt-8 pb-4 animate-pulse">
+          <div className="h-7 w-24 bg-green-700 rounded" />
+        </div>
+        <div className="px-4 py-5 flex flex-col gap-3">
+          {[1, 2, 3].map(i => <div key={i} className="h-16 bg-border/50 rounded-card animate-pulse" />)}
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -88,28 +125,19 @@ export default function ProfileContent() {
               </button>
             ))}
 
-            {/* Add commitment (C24) */}
             <button
               disabled={atCap}
               className={`w-full flex items-center justify-center gap-2 py-3 rounded-card border-[1.5px] border-dashed font-sans text-sm font-medium transition-colors ${
-                atCap
-                  ? 'border-border text-ink-faint'
-                  : 'border-green-700 text-green-700 hover:bg-green-50'
+                atCap ? 'border-border text-ink-faint' : 'border-green-700 text-green-700 hover:bg-green-50'
               }`}
             >
               {atCap ? (
-                <>
-                  <span>Add commitment</span>
-                  <span className="font-mono text-[9px] bg-ink-faint/10 text-ink-faint px-1.5 py-0.5 rounded">FREE</span>
-                </>
-              ) : (
-                '+ Add commitment'
-              )}
+                <><span>Add commitment</span><span className="font-mono text-[9px] bg-ink-faint/10 text-ink-faint px-1.5 py-0.5 rounded">FREE</span></>
+              ) : '+ Add commitment'}
             </button>
           </div>
         </section>
 
-        {/* Restart */}
         <section className="border-t border-border pt-4 flex flex-col gap-1">
           <button className="w-full text-center font-sans text-xs text-ink-soft hover:text-ink transition-colors py-2">
             Restart challenge from Day 1
@@ -121,14 +149,13 @@ export default function ProfileContent() {
             Sign out
           </button>
         </section>
-
       </div>
 
       {editing && (
         <EditCommitmentSheet
           commitment={editing}
           totalCommitments={commitments.length}
-          todayLogged={TODAY_LOGGED}
+          todayLogged={todayLogged}
           onSave={handleSave}
           onRemove={handleRemove}
           onClose={() => setEditing(null)}

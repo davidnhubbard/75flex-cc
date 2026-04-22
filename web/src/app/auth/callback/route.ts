@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase-server'
+import { getActiveChallenge } from '@/lib/queries'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -16,9 +17,10 @@ export async function GET(request: Request) {
     if (exchangeError) {
       return NextResponse.redirect(`${origin}/auth/login?error=${encodeURIComponent(exchangeError.message)}`)
     }
+
+    const challenge = await getActiveChallenge(supabase as any)
+    return NextResponse.redirect(`${origin}${challenge ? '/today' : '/onboarding'}`)
   }
 
-  // New users land on onboarding; returning users land on today.
-  // TODO: check if user has an active challenge and route accordingly.
-  return NextResponse.redirect(`${origin}/today`)
+  return NextResponse.redirect(`${origin}/auth/login`)
 }

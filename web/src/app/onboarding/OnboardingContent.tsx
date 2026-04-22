@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { createClient } from '@/lib/supabase'
+import { createChallenge, createCommitments, todayISO } from '@/lib/queries'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -114,9 +116,32 @@ export default function OnboardingContent() {
 
   // ── Finish ──────────────────────────────────────────────────────────────
 
-  function handleStart() {
-    // TODO: persist challenge + commitments to Supabase
-    router.push('/today')
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+
+  async function handleStart() {
+    setSaving(true)
+    setSaveError(null)
+    try {
+      const supabase = createClient()
+      const challenge = await createChallenge(supabase, {
+        title:     template === '75_soft' ? '75 Soft challenge' : '75 Hard challenge',
+        template,
+        startDate: todayISO(),
+      })
+      await createCommitments(supabase, challenge.id,
+        selectedCategories.map((cat, i) => ({
+          category:   cat.id,
+          name:       commitments[cat.id]?.name ?? cat.defaultName,
+          definition: commitments[cat.id]?.definition ?? '',
+          sortOrder:  i,
+        }))
+      )
+      router.push('/today')
+    } catch (e: any) {
+      setSaveError(e.message ?? 'Something went wrong')
+      setSaving(false)
+    }
   }
 
   // ── Render ──────────────────────────────────────────────────────────────
@@ -356,14 +381,15 @@ export default function OnboardingContent() {
         </div>
 
         <div className="px-6 py-8 flex flex-col gap-3">
+          {saveError && <p className="font-sans text-xs text-amber text-center">{saveError}</p>}
           <button
             onClick={handleStart}
-            disabled={!allNamed}
+            disabled={!allNamed || saving}
             className={`w-full font-sans text-sm font-semibold py-3.5 rounded-xl transition-opacity ${
-              allNamed ? 'bg-citrus text-ink' : 'bg-citrus/30 text-ink/40 cursor-default'
+              allNamed && !saving ? 'bg-citrus text-ink' : 'bg-citrus/30 text-ink/40 cursor-default'
             }`}
           >
-            Start my challenge
+            {saving ? 'Starting…' : 'Start my challenge'}
           </button>
           <button onClick={() => setStep('plan-2')} className="text-green-400 font-sans text-sm text-center py-1">
             Back

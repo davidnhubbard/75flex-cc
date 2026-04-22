@@ -36,7 +36,13 @@ const SECTIONS: { title: string; screens: Screen[] }[] = [
   {
     title: 'Progress',
     screens: [
-      { id: '04.x', label: 'Progress — mid challenge',  description: '75-day calendar',                  href: '/progress' },
+      { id: '04.1', label: 'Progress — calendar',       description: '75-day grid, stats, detail bar',   href: '/progress' },
+    ],
+  },
+  {
+    title: 'Completion',
+    screens: [
+      { id: '07.1', label: 'Day 75 complete',           description: 'Celebration screen',               href: '/complete' },
     ],
   },
   {

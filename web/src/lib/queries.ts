@@ -126,6 +126,54 @@ export async function getOrCreateDailyLog(db: DB, challengeId: string, dayNumber
   return data
 }
 
+export async function getAllDailyLogs(db: DB, challengeId: string) {
+  const { data } = await db
+    .from('daily_logs')
+    .select('*')
+    .eq('challenge_id', challengeId)
+    .order('day_number')
+  return data ?? []
+}
+
+// ─── Notes ────────────────────────────────────────────────────────────────────
+
+export async function getNote(db: DB, dailyLogId: string) {
+  const { data } = await db
+    .from('day_notes')
+    .select('note_text')
+    .eq('daily_log_id', dailyLogId)
+    .maybeSingle()
+  return data?.note_text ?? ''
+}
+
+export async function saveNote(db: DB, dailyLogId: string, text: string) {
+  if (!text.trim()) {
+    await db.from('day_notes').delete().eq('daily_log_id', dailyLogId)
+  } else {
+    await db.from('day_notes').upsert(
+      { daily_log_id: dailyLogId, note_text: text },
+      { onConflict: 'daily_log_id' }
+    )
+  }
+}
+
+// ─── Stats ────────────────────────────────────────────────────────────────────
+
+export function calcStreak(logs: { day_number: number; overall_state: string }[], currentDay: number) {
+  let streak = 0
+  for (let d = currentDay; d >= 1; d--) {
+    const log = logs.find(l => l.day_number === d)
+    if (log && log.overall_state !== 'none') streak++
+    else break
+  }
+  return streak
+}
+
+export function calcShowUpRate(logs: { overall_state: string }[], currentDay: number) {
+  const active = logs.filter(l => l.overall_state !== 'none').length
+  return Math.round((active / currentDay) * 100)
+}
+
 // ─── Commitment logs ──────────────────────────────────────────────────────────
 
 export async function getCommitmentLogs(db: DB, dailyLogId: string) {

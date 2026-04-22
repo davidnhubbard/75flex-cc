@@ -17,10 +17,11 @@ export default function AuthForm({ mode }: Props) {
   const router   = useRouter()
   const supabase = createClient()
 
-  const [email,    setEmail]    = useState('')
-  const [password, setPassword] = useState('')
-  const [error,    setError]    = useState<string | null>(null)
-  const [loading,  setLoading]  = useState(false)
+  const [email,       setEmail]      = useState('')
+  const [password,    setPassword]   = useState('')
+  const [error,       setError]      = useState<string | null>(null)
+  const [loading,     setLoading]    = useState(false)
+  const [checkEmail,  setCheckEmail] = useState(false)
 
   async function handleGoogle() {
     setLoading(true)
@@ -40,21 +41,47 @@ export default function AuthForm({ mode }: Props) {
     setLoading(true)
     setError(null)
 
-    const { error } =
-      mode === 'login'
-        ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({ email, password })
-
-    if (error) {
-      setError(error.message)
-      setLoading(false)
+    if (mode === 'login') {
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) { setError(error.message); setLoading(false) }
+      else        { router.push('/today'); router.refresh() }
     } else {
-      router.push(mode === 'signup' ? '/onboarding' : '/today')
-      router.refresh()
+      const { data, error } = await supabase.auth.signUp({ email, password })
+      if (error) {
+        setError(error.message)
+        setLoading(false)
+      } else if (data.session) {
+        // Email confirmation disabled — session granted immediately
+        router.push('/onboarding')
+        router.refresh()
+      } else {
+        // Email confirmation required — tell user to check their inbox
+        setCheckEmail(true)
+        setLoading(false)
+      }
     }
   }
 
   const isLogin = mode === 'login'
+
+  if (checkEmail) {
+    return (
+      <div className="min-h-screen bg-green-900 flex flex-col max-w-xl mx-auto px-6 justify-center">
+        <div className="w-12 h-12 rounded-full bg-green-800 flex items-center justify-center mb-6">
+          <span className="text-2xl">📬</span>
+        </div>
+        <h1 className="font-display text-[28px] font-semibold tracking-tight text-surface leading-tight mb-2">
+          Check your email.
+        </h1>
+        <p className="font-sans text-sm text-green-300 leading-relaxed mb-8">
+          We sent a confirmation link to <span className="text-surface">{email}</span>. Click it to activate your account, then come back and sign in.
+        </p>
+        <Btn variant="outline" onClick={() => { setCheckEmail(false) }}>
+          Back to sign in
+        </Btn>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-green-900 flex flex-col max-w-xl mx-auto px-6">

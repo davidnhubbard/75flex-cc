@@ -1,5 +1,6 @@
+import { Suspense } from 'react'
 import AuthForm from '../AuthForm'
 
 export default function LoginPage() {
-  return <AuthForm mode="login" />
+  return <Suspense><AuthForm mode="login" /></Suspense>
 }

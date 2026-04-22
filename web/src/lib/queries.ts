@@ -106,6 +106,22 @@ export function todayISO(): string {
   return new Date().toISOString().split('T')[0]
 }
 
+export function dateForDay(startDate: string, dayNumber: number): string {
+  const d = new Date(startDate)
+  d.setDate(d.getDate() + dayNumber - 1)
+  return d.toISOString().split('T')[0]
+}
+
+export async function hasCommitmentChangedSince(db: DB, commitmentId: string, sinceDay: number) {
+  const { data } = await db
+    .from('commitment_history')
+    .select('id')
+    .eq('commitment_id', commitmentId)
+    .gt('changed_on_day', sinceDay)
+    .limit(1)
+  return (data?.length ?? 0) > 0
+}
+
 export async function getOrCreateDailyLog(db: DB, challengeId: string, dayNumber: number, logDate: string) {
   const { data: existing } = await db
     .from('daily_logs')

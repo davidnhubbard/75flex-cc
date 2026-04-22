@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>75 Flex — Sheet 01 Onboarding</title>
+<style>
+:root {
+  --g950:#0A1F0F;--g900:#122A18;--g800:#1A3D22;--g700:#225030;--g600:#2E6B40;
+  --g500:#3A8A52;--g400:#52A86E;--g300:#7EC498;--g200:#B4DEC4;--g100:#DCF0E4;--g50:#F0FAF4;
+  --cit:#D4E832;--cit3:#B8CC1A;--cr1:#FFFDF5;--w9:#1C1409;--w5:#7A6558;--w3:#C0A882;--w1:#EDE5D8;
+  --fd:'Playfair Display',Georgia,serif;--fb:'DM Sans',system-ui,sans-serif;--fm:'DM Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#1a1a1a;padding:30px;font-family:var(--fb);}
+.outer{background:var(--g950);padding:32px;border-radius:14px;max-width:1200px;margin:0 auto;}
+.title{font-family:var(--fd);font-size:28px;font-weight:700;color:var(--cr1);margin-bottom:4px;}
+.sub{font-family:var(--fm);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--g400);margin-bottom:28px;}
+.group{font-family:var(--fm);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--g500);margin:32px 0 20px;border-bottom:1px solid var(--g800);padding-bottom:8px;}
+.row{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;margin-bottom:28px;}
+.sw{display:flex;flex-direction:column;gap:8px;}
+.id{font-family:var(--fm);font-size:9px;color:var(--g500);}
+.name{font-size:11px;font-weight:500;color:var(--g300);}
+.ph{width:250px;background:var(--cr1);border-radius:38px;border:7px solid var(--g900);overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.6);display:flex;flex-direction:column;flex-shrink:0;}
+.notch{height:23px;background:var(--g950);display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:8px;color:var(--g400);position:relative;font-family:var(--fm);}
+.pill{width:60px;height:15px;background:var(--g900);border-radius:99px;position:absolute;left:50%;transform:translateX(-50%);}
+.q{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:18px;height:18px;border-radius:50%;background:rgba(212,232,50,.15);border:1px solid rgba(212,232,50,.3);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:8px;color:var(--cit);}
+
+.slide{background:var(--g900);padding:16px 13px;min-height:500px;display:flex;flex-direction:column;}
+.dots{display:flex;gap:3px;margin-bottom:16px;}.dot{height:3px;border-radius:99px;flex:1;background:var(--g700);}.dot.on{background:var(--cit);}
+.ico{width:80px;height:80px;border-radius:50%;background:var(--g800);display:flex;align-items:center;justify-content:center;font-size:32px;border:2px solid var(--g600);margin:0 auto 14px;}
+.ey{font-family:var(--fm);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--cit);margin-bottom:4px;}
+.h{font-family:var(--fd);font-size:15px;font-weight:700;color:var(--cr1);line-height:1.2;margin-bottom:6px;}
+.b{font-size:10px;color:var(--g300);line-height:1.5;flex:1;}
+.b strong{color:var(--cr1);}
+.btn{background:var(--cit);color:var(--g950);border:none;border-radius:10px;padding:10px;font-size:11px;font-weight:600;font-family:var(--fb);width:100%;cursor:pointer;margin-top:10px;}
+
+.plan{background:#F4F9F5;padding:13px 12px;min-height:500px;display:flex;flex-direction:column;}
+.pt{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;}
+.ley{font-family:var(--fm);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--g600);margin-bottom:2px;}
+.lh{font-family:var(--fd);font-size:15px;font-weight:700;color:var(--w9);margin-bottom:2px;}
+.ls{font-size:10px;color:var(--w5);}
+.ql{width:18px;height:18px;border-radius:50%;background:var(--g100);border:1px solid var(--g300);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:8px;color:var(--g700);flex-shrink:0;}
+
+.card{background:white;border:1.5px solid #E2EDE5;border-radius:13px;padding:10px;margin-bottom:6px;}
+.card.sel{border-color:var(--g600);background:#F0FAF4;}
+.ct{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.cn{font-family:var(--fd);font-size:13px;font-weight:700;color:var(--w9);}
+.badge{font-size:8px;font-weight:600;padding:2px 7px;border-radius:99px;background:var(--g100);color:var(--g700);font-family:var(--fm);}
+.cd{font-size:9px;color:var(--w5);line-height:1.4;margin-bottom:5px;}
+.ci{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--w7);margin-bottom:2px;}
+.dot2{width:4px;height:4px;border-radius:99px;flex-shrink:0;background:var(--g600);}
+.cf{margin-top:5px;padding-top:5px;border-top:1px solid #EEF4F0;font-size:8px;color:var(--w3);font-family:var(--fm);}
+.btn2{background:var(--g700);color:white;border:none;border-radius:10px;padding:10px;font-size:11px;font-weight:600;font-family:var(--fb);width:100%;cursor:pointer;margin-top:5px;}
+
+.cat{font-family:var(--fm);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--g500);margin:6px 0 4px;}
+.cr{display:flex;align-items:center;gap:6px;background:white;border:1.5px solid #E2EDE5;border-radius:11px;padding:7px 9px;margin-bottom:4px;}
+.cr.on{border-color:var(--g600);background:#F0FAF4;}
+.ci2{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;}
+.ccn{font-size:11px;font-weight:600;color:var(--w9);}
+.ccs{font-size:9px;color:var(--w5);margin-top:1px;}
+.ck{width:15px;height:15px;border-radius:99px;border:1.5px solid #C8DDD0;display:flex;align-items:center;justify-content:center;font-size:8px;color:transparent;flex-shrink:0;margin-left:auto;}
+.cr.on .ck{background:var(--g600);border-color:var(--g600);color:white;}
+
+.comm{background:white;border:1.5px solid #E2EDE5;border-radius:12px;padding:9px;margin-bottom:7px;}
+.comm.fill{border-color:var(--g500);}
+.cct{display:flex;align-items:center;gap:6px;margin-bottom:7px;}
+.ccm{font-size:11px;font-weight:600;color:var(--w9);}
+.ccl{font-family:var(--fm);font-size:7px;letter-spacing:.08em;text-transform:uppercase;color:var(--g500);margin-bottom:3px;}
+.ta{width:100%;background:#F4F9F5;border:1.5px solid #C8DDD0;border-radius:7px;padding:6px 8px;font-size:10px;font-family:var(--fb);color:var(--w9);resize:none;line-height:1.4;}
+.ta.fill{border-color:var(--g600);background:#F0FAF4;}
+.chips{display:flex;gap:3px;flex-wrap:wrap;margin-top:4px;}
+.chip{font-size:8px;color:var(--g700);background:var(--g50);border:1px solid var(--g200);border-radius:99px;padding:2px 6px;}
+.note{font-size:9px;color:var(--w5);text-align:center;padding:3px 0;}
+</style>
+</head>
+<body>
+<div class="outer">
+  <div class="title">Reference Sheet 01 — Onboarding</div>
+  <div class="sub">Screens 01.1 – 01.7b</div>
+
+  <div class="group">01.A — Intro slides</div>
+  <div class="row">
+    <div class="sw">
+      <div class="id">01.1</div><div class="name">Welcome</div>
+      <div class="ph"><div class="notch"><span>9:41</span><div class="pill"></div><div class="q">?</div></div>
+      <div class="slide">
+        <div class="dots"><div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        <div class="ico">🎯</div>
+        <div class="ey">Welcome to 75 Flex</div>
+        <div class="h">Build any 75-day challenge you want</div>
+        <div class="b">You've heard of 75 Hard. Same idea — <strong>75 days of daily commitments.</strong><br><br>But here's the difference: <strong>you define the rules.</strong></div>
+        <button class="btn">Next →</button>
+      </div></div>
+    </div>
+
+    <div class="sw">
+      <div class="id">01.2</div><div class="name">Your rules</div>
+      <div class="ph"><div class="notch"><span>9:41</span><div class="pill"></div><div class="q">?</div></div>
+      <div class="slide">
+        <div class="dots"><div class="dot"></div><div class="dot on"></div><div class="dot"></div><div class="dot"></div></div>
+        <div class="ico">⚖️</div>
+        <div class="ey">Your rules</div>
+        <div class="h">A workout is whatever you decide</div>
+        <div class="b">75 Hard says: two 45-min workouts, one outside.<br><br>75 Flex says: <strong>you decide.</strong> Steps count. YouTube courses count.</div>
+        <button class="btn">Next →</button>
+      </div></div>
+    </div>
+
+    <div class="sw">
+      <div class="id">01.3</div><div class="name">No forced resets</div>
+      <div class="ph"><div class="notch"><span>9:41</span><div class="pill"></div><div class="q">?</div></div>
+      <div class="slide">
+        <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot on"></div><div class="dot"></div></div>
+        <div class="ico">📈</div>
+        <div class="ey">No forced resets — ever</div>
+        <div class="h">Miss a day? Keep going anyway</div>
+        <div class="b">75 Hard restarts from day one if you slip.<br><br>75 Flex never erases your progress. <strong>Consistency over perfection — always.</strong></div>
+        <button class="btn">Next →</button>
+      </div></div>
+    </div>
+
+    <div class="sw">
+      <div class="id">01.4</div><div class="name">Ready</div>
+      <div class="ph"><div class="notch"><span>9:41</span><div class="pill"></div><div class="q">?</div></div>
+      <div class="slide">
+        <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot on"></div></div>
+        <div class="ico">🚀</div>
+        <div class="ey">Ready?</div>
+        <div class="h">Let's build your challenge</div>
+        <div class="b">Start from a template — strict 75 Hard or flexible 75 Soft — then make it yours.<br><br><strong>Takes about 2 minutes.</strong></div>
+        <button class="btn">Build my challenge →</button>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="group">01.B — Plan builder</div>
+  <div class="row">
+    <div class="sw">
+      <div class="id">01.5</div><div class="name">Step 1 — Template picker</div>
+      <div class="ph"><div class="notch"><span>9:41</span><div class="pill"></div><div class="q">?</div></div>
+      <div class="plan">
+        <div class="pt"><div><div class="ley">Step 1 of 3</div><div class="lh">Choose your starting point</div><div class="ls">You'll customize everything next.</div></div><div class="ql">?</div></div>
+        <div class="card sel"><div class="ct"><div class="cn">75 Soft</div><div class="badge">FLEXIBLE</div></div><div class="cd">Sustainable. Same categories, your definitions.</div><div class="ci"><div class="dot2"></div>One workout — you define it</div><div class="ci"><div class="dot2"></div>64 oz of water</div><div class="ci"><div class="dot2"></div>Read, watch, or learn something</div><div class="ci"><div class="dot2"></div>Eat intentionally</div><div class="cf">Miss a day → keep going, no reset</div></div>
+        <button class="btn2">Customize 75 Soft →</button>
+      </div></div>
+    </div>
+
+    <div class="sw">
+      <div class="id">01.6</div><div class="name">Step 2 — Categories</div>
+      <div class="ph"><div class="notch"><span>9:41</span><div class="pill"></div><div class="q">?</div></div>
+      <div class="plan">
+        <div class="pt"><div><div class="ley">Step 2 of 3</div><div class="lh">Pick your categories</div><div class="ls">Select at least two to continue.</div></div><div class="ql">?</div></div>
+        <div class="cat">Core</div>
+        <div class="cr on"><div class="ci2" style="background:#FEF3C7;">💪</div><div><div class="ccn">Physical</div><div class="ccs">Workouts, steps, movement</div></div><div class="ck">✓</div></div>
+        <div class="cr on"><div class="ci2" style="background:var(--g50);">🥗</div><div><div class="ccn">Nutrition</div><div class="ccs">Diet, eating habits</div></div><div class="ck">✓</div></div>
+        <div class="cr on"><div class="ci2" style="background:#EFF6FF;">📚</div><div><div class="ccn">Personal dev</div><div class="ccs">Reading, courses, podcasts</div></div><div class="ck">✓</div></div>
+        <div class="cr on"><div class="ci2" style="background:#E0F2FE;">💧</div><div><div class="ccn">Hydration</div><div class="ccs">Daily water goal</div></div><div class="ck">✓</div></div>
+        <button class="btn2" style="margin-top:8px;">Define my commitments →</button>
+      </div></div>
+    </div>
+
+    <div class="sw">
+      <div class="id">01.7a</div><div class="name">Step 3 — Define (progress)</div>
+      <div class="ph"><div class="notch"><span>9:41</span><div class="pill"></div><div class="q">?</div></div>
+      <div class="plan">
+        <div class="pt"><div><div class="ley">Step 3 of 3</div><div class="lh">Define each commitment</div><div class="ls">What does success look like?</div></div><div class="ql">?</div></div>
+        <div class="comm fill"><div class="cct"><div class="ci2" style="background:#FEF3C7;">💪</div><div class="ccn">Physical</div></div><div class="ccl">Your definition</div><textarea class="ta fill" rows="2">One workout — you define it</textarea></div>
+        <div class="comm fill"><div class="cct"><div class="ci2" style="background:#E0F2FE;">💧</div><div class="ccn">Hydration</div></div><div class="ccl">Your definition</div><textarea class="ta fill" rows="2">Drink 64 oz of water</textarea></div>
+        <div class="comm"><div class="cct"><div class="ci2" style="background:#EFF6FF;">📚</div><div class="ccn">Personal dev</div></div><div class="ccl">Your definition</div><textarea class="ta" rows="2" placeholder="e.g. 20 min reading..."></textarea></div>
+        <div class="comm"><div class="cct"><div class="ci2" style="background:#F0FAF4;">🥗</div><div class="ccn">Nutrition</div></div><div class="ccl">Your definition</div><textarea class="ta" rows="2" placeholder="e.g. no alcohol..."></textarea></div>
+        <div class="note">2 undefined — that's fine, add anytime</div>
+        <button class="btn2">Start my challenge →</button>
+      </div></div>
+    </div>
+
+    <div class="sw">
+      <div class="id">01.7b</div><div class="name">Step 3 — All defined</div>
+      <div class="ph"><div class="notch"><span>9:41</span><div class="pill"></div><div class="q">?</div></div>
+      <div class="plan">
+        <div class="pt"><div><div class="ley">Step 3 of 3</div><div class="lh">Define each commitment</div><div class="ls">What does success look like?</div></div><div class="ql">?</div></div>
+        <div class="comm fill"><div class="cct"><div class="ci2" style="background:#FEF3C7;">💪</div><div class="ccn">Physical</div></div><div class="ccl">Your definition</div><textarea class="ta fill" rows="2">One workout — you define it</textarea></div>
+        <div class="comm fill"><div class="cct"><div class="ci2" style="background:#E0F2FE;">💧</div><div class="ccn">Hydration</div></div><div class="ccl">Your definition</div><textarea class="ta fill" rows="2">Drink 64 oz of water</textarea></div>
+        <div class="comm fill"><div class="cct"><div class="ci2" style="background:#EFF6FF;">📚</div><div class="ccn">Personal dev</div></div><div class="ccl">Your definition</div><textarea class="ta fill" rows="2">20 min reading or podcast</textarea></div>
+        <div class="comm fill"><div class="cct"><div class="ci2" style="background:#F0FAF4;">🥗</div><div class="ccn">Nutrition</div></div><div class="ccl">Your definition</div><textarea class="ta fill" rows="2">No alcohol, eat intentionally</textarea></div>
+        <div class="note">You can edit these anytime</div>
+        <button class="btn2">Start my challenge →</button>
+      </div></div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

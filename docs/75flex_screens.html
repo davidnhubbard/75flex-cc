@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>75 Flex — Screen Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --g950:#0A1F0F;--g900:#122A18;--g800:#1A3D22;--g700:#225030;--g600:#2E6B40;
+  --g500:#3A8A52;--g400:#52A86E;--g300:#7EC498;--g200:#B4DEC4;--g100:#DCF0E4;--g50:#F0FAF4;
+  --cit:#D4E832;--cit2:#E2F04A;--cit3:#B8CC1A;
+  --cr1:#FFFDF5;--cr2:#FFF9E6;--cr3:#F5EDD0;
+  --w9:#1C1409;--w7:#3D2E1E;--w5:#7A6558;--w3:#C0A882;--w1:#EDE5D8;
+  --par:#F59E0B;--parl:#FEF3C7;
+  --fd:'Playfair Display',Georgia,serif;
+  --fb:'DM Sans',system-ui,sans-serif;
+  --fm:'DM Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--g950);font-family:var(--fb);color:var(--cr1);min-height:100vh;}
+.page-header{padding:60px 48px 40px;border-bottom:1px solid var(--g800);display:flex;align-items:flex-end;justify-content:space-between;}
+.logo-tag{font-family:var(--fm);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--cit);margin-bottom:8px;}
+.logo-title{font-family:var(--fd);font-size:56px;font-weight:900;color:var(--cr1);line-height:1;}
+.logo-title span{color:var(--cit);}
+.header-meta{text-align:right;font-size:13px;color:var(--g400);line-height:1.8;}
+.section{padding:64px 48px;border-bottom:1px solid var(--g900);}
+.section-header{display:flex;align-items:baseline;gap:16px;margin-bottom:12px;}
+.section-num{font-family:var(--fm);font-size:11px;color:var(--cit);letter-spacing:.1em;}
+.section-title{font-family:var(--fd);font-size:28px;font-weight:700;color:var(--cr1);}
+.section-desc{font-size:14px;color:var(--g300);line-height:1.7;max-width:600px;margin-bottom:40px;}
+.screen-grid{display:flex;gap:32px;flex-wrap:wrap;align-items:flex-start;}
+.screen-wrap{display:flex;flex-direction:column;gap:14px;}
+.screen-label{font-family:var(--fm);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--g400);}
+.note{display:flex;gap:8px;font-size:12px;color:var(--g300);line-height:1.6;margin-bottom:5px;}
+.note::before{content:"→";color:var(--cit3);flex-shrink:0;}
+.screen-notes{max-width:280px;}
+.phone{width:295px;background:var(--cr1);border-radius:44px;border:8px solid var(--g900);overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.6),0 0 0 1px var(--g700);display:flex;flex-direction:column;flex-shrink:0;}
+.notch{height:26px;background:var(--g950);display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-size:10px;color:var(--g400);position:relative;flex-shrink:0;}
+.notch-pill{width:72px;height:18px;background:var(--g900);border-radius:99px;position:absolute;left:50%;transform:translateX(-50%);}
+.notch-lt{background:var(--g800);}
+/* SLIDE */
+.slide{background:var(--g900);padding:24px 20px 20px;min-height:560px;display:flex;flex-direction:column;}
+.sp-row{display:flex;gap:4px;margin-bottom:20px;}
+.sp{height:3px;border-radius:99px;flex:1;background:var(--g700);}
+.sp.on{background:var(--cit);}
+.s-illo{flex:1;display:flex;align-items:center;justify-content:center;margin-bottom:20px;}
+.s-ico{width:110px;height:110px;border-radius:50%;background:var(--g800);display:flex;align-items:center;justify-content:center;font-size:48px;border:2px solid var(--g600);}
+.s-ey{font-family:var(--fm);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--cit);margin-bottom:6px;}
+.s-h{font-family:var(--fd);font-size:20px;font-weight:700;color:var(--cr1);line-height:1.2;margin-bottom:8px;}
+.s-b{font-size:13px;color:var(--g300);line-height:1.7;flex:1;}
+.s-b strong{color:var(--cr1);font-weight:500;}
+.btn-cit{background:var(--cit);color:var(--g950);border:none;border-radius:13px;padding:13px;font-size:14px;font-weight:600;font-family:var(--fb);width:100%;cursor:pointer;margin-top:16px;}
+/* PICKER */
+.lt-screen{background:#F4F9F5;padding:18px 14px 14px;min-height:560px;display:flex;flex-direction:column;}
+.lt-ey{font-family:var(--fm);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--g600);margin-bottom:3px;}
+.lt-h{font-family:var(--fd);font-size:20px;font-weight:700;color:var(--w9);margin-bottom:3px;}
+.lt-sub{font-size:12px;color:var(--w5);margin-bottom:12px;}
+.tcard{background:white;border:1.5px solid #E2EDE5;border-radius:18px;padding:14px;margin-bottom:8px;flex:1;}
+.tcard.sel-hard{border-color:var(--w7);background:#FDFAF7;}
+.tcard.sel-soft{border-color:var(--g600);background:#F0FAF4;}
+.tc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.tc-n{font-family:var(--fd);font-size:17px;font-weight:700;color:var(--w9);}
+.badge{font-size:10px;font-weight:600;padding:3px 9px;border-radius:99px;font-family:var(--fm);letter-spacing:.04em;}
+.b-strict{background:#FEF3C7;color:#92400E;}
+.b-flex{background:var(--g100);color:var(--g700);}
+.tc-desc{font-size:11px;color:var(--w5);line-height:1.5;margin-bottom:8px;}
+.tc-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--w7);margin-bottom:3px;}
+.tc-dot{width:5px;height:5px;border-radius:99px;flex-shrink:0;}
+.tc-ft{margin-top:8px;padding-top:7px;border-top:1px solid #EEF4F0;font-size:10px;color:var(--w3);font-family:var(--fm);}
+.btn-grn{background:var(--g700);color:white;border:none;border-radius:13px;padding:13px;font-size:14px;font-weight:600;font-family:var(--fb);width:100%;cursor:pointer;margin-top:6px;}
+/* CATEGORIES */
+.cat-sec{font-family:var(--fm);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--g500);margin:8px 0 5px;}
+.cat-row{display:flex;align-items:center;gap:8px;background:white;border:1.5px solid #E2EDE5;border-radius:13px;padding:9px 11px;margin-bottom:5px;}
+.cat-row.on{border-color:var(--g600);background:#F0FAF4;}
+.cat-ico{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.cat-n{font-size:13px;font-weight:600;color:var(--w9);}
+.cat-hint{font-size:11px;color:var(--w5);margin-top:1px;}
+.cat-ck{width:19px;height:19px;border-radius:99px;border:1.5px solid #C8DDD0;display:flex;align-items:center;justify-content:center;font-size:10px;color:transparent;flex-shrink:0;}
+.cat-row.on .cat-ck{background:var(--g600);border-color:var(--g600);color:white;}
+/* DAILY LOG */
+.log-hdr{background:var(--g800);padding:14px 16px 16px;}
+.log-day-row{display:flex;align-items:center;gap:7px;margin-bottom:3px;}
+.log-chip{background:var(--cit);color:var(--g950);font-family:var(--fm);font-size:10px;font-weight:600;padding:3px 9px;border-radius:99px;letter-spacing:.05em;}
+.log-back-chip{background:rgba(212,232,50,.2);color:var(--cit);font-family:var(--fm);font-size:10px;font-weight:600;padding:3px 9px;border-radius:99px;letter-spacing:.05em;}
+.log-greet{font-family:var(--fd);font-size:20px;font-weight:700;color:var(--cr1);margin-bottom:10px;}
+.log-trk{height:4px;background:var(--g700);border-radius:99px;overflow:hidden;margin-bottom:5px;}
+.log-fill{height:100%;border-radius:99px;background:var(--cit);}
+.log-lbl{font-size:11px;color:var(--g300);}
+.log-cards{padding:12px 12px 0;flex:1;display:flex;flex-direction:column;gap:7px;}
+.lcard{background:white;border:1px solid #E2EDE5;border-radius:15px;padding:11px 12px;display:flex;align-items:center;justify-content:space-between;}
+.lcard.done{background:#F0FAF4;border-color:var(--g300);}
+.lcard.part{background:#FFFBEB;border-color:#FCD34D;}
+.lcard-l{display:flex;align-items:center;gap:9px;}
+.lcard-ico{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.lcard-n{font-size:13px;font-weight:600;color:var(--w9);}
+.lcard-s{font-size:11px;color:var(--w5);margin-top:1px;}
+.pill{font-size:10px;font-weight:600;padding:3px 9px;border-radius:99px;white-space:nowrap;font-family:var(--fm);letter-spacing:.03em;}
+.p-none{background:#F1F5F2;color:#6B9278;}
+.p-part{background:#FEF3C7;color:#92400E;}
+.p-done{background:var(--g100);color:var(--g700);}
+/* TABS */
+.day-tabs{display:flex;gap:5px;padding:10px 12px 0;}
+.dtab{flex:1;background:white;border:1px solid #E2EDE5;border-radius:11px;padding:8px 4px;text-align:center;}
+.dtab.on{background:var(--g700);border-color:var(--g700);}
+.dtab.lk{background:#F7F9F7;border-color:#E2EDE5;opacity:.5;}
+.dtab-d{font-size:12px;font-weight:600;color:var(--w9);}
+.dtab.on .dtab-d{color:white;}
+.dtab.lk .dtab-d{color:var(--w3);}
+.dtab-dt{font-size:10px;color:var(--w5);margin-top:1px;}
+.dtab.on .dtab-dt{color:var(--g200);}
+.dtab-lk{font-size:9px;color:var(--w3);font-family:var(--fm);}
+/* CALENDAR */
+.cal-hdr{background:var(--g800);padding:14px 16px 16px;}
+.streak-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px;}
+.sc{background:rgba(255,255,255,.08);border-radius:13px;padding:10px 11px;border:1px solid rgba(255,255,255,.1);}
+.sc.hot{background:var(--cit);border-color:var(--cit2);}
+.sc-lbl{font-size:10px;font-family:var(--fm);letter-spacing:.07em;text-transform:uppercase;color:var(--g300);margin-bottom:2px;}
+.sc.hot .sc-lbl{color:var(--g900);}
+.sc-num{font-family:var(--fd);font-size:26px;font-weight:900;color:white;line-height:1;}
+.sc.hot .sc-num{color:var(--g950);}
+.sc-unit{font-size:11px;color:var(--g300);margin-top:2px;}
+.sc.hot .sc-unit{color:var(--g800);}
+.stats-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;padding:9px 12px;}
+.sm{background:white;border-radius:9px;padding:7px;text-align:center;border:1px solid #E2EDE5;}
+.sm-n{font-size:14px;font-weight:600;color:var(--w9);font-family:var(--fd);}
+.sm-l{font-size:10px;color:var(--w5);margin-top:1px;}
+.cal-body{padding:0 12px 8px;flex:1;}
+.cal-mo{font-family:var(--fm);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--g600);margin:7px 0 4px;display:flex;justify-content:space-between;}
+.dow-row{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:2px;}
+.dow-c{text-align:center;font-size:9px;color:var(--w3);font-weight:500;padding-bottom:2px;}
+.wk{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:2px;}
+.dc{aspect-ratio:1;border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.dc-n{font-size:10px;font-weight:600;line-height:1;}
+.dc-d{font-size:7px;line-height:1;margin-top:1px;}
+.d-comp{background:var(--g600);}
+.d-comp .dc-n{color:white;} .d-comp .dc-d{color:var(--g200);}
+.d-part{background:white;border:1.5px solid var(--par);}
+.d-part .dc-n{color:var(--w7);} .d-part .dc-d{color:var(--w3);}
+.d-miss{background:white;border:1px solid #E2EDE5;}
+.d-miss .dc-n{color:#C8D8CC;} .d-miss .dc-d{color:#DCE8DF;}
+.d-today{background:var(--cit);}
+.d-today .dc-n{color:var(--g950);font-weight:700;} .d-today .dc-d{color:var(--g800);}
+.d-fut .dc-n{color:#D5E8DA;} .d-fut .dc-d{color:#E5F0E8;}
+.leg-row{display:flex;gap:9px;padding:3px 12px 7px;flex-wrap:wrap;}
+.leg{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--w5);}
+.leg-sw{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+/* PLAN MGMT */
+.plan-hdr{background:var(--g800);padding:14px 16px 16px;}
+.pcard{background:white;border:1px solid #E2EDE5;border-radius:13px;padding:10px 12px;display:flex;align-items:center;gap:9px;margin-bottom:6px;}
+.pc-ico{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.pc-cat{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--g500);font-weight:600;font-family:var(--fm);}
+.pc-val{font-size:13px;font-weight:500;color:var(--w9);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pc-arr{font-size:14px;color:var(--w3);margin-left:auto;}
+.clog{background:white;border:1px solid #E2EDE5;border-radius:11px;padding:9px 11px;margin-bottom:5px;}
+.clog-day{font-family:var(--fm);font-size:10px;color:var(--g500);letter-spacing:.07em;text-transform:uppercase;margin-bottom:2px;}
+.clog-t{font-size:12px;color:var(--w7);line-height:1.5;}
+.clog-t s{color:var(--w3);}
+.clog-t strong{color:var(--w9);font-weight:500;}
+/* BENCHMARK */
+.bench{background:var(--g900);padding:18px 14px;min-height:560px;display:flex;flex-direction:column;}
+.bench-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:15px;padding:13px;margin-bottom:9px;}
+.bench-title{font-size:13px;font-weight:600;color:var(--cr1);margin-bottom:7px;display:flex;align-items:center;gap:6px;}
+.bench-ta{width:100%;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:9px 11px;font-size:12px;color:var(--g200);font-family:var(--fb);resize:none;line-height:1.6;}
+.bench-ta::placeholder{color:var(--g600);}
+.photo-drop{background:rgba(0,0,0,.15);border:1.5px dashed var(--g600);border-radius:9px;padding:16px;text-align:center;}
+.pd-icon{font-size:22px;margin-bottom:3px;}
+.pd-text{font-size:12px;color:var(--g400);}
+.pd-sub{font-size:11px;color:var(--g600);margin-top:2px;}
+/* NAV */
+.bnav{display:flex;justify-content:space-around;padding:9px 12px 14px;border-top:1px solid #E2EDE5;background:white;flex-shrink:0;}
+.ni{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--w3);font-family:var(--fm);letter-spacing:.04em;}
+.ni.on{color:var(--g600);}
+.ni-ico{width:19px;height:19px;}
+.bnav-dk{display:flex;justify-content:space-around;padding:9px 12px 14px;border-top:1px solid var(--g700);background:var(--g900);flex-shrink:0;}
+.ni-dk{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--g600);font-family:var(--fm);letter-spacing:.04em;}
+.ni-dk.on{color:var(--cit);}
+.sec-lbl{font-size:10px;font-weight:600;color:var(--w5);letter-spacing:.07em;text-transform:uppercase;padding:9px 12px 5px;font-family:var(--fm);}
+.save-bar{padding:10px 12px 14px;}
+.btn-save{background:var(--g700);color:white;border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:600;font-family:var(--fb);width:100%;cursor:pointer;}
+.banner{margin:8px 12px 0;background:rgba(212,232,50,.1);border:1px solid rgba(212,232,50,.3);border-radius:12px;padding:9px 11px;display:flex;align-items:flex-start;gap:7px;}
+.ban-ico{font-size:15px;flex-shrink:0;margin-top:1px;}
+.ban-t{font-size:12px;font-weight:600;color:var(--cit);margin-bottom:2px;}
+.ban-s{font-size:11px;color:var(--g300);line-height:1.4;}
+.ban-cta{font-size:11px;color:var(--cit);font-weight:600;margin-top:4px;}
+.ban-x{font-size:15px;color:var(--g500);flex-shrink:0;}
+.lk-overlay{margin:0 12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:20px 14px;text-align:center;}
+.lk-ico{font-size:22px;margin-bottom:6px;}
+.lk-t{font-size:13px;font-weight:600;color:var(--g200);margin-bottom:4px;}
+.lk-s{font-size:12px;color:var(--g500);line-height:1.5;}
+.page-footer{padding:40px 48px;text-align:center;font-family:var(--fm);font-size:12px;color:var(--g700);}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div>
+    <div class="logo-tag">Screen Reference · v1.0</div>
+    <div class="logo-title">75 <span>Flex</span></div>
+  </div>
+  <div class="header-meta">Build any 75-day challenge · Your rules<br>Deep green + citrus · Premium &amp; distinctive<br>April 2026</div>
+</div>
+
+<!-- 01 ONBOARDING -->
+<div class="section">
+  <div class="section-header"><span class="section-num">01</span><span class="section-title">Onboarding slides</span></div>
+  <p class="section-desc">4 swipeable intro slides before plan creation. Dark green signals premium from the first open. Citrus CTA is the only bright element per slide — draws the eye naturally.</p>
+  <div class="screen-grid">
+
+    <div class="screen-wrap">
+      <div class="screen-label">Slide 1 — Welcome</div>
+      <div class="phone"><div class="notch" style="background:var(--g950)"><span style="color:var(--g400)">9:41</span><div class="notch-pill"></div><span style="color:var(--g400)">●●●</span></div><div class="slide"><div class="sp-row"><div class="sp on"></div><div class="sp"></div><div class="sp"></div><div class="sp"></div></div><div class="s-illo"><div class="s-ico">🎯</div></div><div class="s-ey">Welcome to 75 Flex</div><div class="s-h">Build any 75-day challenge you want</div><div class="s-b">You've heard of 75 Hard. Same idea — <strong>75 days of daily commitments.</strong><br><br>But here's the difference: <strong>you define the rules.</strong> What counts as a workout. What counts as learning. Your challenge, your way.</div><button class="btn-cit">Next →</button></div></div>
+      <div class="screen-notes"><div class="note">Dark green bg signals premium from first open</div><div class="note">Citrus CTA only bright element — eye goes straight to it</div><div class="note">Progress dots are minimal, not distracting</div></div>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="screen-label">Slide 2 — Your rules</div>
+      <div class="phone"><div class="notch" style="background:var(--g950)"><span style="color:var(--g400)">9:41</span><div class="notch-pill"></div><span style="color:var(--g400)">●●●</span></div><div class="slide"><div class="sp-row"><div class="sp"></div><div class="sp on"></div><div class="sp"></div><div class="sp"></div></div><div class="s-illo"><div class="s-ico">⚖️</div></div><div class="s-ey">Your rules</div><div class="s-h">A workout is whatever you decide</div><div class="s-b">75 Hard says: two 45-min workouts, one outside. Every day.<br><br>75 Flex says: <strong>you decide.</strong> Steps on your tracker count. A YouTube course counts as personal development. <strong>Same structure. Your definitions.</strong></div><button class="btn-cit">Next →</button></div></div>
+      <div class="screen-notes"><div class="note">Core differentiation slide — must land clearly</div><div class="note">Category language introduced here: personal development, not just reading</div></div>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="screen-label">Slide 3 — No resets</div>
+      <div class="phone"><div class="notch" style="background:var(--g950)"><span style="color:var(--g400)">9:41</span><div class="notch-pill"></div><span style="color:var(--g400)">●●●</span></div><div class="slide"><div class="sp-row"><div class="sp"></div><div class="sp"></div><div class="sp on"></div><div class="sp"></div></div><div class="s-illo"><div class="s-ico">📈</div></div><div class="s-ey">No resets — ever</div><div class="s-h">Miss a day? Keep going anyway</div><div class="s-b">75 Hard restarts from day one if you slip. That's why most people quit.<br><br>75 Flex never erases your progress. <strong>A hard day is still a day forward.</strong><br><br>Partial counts. Showing up counts. Consistency over perfection — always.</div><button class="btn-cit">Next →</button></div></div>
+      <div class="screen-notes"><div class="note">This slide does the selling — addresses burnout directly</div><div class="note">No red, no punishment language anywhere</div></div>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="screen-label">Slide 4 — Ready</div>
+      <div class="phone"><div class="notch" style="background:var(--g950)"><span style="color:var(--g400)">9:41</span><div class="notch-pill"></div><span style="color:var(--g400)">●●●</span></div><div class="slide"><div class="sp-row"><div class="sp"></div><div class="sp"></div><div class="sp"></div><div class="sp on"></div></div><div class="s-illo"><div class="s-ico">🚀</div></div><div class="s-ey">Ready?</div><div class="s-h">Let's build your challenge</div><div class="s-b">Start from a template — strict 75 Hard or a gentler flexible version — then make it yours.<br><br><strong>Takes about 2 minutes.</strong> You can always adjust your plan later.</div><button class="btn-cit">Build my challenge →</button></div></div>
+      <div class="screen-notes"><div class="note">CTA shifts to "Build my challenge" — specific and motivating</div><div class="note">Sets expectation: 2 min, customizable</div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 02 PLAN BUILDER -->
+<div class="section">
+  <div class="section-header"><span class="section-num">02</span><span class="section-title">Plan builder</span></div>
+  <p class="section-desc">3-step flow on light background — signals transition from inspiration to action. Template → Categories → Define commitments. Under 3 minutes total.</p>
+  <div class="screen-grid">
+
+    <div class="screen-wrap">
+      <div class="screen-label">Step 1 — Template picker</div>
+      <div class="phone"><div class="notch" style="background:var(--g950)"><span style="color:var(--g400)">9:41</span><div class="notch-pill"></div><span style="color:var(--g400)">●●●</span></div><div class="lt-screen"><div class="lt-ey">Step 1 of 3</div><div class="lt-h">Choose your starting point</div><div class="lt-sub">You'll customize everything next.</div><div class="tcard sel-hard"><div class="tc-top"><div class="tc-n">75 Hard</div><div class="badge b-strict">STRICT</div></div><div class="tc-desc">The original. Unmodified rules, no flexibility.</div><div class="tc-item"><div class="tc-dot" style="background:#92400E"></div>Two 45-min workouts (one outside)</div><div class="tc-item"><div class="tc-dot" style="background:#92400E"></div>1 gallon of water</div><div class="tc-item"><div class="tc-dot" style="background:#92400E"></div>Read 10 pages non-fiction</div><div class="tc-item"><div class="tc-dot" style="background:#92400E"></div>Strict diet, no alcohol</div><div class="tc-item"><div class="tc-dot" style="background:#92400E"></div>Progress photo daily</div><div class="tc-ft">Miss a day → restart from Day 1</div></div><div class="tcard sel-soft"><div class="tc-top"><div class="tc-n">75 Soft</div><div class="badge b-flex">FLEXIBLE</div></div><div class="tc-desc">Sustainable. Same categories, your definitions.</div><div class="tc-item"><div class="tc-dot" style="background:var(--g600)"></div>One workout — you define it</div><div class="tc-item"><div class="tc-dot" style="background:var(--g600)"></div>64 oz of water</div><div class="tc-item"><div class="tc-dot" style="background:var(--g600)"></div>Read, watch, or learn something</div><div class="tc-item"><div class="tc-dot" style="background:var(--g600)"></div>Eat intentionally</div><div class="tc-ft">Miss a day → keep going, no reset</div></div><button class="btn-grn">Customize 75 Soft →</button></div></div>
+      <div class="screen-notes"><div class="note">Both templates show full commitment list inline</div><div class="note">Reset policy in footer — contrast does the selling</div><div class="note">Selected card gets colored border</div></div>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="screen-label">Step 2 — Category selector</div>
+      <div class="phone"><div class="notch" style="background:var(--g950)"><span style="color:var(--g400)">9:41</span><div class="notch-pill"></div><span style="color:var(--g400)">●●●</span></div><div class="lt-screen"><div class="lt-ey">Step 2 of 3</div><div class="lt-h">Pick your categories</div><div class="lt-sub">Select what matters. Skip the rest.</div><div class="cat-sec">Core</div><div class="cat-row on"><div class="cat-ico" style="background:#FEF3C7">💪</div><div style="flex:1"><div class="cat-n">Physical</div><div class="cat-hint">Workouts, steps, movement</div></div><div class="cat-ck">✓</div></div><div class="cat-row on"><div class="cat-ico" style="background:var(--g50)">🥗</div><div style="flex:1"><div class="cat-n">Nutrition</div><div class="cat-hint">Diet, eating habits, alcohol</div></div><div class="cat-ck">✓</div></div><div class="cat-row on"><div class="cat-ico" style="background:#EFF6FF">📚</div><div style="flex:1"><div class="cat-n">Personal development</div><div class="cat-hint">Reading, courses, podcasts, YouTube</div></div><div class="cat-ck">✓</div></div><div class="cat-row on"><div class="cat-ico" style="background:#E0F2FE">💧</div><div style="flex:1"><div class="cat-n">Hydration</div><div class="cat-hint">Daily water goal</div></div><div class="cat-ck">✓</div></div><div class="cat-sec">Extras</div><div class="cat-row"><div class="cat-ico" style="background:#F3E8FF">📸</div><div style="flex:1"><div class="cat-n">Progress photo</div><div class="cat-hint">Daily photo log</div></div><div class="cat-ck"></div></div><div class="cat-row"><div class="cat-ico" style="background:#FFF7ED">🧘</div><div style="flex:1"><div class="cat-n">Mindfulness</div><div class="cat-hint">Meditation, breathing</div></div><div class="cat-ck"></div></div><button class="btn-grn" style="margin-top:8px">Define my commitments →</button></div></div>
+      <div class="screen-notes"><div class="note">None required — pick what matters, skip the rest</div><div class="note">Core pre-selected from template, extras opt-in</div><div class="note">Green checkmark on selected rows</div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 03 DAILY LOG -->
+<div class="section">
+  <div class="section-header"><span class="section-num">03</span><span class="section-title">Daily logging</span></div>
+  <p class="section-desc">The core daily experience. Task-first — commitments visible immediately. Dark green header anchors the day. Citrus progress bar shows momentum. Under 5 seconds per session.</p>
+  <div class="screen-grid">
+
+    <div class="screen-wrap">
+      <div class="screen-label">Today — in progress</div>
+      <div class="phone"><div class="notch" style="background:var(--g950)"><span style="color:var(--g400)">9:41</span><div class="notch-pill"></div><span style="color:var(--g400)">●●●</span></div><div style="background:#F4F9F5;flex:1;display:flex;flex-direction:column;min-height:590px"><div class="log-hdr"><div class="log-day-row"><div class="log-chip">DAY 35</div></div><div class="log-greet">Good morning, Alex</div><div class="log-trk"><div class="log-fill" style="width:25%"></div></div><div class="log-lbl">1 of 4 done today</div></div><div class="log-cards"><div class="lcard done"><div class="lcard-l"><div class="lcard-ico" style="background:#FEF3C7">💪</div><div><div class="lcard-n">One workout</div><div class="lcard-s">You define it</div></div></div><div class="pill p-done">DONE</div></div><div class="lcard"><div class="lcard-l"><div class="lcard-ico" style="background:#E0F2FE">💧</div><div><div class="lcard-n">Water</div><div class="lcard-s">64 oz</div></div></div><div class="pill p-none">NOT STARTED</div></div><div class="lcard part"><div class="lcard-l"><div class="lcard-ico" style="background:#EFF6FF">📚</div><div><div class="lcard-n">Personal dev</div><div class="lcard-s">20 min</div></div></div><div class="pill p-part">PARTIAL</div></div><div class="lcard"><div class="lcard-l"><div class="lcard-ico" style="background:var(--g50)">🥗</div><div><div class="lcard-n">Nutrition</div><div class="lcard-s">Eat intentionally</div></div></div><div class="pill p-none">NOT STARTED</div></div></div><div style="text-align:center;font-size:10px;color:var(--w3);padding:10px 0;font-family:var(--fm)">tap a card to cycle state</div><div class="bnav"><div class="ni on"><svg class="ni-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Today</span></div><div class="ni"><svg class="ni-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>Progress</span></div><div class="ni"><svg class="ni-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>Profile</span></div></div></div></div>
+      <div class="screen-notes"><div class="note">Tasks first — no summary gate before logging</div><div class="note">Citrus progress bar in dark green header = satisfying contrast</div><div class="note">Partial is amber/yellow — positive, not a warning</div><div class="note">Done cards shift to green bg — visual reward</div></div>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="screen-label">Backdate selector</div>
+      <div class="phone"><div class="notch" style="background:var(--g950)"><span style="color:var(--g400)">9:41</span><div class="notch-pill"></div><span style="color:var(--g400)">●●●</span></div><div style="background:#F4F9F5;flex:1;display:flex;flex-direction:column;min-height:590px"><div class="log-hdr"><div class="log-day-row"><div class="log-back-chip">BACKDATING</div></div><div class="log-greet">Day 34 · Apr 19</div><div class="log-trk"><div class="log-fill" style="width:50%"></div></div><div class="log-lbl">2 of 4 done</div></div><div class="day-tabs"><div class="dtab lk"><div class="dtab-d">Day 33</div><div class="dtab-dt">Apr 18</div><div class="dtab-lk">locked</div></div><div class="dtab on"><div class="dtab-d">Day 34</div><div class="dtab-dt">Yesterday</div><div class="dtab-lk" style="visibility:hidden">·</div></div><div class="dtab"><div class="dtab-d">Day 35</div><div class="dtab-dt">Today</div><div class="dtab-lk" style="visibility:hidden">·</div></div></div><div class="log-cards" style="margin-top:8px"><div class="lcard done"><div class="lcard-l"><div class="lcard-ico" style="background:#FEF3C7">💪</div><div><div class="lcard-n">One workout</div><div class="lcard-s">You define it</div></div></div><div class="pill p-done">DONE</div></div><div class="lcard done"><div class="lcard-l"><div class="lcard-ico" style="background:#E0F2FE">💧</div><div><div class="lcard-n">Water</div><div class="lcard-s">64 oz</div></div></div><div class="pill p-done">DONE</div></div><div class="lcard"><div class="lcard-l"><div class="lcard-ico" style="background:#EFF6FF">📚</div><div><div class="lcard-n">Personal dev</div><div class="lcard-s">20 min</div></div></div><div class="pill p-none">NOT STARTED</div></div><div class="lcard"><div class="lcard-l"><div class="lcard-ico" style="background:var(--g50)">🥗</div><div><div class="lcard-n">Nutrition</div><div class="lcard-s">Eat intentionally</div></div></div><div class="pill p-none">NOT STARTED</div></div></div><div class="save-bar"><button class="btn-save">Save Day 34</button></div><div class="bnav"><div class="ni on"><svg class="ni-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Today</span></div><div class="ni"><svg class="ni-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>Progress</span></div><div class="ni"><svg class="ni-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>Profile</span></div></div></div></div>
+      <div class="screen-notes"><div class="note">3 tabs always visible: locked, yesterday, today</div><div class="note">Locked tab is dimmed with "locked" label — not hidden</div><div class="note">"BACKDATING" amber chip replaces day chip when on past day</div><div class="note">Save button names the exact day being saved</div></div>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="screen-label">Locked day state</div>
+      <div class="phone"><div class="notch" style="background:var(--g950)"><span style="color:var(--g400)">9:41</span><div class="notch-pill"></div><span style="color:var(--g400)">●●●</span></div><div style="background:#F4F9F5;flex:1;display:flex;flex-direction:column;min-height:590px"><div class="log-hdr"><div class="log-day-row"><div class="log-chip" style="background:rgba(255,255,255,.15);color:var(--g300)">DAY 33</div></div><div class="log-greet" style="color:var(--g300)">Apr 18</div><div class="log-trk"><div class="log-fill" style="width:0%"></div></div><div class="log-lbl">Window closed</div></div><div class="day-tabs"><div class="dtab on"><div class="dtab-d">Day 33</div><div class="dtab-dt">Apr 18</div><div class="dtab-lk" style="visibility:hidden">·</div></div><div class="dtab"><div class="dtab-d">Day 34</div><div class="dtab-dt">Yesterday</div><div class="dtab-lk" style="visibility:hidden">·</div></div><div class="dtab"><div class="dtab-d">Day 35</div><div class="dtab-dt">Today</div><div class="dtab-lk" style="visibility:hidden">·</div></div></div><div style="flex:1;display:flex;align-items:center;justify-content:center;padding:20px"><div class="lk-overlay"><div class="lk-ico">🔒</div><div class="lk-t">This day is closed</div><div class="lk-s">Day 33 (Apr 18) is outside the 3-day logging window and has been recorded as missed.</div></div></div><div class="save-bar"><button class="btn-save" style="opacity:.3">Day closed</button></div><div class="bnav"><div class="ni on"><svg class="ni-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Today</span></div><div class="ni"><svg class="ni-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>Progress</span></div><div class="ni"><svg class="ni-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>Profile</span></div></div></div></div>
+      <div class="screen-notes"><div class="note">Warm, non-alarming locked state — explains clearly</div><div class="note">Copy: "recorded as missed" — honest, not harsh</div><div class="note">Save button disabled, no red, no frustration language</div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 04 PROGRESS -->
+<div class="section">
+  <div class="section-header"><span class="section-num">04</span><span class="section-title">Progress view</span></div>
+  <p class="section-desc">Custom 75-day calendar — rows of 7, challenge starts Day 1, no wasted month rows. Streaks as hero stat. Missed days are quiet, not alarming.</p>
+  <div class="screen-grid">
+
+    <div class="screen-wrap">
+      <div class="screen-label">Progress calendar</div>
+      <div class="phone"><div class="notch" style="background:var(--g950)"><span style="color:var(--g400)">9:41</span><div class="notch-pill"></div><span style="color:var(--g400)">●●●</span></div><div class="cal-screen"><div class="cal-hdr"><div class="lt-ey">Your progress</div><div class="lt-h" style="color:var(--cr1)">75 Soft challenge</div><div class="streak-row"><div class="sc hot"><div class="sc-lbl">Current streak</div><div class="sc-num">12</div><div class="sc-unit">days showing up</div></div><div class="sc"><div class="sc-lbl">Longest streak</div><div class="sc-num">18</div><div class="sc-unit">days in a row</div></div></div></div><div class="stats-mini"><div class="sm"><div class="sm-n">21</div><div class="sm-l">Full days</div></div><div class="sm"><div class="sm-n">13</div><div class="sm-l">Partial</div></div><div class="sm"><div class="sm-n">81%</div><div class="sm-l">Show-up rate</div></div></div><div class="leg-row"><div class="leg"><div class="leg-sw" style="background:var(--g600)"></div>Complete</div><div class="leg"><div class="leg-sw" style="background:white;border:1.5px solid var(--par)"></div>Partial</div><div class="leg"><div class="leg-sw" style="background:white;border:1px solid #E2EDE5"></div>Missed</div><div class="leg"><div class="leg-sw" style="background:var(--cit)"></div>Today</div></div><div class="cal-body"><div class="cal-mo"><span>Feb 2025</span><span style="color:var(--w3);font-weight:400">days 1–15</span></div><div class="dow-row"><div class="dow-c">Su</div><div class="dow-c">Mo</div><div class="dow-c">Tu</div><div class="dow-c">We</div><div class="dow-c">Th</div><div class="dow-c">Fr</div><div class="dow-c">Sa</div></div><div class="wk"><div class="dc"></div><div class="dc"></div><div class="dc"></div><div class="dc"></div><div class="dc"></div><div class="dc d-comp"><span class="dc-n">1</span><span class="dc-d">2/14</span></div><div class="dc d-comp"><span class="dc-n">2</span><span class="dc-d">2/15</span></div></div><div class="wk"><div class="dc d-part"><span class="dc-n">3</span><span class="dc-d">2/16</span></div><div class="dc d-comp"><span class="dc-n">4</span><span class="dc-d">2/17</span></div><div class="dc d-comp"><span class="dc-n">5</span><span class="dc-d">2/18</span></div><div class="dc d-comp"><span class="dc-n">6</span><span class="dc-d">2/19</span></div><div class="dc d-miss"><span class="dc-n">7</span><span class="dc-d">2/20</span></div><div class="dc d-comp"><span class="dc-n">8</span><span class="dc-d">2/21</span></div><div class="dc d-comp"><span class="dc-n">9</span><span class="dc-d">2/22</span></div></div><div class="wk"><div class="dc d-part"><span class="dc-n">10</span><span class="dc-d">2/23</span></div><div class="dc d-comp"><span class="dc-n">11</span><span class="dc-d">2/24</span></div><div class="dc d-comp"><span class="dc-n">12</span><span class="dc-d">2/25</span></div><div class="dc d-comp"><span class="dc-n">13</span><span class="dc-d">2/26</span></div><div class="dc d-part"><span class="dc-n">14</span><span class="dc-d">2/27</span></div><div class="dc d-comp"><span class="dc-n">15</span><span class="dc-d">2/28</span></div><div class="dc d-comp"><span class="dc-n">16</span><span class="dc-d">3/1</span></div></div><div class="cal-mo"><span>Mar 2025</span><span style="color:var(--w3);font-weight:400">days 16–35</span></div><div class="dow-row"><div class="dow-c">Su</div><div class="dow-c">Mo</div><div class="dow-c">Tu</div><div class="dow-c">We</div><div class="dow-c">Th</div><div class="dow-c">Fr</div><div class="dow-c">Sa</div></div><div class="wk"><div class="dc d-comp"><span class="dc-n">17</span><span class="dc-d">3/2</span></div><div class="dc d-comp"><span class="dc-n">18</span><span class="dc-d">3/3</span></div><div class="dc d-miss"><span class="dc-n">19</span><span class="dc-d">3/4</span></div><div class="dc d-comp"><span class="dc-n">20</span><span class="dc-d">3/5</span></div><div class="dc d-part"><span class="dc-n">21</span><span class="dc-d">3/6</span></div><div class="dc d-miss"><span class="dc-n">22</span><span class="dc-d">3/7</span></div><div class="dc d-comp"><span class="dc-n">23</span><span class="dc-d">3/8</span></div></div><div class="wk"><div class="dc d-comp"><span class="dc-n">24</span><span class="dc-d">3/9</span></div><div class="dc d-comp"><span class="dc-n">25</span><span class="dc-d">3/10</span></div><div class="dc d-comp"><span class="dc-n">26</span><span class="dc-d">3/11</span></div><div class="dc d-part"><span class="dc-n">27</span><span class="dc-d">3/12</span></div><div class="dc d-comp"><span class="dc-n">28</span><span class="dc-d">3/13</span></div><div class="dc d-comp"><span class="dc-n">29</span><span class="dc-d">3/14</span></div><div class="dc d-comp"><span class="dc-n">30</span><span class="dc-d">3/15</span></div></div><div class="wk"><div class="dc d-miss"><span class="dc-n">31</span><span class="dc-d">3/16</span></div><div class="dc d-comp"><span class="dc-n">32</span><span class="dc-d">3/17</span></div><div class="dc d-part"><span class="dc-n">33</span><span class="dc-d">3/18</span></div><div class="dc d-comp"><span class="dc-n">34</span><span class="dc-d">3/19</span></div><div class="dc d-today"><span class="dc-n">35</span><span class="dc-d">3/20</span></div><div class="dc d-fut"><span class="dc-n">36</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">37</span><span class="dc-d"></span></div></div><div class="wk"><div class="dc d-fut"><span class="dc-n">38</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">39</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">40</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">41</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">42</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">43</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">44</span><span class="dc-d"></span></div></div><div class="wk"><div class="dc d-fut"><span class="dc-n">45</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">46</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">47</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">48</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">49</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">50</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">51</span><span class="dc-d"></span></div></div><div class="wk"><div class="dc d-fut"><span class="dc-n">52</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">53</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">54</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">55</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">56</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">57</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">58</span><span class="dc-d"></span></div></div><div class="wk"><div class="dc d-fut"><span class="dc-n">59</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">60</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">61</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">62</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">63</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">64</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">65</span><span class="dc-d"></span></div></div><div class="wk"><div class="dc d-fut"><span class="dc-n">66</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">67</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">68</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">69</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">70</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">71</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">72</span><span class="dc-d"></span></div></div><div class="wk"><div class="dc d-fut"><span class="dc-n">73</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">74</span><span class="dc-d"></span></div><div class="dc d-fut"><span class="dc-n">75</span><span class="dc-d"></span></div><div class="dc"></div><div class="dc"></div><div class="dc"></div><div class="dc"></div></div></div><div class="bnav"><div class="ni"><svg class="ni-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Today</span></div><div class="ni on"><svg class="ni-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>Progress</span></div><div class="ni"><svg class="ni-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>Profile</span></div></div></div></div>
+      <div class="screen-notes"><div class="note">Streak hero stat in citrus — immediately visible</div><div class="note">"Show-up rate" counts complete + partial — reframes the narrative</div><div class="note">Missed days are near-invisible white cells — no alarm</div><div class="note">Today is citrus — connects to the app's accent</div><div class="note">Month labels show real date + day range</div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 05 PLAN MANAGEMENT -->
+<div class="section">
+  <div class="section-header"><span class="section-num">05</span><span class="section-title">Plan management</span></div>
+  <p class="section-desc">Edit commitments anytime. Changes take effect tomorrow — never retroactive. Every change logged with a timestamp. The history is honest, not shameful.</p>
+  <div class="screen-grid">
+
+    <div class="screen-wrap">
+      <div class="screen-label">Plan overview + change log</div>
+      <div class="phone"><div class="notch" style="background:var(--g950)"><span style="color:var(--g400)">9:41</span><div class="notch-pill"></div><span style="color:var(--g400)">●●●</span></div><div style="background:#F4F9F5;flex:1;display:flex;flex-direction:column;min-height:590px"><div class="plan-hdr"><div class="lt-ey" style="color:var(--cit)">Your plan</div><div class="lt-h" style="color:var(--cr1)">75 Soft challenge</div><div class="log-lbl">Day 35 of 75 · changes take effect tomorrow</div></div><div style="flex:1;overflow-y:auto;padding:12px 12px 0"><div class="sec-lbl">Commitments</div><div class="pcard"><div class="pc-ico" style="background:#FEF3C7">💪</div><div style="flex:1;min-width:0"><div class="pc-cat">Physical</div><div class="pc-val">One workout — you define it</div></div><div class="pc-arr">›</div></div><div class="pcard"><div class="pc-ico" style="background:#E0F2FE">💧</div><div style="flex:1;min-width:0"><div class="pc-cat">Hydration</div><div class="pc-val">Drink 64 oz of water</div></div><div class="pc-arr">›</div></div><div class="pcard"><div class="pc-ico" style="background:#EFF6FF">📚</div><div style="flex:1;min-width:0"><div class="pc-cat">Personal development</div><div class="pc-val">20 min — read, watch, or listen</div></div><div class="pc-arr">›</div></div><div class="pcard"><div class="pc-ico" style="background:var(--g50)">🥗</div><div style="flex:1;min-width:0"><div class="pc-cat">Nutrition</div><div class="pc-val">Eat intentionally — your definition</div></div><div class="pc-arr">›</div></div><div class="sec-lbl" style="margin-top:8px">Change history</div><div class="clog"><div class="clog-day">Day 28</div><div class="clog-t">Physical: <s>45 min gym session</s> → <strong>One workout — you define it</strong></div></div><div class="clog"><div class="clog-day">Day 12</div><div class="clog-t">Hydration: <s>1 gallon of water</s> → <strong>Drink 64 oz</strong></div></div><div style="text-align:center;font-size:10px;color:var(--w3);padding:8px;font-family:var(--fm)">Changes don't affect past logged days</div></div><div class="bnav"><div class="ni"><svg class="ni-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Today</span></div><div class="ni"><svg class="ni-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>Progress</span></div><div class="ni on"><svg class="ni-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>Profile</span></div></div></div></div>
+      <div class="screen-notes"><div class="note">Change history is visible but not prominent — honest, not accusatory</div><div class="note">Strikethrough old value → new value — clear timeline</div><div class="note">"Changes don't affect past logged days" — integrity note</div><div class="note">Each row taps to edit screen</div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 06 BENCHMARK -->
+<div class="section">
+  <div class="section-header"><span class="section-num">06</span><span class="section-title">Benchmark capture</span></div>
+  <p class="section-desc">Optional starting point capture. Free-form text — no structured fields. Shown once after onboarding, then a gentle banner if skipped. Never mentioned after completion.</p>
+  <div class="screen-grid">
+
+    <div class="screen-wrap">
+      <div class="screen-label">Benchmark setup screen</div>
+      <div class="phone"><div class="notch" style="background:var(--g950)"><span style="color:var(--g400)">9:41</span><div class="notch-pill"></div><span style="color:var(--g400)">●●●</span></div><div class="bench"><div class="lt-ey" style="color:var(--cit)">One last thing</div><div class="lt-h" style="color:var(--cr1);font-family:var(--fd);font-size:20px;font-weight:700;margin-bottom:4px">Capture your starting point</div><div class="lt-sub" style="color:var(--g400);margin-bottom:14px">Optional — but powerful to look back on.</div><div class="bench-card"><div class="bench-title">✏️ Notes &amp; measurements</div><textarea class="bench-ta" rows="4" placeholder="e.g. 185 lbs, 36&quot; waist, tired most mornings, stress eating at night..."></textarea></div><div class="bench-card"><div class="bench-title">📸 Starting photos</div><div class="photo-drop"><div class="pd-icon">+</div><div class="pd-text">Add photos</div><div class="pd-sub">Front, side, back — whatever feels right</div></div></div><button class="btn-cit">Save &amp; start Day 1</button><button style="background:transparent;color:var(--g500);border:1px solid var(--g700);border-radius:13px;padding:12px;font-size:13px;font-family:var(--fb);width:100%;cursor:pointer;margin-top:8px">Skip for now</button></div></div>
+      <div class="screen-notes"><div class="note">Dark bg matches onboarding — feels like final step of setup</div><div class="note">Free-form textarea — no structured fields, no pressure</div><div class="note">Skip is easy and prominent — never guilted</div></div>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="screen-label">Main screen nudge (if skipped)</div>
+      <div class="phone"><div class="notch" style="background:var(--g950)"><span style="color:var(--g400)">9:41</span><div class="notch-pill"></div><span style="color:var(--g400)">●●●</span></div><div style="background:#F4F9F5;flex:1;display:flex;flex-direction:column;min-height:590px"><div class="log-hdr"><div class="log-day-row"><div class="log-chip">DAY 1</div></div><div class="log-greet">Good morning, Alex</div><div class="log-trk"><div class="log-fill" style="width:0%"></div></div><div class="log-lbl">0 of 4 done today</div></div><div class="banner"><div class="ban-ico">📸</div><div style="flex:1"><div class="ban-t">Capture your starting point</div><div class="ban-s">A quick note or photo makes Day 75 so much more meaningful.</div><div class="ban-cta">Set it up →</div></div><div class="ban-x">×</div></div><div class="log-cards" style="margin-top:8px"><div class="lcard"><div class="lcard-l"><div class="lcard-ico" style="background:#FEF3C7">💪</div><div><div class="lcard-n">One workout</div><div class="lcard-s">You define it</div></div></div><div class="pill p-none">NOT STARTED</div></div><div class="lcard"><div class="lcard-l"><div class="lcard-ico" style="background:#E0F2FE">💧</div><div><div class="lcard-n">Water</div><div class="lcard-s">64 oz</div></div></div><div class="pill p-none">NOT STARTED</div></div><div class="lcard"><div class="lcard-l"><div class="lcard-ico" style="background:#EFF6FF">📚</div><div><div class="lcard-n">Personal dev</div><div class="lcard-s">20 min</div></div></div><div class="pill p-none">NOT STARTED</div></div></div><div class="bnav"><div class="ni on"><svg class="ni-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Today</span></div><div class="ni"><svg class="ni-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>Progress</span></div><div class="ni"><svg class="ni-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>Profile</span></div></div></div></div>
+      <div class="screen-notes"><div class="note">Banner uses citrus accent — friendly, not alarming</div><div class="note">× dismiss is easy and prominent</div><div class="note">Copy: motivational ("makes Day 75 meaningful") not obligatory</div><div class="note">Gone forever once dismissed or completed</div></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="page-footer">75 Flex · Screen Reference v1.0 · April 2026 · Deep green + citrus palette · DM Sans + Playfair Display</div>
+
+</body>
+</html>

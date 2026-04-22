@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>75 Flex — Reference Sheet 08 — Incremental Tracking</title>
+<style>
+:root {
+  --g950:#0A1F0F;--g900:#122A18;--g800:#1A3D22;--g700:#225030;--g600:#2E6B40;
+  --g500:#3A8A52;--g400:#52A86E;--g300:#7EC498;--g200:#B4DEC4;--g100:#DCF0E4;--g50:#F0FAF4;
+  --cit:#D4E832;--cit3:#B8CC1A;
+  --cr1:#FFFDF5;--w9:#1C1409;--w5:#7A6558;--w3:#C0A882;--w1:#EDE5D8;
+  --par:#F59E0B;--parl:#FEF3C7;
+  --fd:'Playfair Display',Georgia,serif;
+  --fb:'DM Sans',system-ui,sans-serif;
+  --fm:'DM Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#1a1a1a;padding:40px;font-family:var(--fb);}
+.outer{background:var(--g950);padding:40px;border-radius:16px;max-width:900px;margin:0 auto;}
+.sheet-title{font-family:var(--fd);font-size:28px;font-weight:700;color:var(--cr1);margin-bottom:6px;}
+.sheet-sub{font-family:var(--fm);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--g400);margin-bottom:32px;}
+.group-label{font-family:var(--fm);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--g500);margin-bottom:20px;border-bottom:1px solid var(--g800);padding-bottom:10px;}
+.row{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start;}
+.sw{display:flex;flex-direction:column;gap:8px;}
+.sid{font-family:var(--fm);font-size:10px;color:var(--g500);}
+.sname{font-size:12px;font-weight:500;color:var(--g300);font-family:var(--fb);}
+.notes{max-width:220px;padding-top:24px;}
+.note{display:flex;gap:7px;font-size:11px;color:var(--g300);line-height:1.6;margin-bottom:10px;font-family:var(--fb);}
+.note::before{content:"→";color:var(--cit3);flex-shrink:0;}
+
+.phone{width:260px;background:var(--cr1);border-radius:40px;border:7px solid var(--g900);overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.7),0 0 0 1px var(--g700);display:flex;flex-direction:column;flex-shrink:0;}
+.notch{height:24px;background:var(--g950);display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:9px;color:var(--g400);position:relative;flex-shrink:0;font-family:var(--fm);}
+.notch-pill{width:64px;height:16px;background:var(--g900);border-radius:99px;position:absolute;left:50%;transform:translateX(-50%);}
+.qbtn{position:absolute;right:13px;top:50%;transform:translateY(-50%);width:20px;height:20px;border-radius:50%;background:rgba(212,232,50,.15);border:1px solid rgba(212,232,50,.3);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:9px;font-weight:500;color:var(--cit);}
+
+.screen{background:#F4F9F5;flex:1;display:flex;flex-direction:column;}
+.hdr{background:var(--g800);padding:12px 13px;display:flex;align-items:center;gap:10px;flex-shrink:0;position:relative;}
+.back{font-size:18px;color:var(--g300);background:none;border:none;cursor:pointer;}
+.hdr-title{font-family:var(--fd);font-size:15px;font-weight:700;color:var(--cr1);flex:1;}
+.hdr-day{font-size:10px;color:var(--g300);font-family:var(--fm);}
+.qbtn-hdr{width:20px;height:20px;border-radius:50%;background:rgba(212,232,50,.15);border:1px solid rgba(212,232,50,.3);display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:9px;color:var(--cit);}
+
+.body{padding:13px;display:flex;flex-direction:column;gap:11px;flex:1;}
+.hero{background:white;border:1.5px solid #E2EDE5;border-radius:14px;padding:16px;text-align:center;}
+.h-lbl{font-family:var(--fm);font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:var(--g500);margin-bottom:6px;}
+.h-nums{display:flex;align-items:baseline;justify-content:center;gap:5px;margin-bottom:4px;}
+.h-cur{font-family:var(--fd);font-size:40px;font-weight:700;color:var(--w9);line-height:1;}
+.h-sep{font-size:18px;color:var(--w3);}
+.h-goal{font-family:var(--fd);font-size:24px;font-weight:700;color:var(--w3);line-height:1;}
+.h-unit{font-size:11px;color:var(--w5);font-family:var(--fm);margin-bottom:12px;}
+.bar-wrap{background:#F1EFE8;border-radius:99px;height:10px;margin-bottom:8px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:99px;background:var(--cit);}
+.h-pct{font-size:11px;color:var(--g500);font-family:var(--fm);}
+
+.adj{background:white;border:1.5px solid #E2EDE5;border-radius:13px;padding:13px;}
+.adj-lbl{font-family:var(--fm);font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:var(--g500);margin-bottom:10px;}
+.adj-row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;}
+.chip{background:var(--g50);border:1.5px solid var(--g200);border-radius:9px;padding:8px 12px;font-size:12px;font-weight:600;color:var(--g700);cursor:pointer;font-family:var(--fb);}
+.chip.sub{background:#FFF9E6;border-color:#FDE68A;color:#92400E;}
+.divider{width:1px;height:32px;background:var(--w1);}
+
+.state-card{background:white;border:1.5px solid #E2EDE5;border-radius:13px;padding:12px;}
+.state-lbl{font-family:var(--fm);font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:var(--g500);margin-bottom:9px;}
+.pills{display:flex;gap:6px;}
+.pill{flex:1;border-radius:9px;padding:8px 5px;text-align:center;font-size:9px;font-family:var(--fm);cursor:pointer;border:1.5px solid transparent;}
+.p-none{background:#F1EFE8;color:var(--w3);border-color:var(--w1);}
+.p-part{background:var(--parl);color:#92400E;border-color:#FDE68A;}
+.p-done{background:var(--g100);color:var(--g700);border-color:var(--g300);}
+.p-done.active{border-color:var(--g600);box-shadow:0 0 0 2px var(--g200);}
+.p-part.active{border-color:var(--par);box-shadow:0 0 0 2px var(--parl);}
+
+.back-hint{text-align:center;font-size:9px;color:var(--w3);font-family:var(--fm);padding:4px 0 8px;}
+
+.bnav{display:flex;height:48px;background:white;border-top:1px solid #E2EDE5;flex-shrink:0;}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:8px;font-family:var(--fm);color:var(--w3);}
+.ni.on{color:var(--g600);}
+.ni svg{width:15px;height:15px;}
+</style>
+</head>
+<body>
+<div class="outer">
+  <div class="sheet-title">Reference Sheet 08 — Incremental Tracking</div>
+  <div class="sheet-sub">Screens 08.1 – 08.2 · ? button on every screen top-right · accessed via long-press on commitment card</div>
+
+  <div class="group-label">08.A — Incremental detail screens</div>
+  <div class="row">
+
+    <!-- 08.1 WATER -->
+    <div class="sw">
+      <div class="sid">08.1</div>
+      <div class="sname">Hydration detail — 75% complete</div>
+      <div class="phone">
+        <div class="notch"><span>9:41</span><div class="notch-pill"></div><span style="opacity:0">x</span><div class="qbtn">?</div></div>
+        <div class="screen">
+          <div class="hdr">
+            <button class="back">‹</button>
+            <div class="hdr-title">Hydration</div>
+            <div class="hdr-day">Day 35</div>
+            <div class="qbtn-hdr">?</div>
+          </div>
+          <div class="body">
+            <div class="hero">
+              <div class="h-lbl">Today's progress</div>
+              <div class="h-nums">
+                <div class="h-cur">48</div>
+                <div class="h-sep">/</div>
+                <div class="h-goal">64</div>
+              </div>
+              <div class="h-unit">oz</div>
+              <div class="bar-wrap"><div class="bar-fill" style="width:75%"></div></div>
+              <div class="h-pct">75% — almost there</div>
+            </div>
+
+            <div class="adj">
+              <div class="adj-lbl">Log a drink</div>
+              <div class="adj-row">
+                <div class="chip">+8 oz</div>
+                <div class="chip">+16 oz</div>
+                <div class="chip">+32 oz</div>
+                <div class="divider"></div>
+                <div class="chip sub">−8 oz</div>
+              </div>
+            </div>
+
+            <div class="state-card">
+              <div class="state-lbl">Commitment state — your call</div>
+              <div class="pills">
+                <div class="pill p-none">NOT STARTED</div>
+                <div class="pill p-part">PARTIAL</div>
+                <div class="pill p-done active">DONE</div>
+              </div>
+            </div>
+
+            <div class="back-hint">← back to today's log</div>
+          </div>
+          <div class="bnav">
+            <div class="ni on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Today</span></div>
+            <div class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>Progress</span></div>
+            <div class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>Profile</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 08.2 STEPS -->
+    <div class="sw">
+      <div class="sid">08.2</div>
+      <div class="sname">Physical / steps detail — 73% complete</div>
+      <div class="phone">
+        <div class="notch"><span>9:41</span><div class="notch-pill"></div><span style="opacity:0">x</span><div class="qbtn">?</div></div>
+        <div class="screen">
+          <div class="hdr">
+            <button class="back">‹</button>
+            <div class="hdr-title">Physical</div>
+            <div class="hdr-day">Day 35</div>
+            <div class="qbtn-hdr">?</div>
+          </div>
+          <div class="body">
+            <div class="hero">
+              <div class="h-lbl">Today's progress</div>
+              <div class="h-nums">
+                <div class="h-cur">6,234</div>
+                <div class="h-sep">/</div>
+                <div class="h-goal">8,500</div>
+              </div>
+              <div class="h-unit">steps</div>
+              <div class="bar-wrap"><div class="bar-fill" style="width:73%"></div></div>
+              <div class="h-pct">73% — keep going</div>
+            </div>
+
+            <div class="adj">
+              <div class="adj-lbl">Adjust count</div>
+              <div class="adj-row">
+                <div class="chip">+500</div>
+                <div class="chip">+1,000</div>
+                <div class="chip">+2,000</div>
+                <div class="divider"></div>
+                <div class="chip sub">−500</div>
+              </div>
+            </div>
+
+            <div class="state-card">
+              <div class="state-lbl">Commitment state — your call</div>
+              <div class="pills">
+                <div class="pill p-none">NOT STARTED</div>
+                <div class="pill p-part active">PARTIAL</div>
+                <div class="pill p-done">DONE</div>
+              </div>
+            </div>
+
+            <div class="back-hint">← back to today's log</div>
+          </div>
+          <div class="bnav">
+            <div class="ni on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Today</span></div>
+            <div class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>Progress</span></div>
+            <div class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>Profile</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note">Accessed via long-press on the water or steps commitment card on the daily log. No other cards support long-press in MVP.</div>
+      <div class="note">Large current/goal numbers front and center. Citrus progress bar. Percentage with encouraging copy — never negative.</div>
+      <div class="note">Quick-add chips for fast logging. Subtract chip in amber — distinct but calm. No negative connotation.</div>
+      <div class="note">State pill at bottom is always overridable regardless of numeric progress. At 75% water the user can still mark Done — 48oz was enough for them today. "Your call" label reinforces this.</div>
+      <div class="note">State auto-suggests: 0% = Not Started, 1–99% = Partial, 100% = Done. But user has final say always.</div>
+      <div class="note">08.1 shows DONE selected (user decided 48oz was enough). 08.2 shows PARTIAL selected (auto-suggested at 73%).</div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

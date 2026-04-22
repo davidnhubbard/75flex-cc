@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import CommitmentCard from '@/components/CommitmentCard'
 import CompleteAllSheet from '@/components/CompleteAllSheet'
+import HelpButton from '@/components/HelpButton'
 
 type State = 'none' | 'partial' | 'complete'
 type Tab = 'today' | 'yesterday' | 'daybefore'
@@ -37,6 +38,9 @@ export default function TodayPage() {
   const [showCompleteAll, setShowCompleteAll] = useState(false)
   const [noteOpen, setNoteOpen] = useState(false)
   const [note, setNote] = useState('')
+  const [greet, setGreet] = useState('Good morning')
+
+  useEffect(() => { setGreet(greeting()) }, [])
 
   const progress = Math.round((DAY_NUMBER / 75) * 100)
   const allDone = Object.values(states).every(s => s === 'complete')
@@ -63,12 +67,10 @@ export default function TodayPage() {
               Day {DAY_NUMBER} of 75
             </p>
             <h1 className="font-display text-[22px] font-bold text-surface mt-0.5">
-              {greeting()}
+              {greet}
             </h1>
           </div>
-          <button className="w-[18px] h-[18px] rounded-full bg-citrus/15 border border-citrus flex items-center justify-center">
-            <span className="font-sans text-[10px] text-citrus font-bold">?</span>
-          </button>
+          <HelpButton variant="dark" />
         </div>
         {/* Progress bar */}
         <div className="mt-4 bg-green-900 rounded-full h-[3px]">

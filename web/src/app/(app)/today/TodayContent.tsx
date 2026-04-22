@@ -353,7 +353,7 @@ export default function TodayContent() {
 
       {/* Tab row (C6) */}
       {tabs.length > 0 && (
-        <div className="flex border-b border-border bg-surface">
+        <div className="flex border-b border-border bg-green-50">
           {tabs.map(t => (
             <button
               key={t}
@@ -384,6 +384,18 @@ export default function TodayContent() {
             </p>
           )}
 
+          {/* Mark all complete — subtle, above cards, today only */}
+          {isToday && !allDone && (
+            <div className="px-4 pt-3 flex justify-end">
+              <button
+                onClick={() => setShowCompleteAll(true)}
+                className="font-sans text-xs text-ink-faint"
+              >
+                Mark all complete →
+              </button>
+            </div>
+          )}
+
           {/* Cards */}
           <div className="flex-1 px-4 py-4 flex flex-col gap-3">
             {commitments.map(c => (
@@ -410,32 +422,23 @@ export default function TodayContent() {
             )}
           </div>
 
-          {/* Footer (C10: Complete All disabled on locked days) */}
-          <div className="sticky bottom-0 bg-surface border-t border-border px-4 py-3 flex gap-2">
+          {/* Footer */}
+          <div className="sticky bottom-0 bg-green-50 border-t border-border px-4 py-3 flex gap-2">
             <Btn
               variant="outline"
               onClick={() => setNoteOpen(o => !o)}
-              className="flex-1"
+              className={isToday ? 'flex-1' : ''}
             >
               {noteOpen ? 'Hide note' : 'Add note'}
             </Btn>
 
-            {isToday ? (
-              <Btn
-                variant="primary"
-                onClick={() => !allDone && setShowCompleteAll(true)}
-                disabled={allDone}
-                className={allDone ? 'bg-green-100 text-green-700 border-[1.5px] border-green-200' : ''}
-              >
-                {allDone ? 'All done ✓' : 'Complete all'}
-              </Btn>
-            ) : (
+            {!isToday && (
               <>
                 <Btn
                   variant="outline"
                   onClick={() => !allDone && setShowCompleteAll(true)}
                   disabled={allDone}
-                  className={`py-2.5 px-3 ${allDone ? 'border-border text-ink-faint' : ''}`}
+                  className={`px-3 ${allDone ? 'border-border text-ink-faint' : ''}`}
                 >
                   All
                 </Btn>

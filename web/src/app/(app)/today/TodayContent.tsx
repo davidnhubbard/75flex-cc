@@ -44,15 +44,16 @@ export default function TodayContent() {
   const supabase = createClient()
 
   // ── Challenge / commitment context ────────────────────────────────────────
-  const [loading,      setLoading]     = useState(true)
-  const [challengeId,  setChallengeId] = useState('')
-  const [startDate,    setStartDate]   = useState('')
-  const [currentDay,   setCurrentDay]  = useState(1)
-  const [commitments,  setCommitments] = useState<Commitment[]>([])
-  const [greet,        setGreet]       = useState('Good morning')
-  const [reengaged,    setReengaged]   = useState(false)
-  const [showUpRate,   setShowUpRate]  = useState(0)
-  const [daysLogged,   setDaysLogged]  = useState(0)
+  const [loading,       setLoading]      = useState(true)
+  const [challengeId,   setChallengeId]  = useState('')
+  const [startDate,     setStartDate]    = useState('')
+  const [currentDay,    setCurrentDay]   = useState(1)
+  const [commitments,   setCommitments]  = useState<Commitment[]>([])
+  const [greet,         setGreet]        = useState('Good morning')
+  const [reengaged,     setReengaged]    = useState(false)
+  const [showUpRate,    setShowUpRate]   = useState(0)
+  const [daysLogged,    setDaysLogged]   = useState(0)
+  const [challengeDone, setChallengeDone] = useState(false)  // C32: Day 76+
 
   // ── Tab state ─────────────────────────────────────────────────────────────
   const [tab,          setTab]          = useState<Tab>('today')
@@ -70,10 +71,23 @@ export default function TodayContent() {
   const [showCompleteAll, setShowCompleteAll] = useState(false)
   const [noteOpen,        setNoteOpen]        = useState(false)
 
-  const loadedTabs = useRef<Set<Tab>>(new Set())
+  const loadedTabs  = useRef<Set<Tab>>(new Set())
+  const loadedDate  = useRef('')  // C27: track date at load time
 
   useEffect(() => { setGreet(greeting()) }, [])
   useEffect(() => { init() }, [])
+
+  // C27: day rollover — re-init when app comes back to foreground after midnight
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible' && loadedDate.current && todayISO() !== loadedDate.current) {
+        loadedTabs.current.clear()
+        init()
+      }
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [])
 
   // ── Init: load challenge + today's data ───────────────────────────────────
 
@@ -81,8 +95,18 @@ export default function TodayContent() {
     const challenge = await getActiveChallenge(supabase)
     if (!challenge) { router.push('/onboarding'); return }
 
-    const day      = calcDayNumber(challenge.start_date)
-    const today    = todayISO()
+    // Compute raw diff for C32 detection (uncapped, unlike calcDayNumber)
+    const startD = new Date(challenge.start_date)
+    startD.setHours(0, 0, 0, 0)
+    const nowD = new Date()
+    nowD.setHours(0, 0, 0, 0)
+    const rawDiff = Math.floor((nowD.getTime() - startD.getTime()) / 86_400_000)
+    const done = rawDiff >= 75  // C32: Day 76+
+
+    const day   = Math.min(75, Math.max(1, rawDiff + 1))
+    const today = todayISO()
+    loadedDate.current = today
+
     const [comms, dailyLog, allLogs] = await Promise.all([
       getCommitments(supabase, challenge.id),
       getOrCreateDailyLog(supabase, challenge.id, day, today),
@@ -103,11 +127,18 @@ export default function TodayContent() {
       return !log || log.overall_state === 'none'
     })
 
+    // C31: already complete on day 75 → celebration screen
+    if (day === 75 && dailyLog.overall_state === 'complete' && !done) {
+      router.push('/complete')
+      return
+    }
+
     setChallengeId(challenge.id)
     setStartDate(challenge.start_date)
     setCurrentDay(day)
     setCommitments(comms)
-    setReengaged(missedRecent)
+    setChallengeDone(done)
+    setReengaged(!done && missedRecent)
     setShowUpRate(calcShowUpRate(allLogs, day))
     setDaysLogged(allLogs.filter(l => l.overall_state !== 'none').length)
     setTabData(prev => ({
@@ -162,15 +193,13 @@ export default function TodayContent() {
   async function updateToday(commitmentId: string, next: DayState) {
     const { dailyLogId } = tabData.today
     if (!dailyLogId) return
-    setTabData(prev => ({
-      ...prev,
-      today: { ...prev.today, states: { ...prev.today.states, [commitmentId]: next } },
-    }))
+    const newStates = { ...tabData.today.states, [commitmentId]: next }
+    setTabData(prev => ({ ...prev, today: { ...prev.today, states: newStates } }))
     await saveCommitmentLog(supabase, dailyLogId, commitmentId, next)
-    const allStates = commitments.map(c =>
-      c.id === commitmentId ? next : (tabData.today.states[c.id] ?? 'none')
-    )
-    await recalcOverallState(supabase, dailyLogId, allStates)
+    const allStates = commitments.map(c => newStates[c.id] ?? 'none')
+    const overall   = await recalcOverallState(supabase, dailyLogId, allStates)
+    // C31: route to celebration when day 75 is fully logged
+    if (overall === 'complete' && currentDay === 75) router.push('/complete')
   }
 
   // ── Backdate: stage changes, explicit Save ────────────────────────────────
@@ -209,6 +238,8 @@ export default function TodayContent() {
       setTabData(prev => ({ ...prev, today: { ...prev.today, states: all } }))
       await Promise.all(commitments.map(c => saveCommitmentLog(supabase, dailyLogId, c.id, 'complete')))
       await recalcOverallState(supabase, dailyLogId, commitments.map(() => 'complete'))
+      // C31
+      if (currentDay === 75) { router.push('/complete'); return }
     } else {
       const all = Object.fromEntries(commitments.map(c => [c.id, 'complete' as DayState]))
       setPending(all)
@@ -220,12 +251,12 @@ export default function TodayContent() {
   // ── Derived ───────────────────────────────────────────────────────────────
 
   const isToday    = tab === 'today'
-  const isLocked   = !isToday && activeData.dayNumber > 0 && activeData.dayNumber < currentDay - 2
   const activeData = tabData[tab]
+  const isLocked   = !isToday && activeData.dayNumber > 0 && activeData.dayNumber < currentDay - 2
   const liveStates = isToday ? activeData.states : { ...activeData.states, ...pendingStates }
   const allDone    = commitments.length > 0 && commitments.every(c => liveStates[c.id] === 'complete')
   const progress   = Math.round((currentDay / 75) * 100)
-  const tabs: Tab[] = currentDay === 1 ? [] : currentDay === 2
+  const tabs: Tab[] = challengeDone || currentDay === 1 ? [] : currentDay === 2
     ? ['today', 'yesterday']
     : ['today', 'yesterday', 'daybefore']
 
@@ -241,6 +272,43 @@ export default function TodayContent() {
         </div>
         <div className="px-4 py-4 flex flex-col gap-3">
           {[1, 2, 3, 4].map(i => <div key={i} className="h-16 bg-border/50 rounded-card animate-pulse" />)}
+        </div>
+      </div>
+    )
+  }
+
+  // C32: post-challenge read-only state (Day 76+)
+  if (challengeDone) {
+    return (
+      <div className="flex flex-col min-h-full">
+        <PageHeader eyebrow="Challenge complete">
+          <h1 className="font-display text-[22px] font-bold text-surface">75 days. Done.</h1>
+          <div className="mt-4 bg-green-900 rounded-full h-[3px]">
+            <div className="bg-citrus h-[3px] rounded-full w-full" />
+          </div>
+          <p className="font-mono text-[9px] text-green-400 mt-1">100% complete</p>
+        </PageHeader>
+
+        <div className="flex-1 px-4 py-4 flex flex-col gap-3 opacity-40 pointer-events-none select-none">
+          {commitments.map(c => (
+            <CommitmentCard
+              key={c.id}
+              category={c.category}
+              name={c.name}
+              definition={c.definition}
+              state={tabData.today.states[c.id] ?? 'none'}
+              onChange={() => {}}
+            />
+          ))}
+        </div>
+
+        <div className="sticky bottom-0 bg-surface border-t border-border px-4 py-3">
+          <button
+            onClick={() => router.push('/onboarding')}
+            className="w-full py-3 rounded-xl bg-citrus text-ink font-sans text-sm font-semibold"
+          >
+            Start a new challenge
+          </button>
         </div>
       </div>
     )

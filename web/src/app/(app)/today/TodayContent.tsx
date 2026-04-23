@@ -338,7 +338,7 @@ export default function TodayContent() {
           </p>
           <div className="grid grid-cols-3 gap-2 mb-3">
             {[['Days logged', daysLogged], ['Show-up rate', `${showUpRate}%`], ['Days left', 75 - currentDay + 1]].map(([label, val]) => (
-              <StatCard key={label as string} value={val} label={label as string} />
+              <StatCard key={label as string} value={val} label={label as string} className="!bg-green-100 !border-green-200" />
             ))}
           </div>
           <p className="font-sans text-xs text-ink-soft leading-relaxed mb-3">
@@ -352,7 +352,7 @@ export default function TodayContent() {
 
       {/* Tab row (C6) */}
       {tabs.length > 0 && (
-        <div className="flex border-b border-border bg-green-50">
+        <div className="flex border-b border-border bg-surface">
           {tabs.map(t => (
             <button
               key={t}
@@ -422,7 +422,7 @@ export default function TodayContent() {
           </div>
 
           {/* Footer */}
-          <div className="sticky bottom-0 bg-green-50 border-t border-border px-4 py-3 flex gap-2">
+          <div className="sticky bottom-0 bg-surface border-t border-border px-4 py-3 flex gap-2">
             <Btn
               variant="outline"
               onClick={() => setNoteOpen(o => !o)}

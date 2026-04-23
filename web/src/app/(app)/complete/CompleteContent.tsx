@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { getActiveChallenge, getAllDailyLogs, calcStreak, calcShowUpRate } from '@/lib/queries'
 import Btn from '@/components/ui/Btn'
+import StatCard from '@/components/ui/StatCard'
 
 export default function CompleteContent() {
   const supabase = createClient()
@@ -43,10 +44,7 @@ export default function CompleteContent() {
 
         <div className="w-full grid grid-cols-3 gap-3 mb-10">
           {stats.map(([val, label]) => (
-            <div key={label} className="bg-green-800 border-[1.5px] border-green-700 rounded-card py-4 text-center">
-              <p className="font-display text-2xl font-medium tabular-nums tracking-tighter text-ember">{val}</p>
-              <p className="font-mono text-[8px] text-green-400 uppercase tracking-widest mt-0.5">{label}</p>
-            </div>
+            <StatCard key={label} value={val} label={label} dark />
           ))}
         </div>
 

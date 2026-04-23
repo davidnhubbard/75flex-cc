@@ -1,6 +1,6 @@
 import { ButtonHTMLAttributes } from 'react';
 
-type BtnVariant = 'primary' | 'dark' | 'outline' | 'ghost';
+type BtnVariant = 'primary' | 'dark' | 'outline' | 'ghost' | 'destructive';
 
 interface BtnProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant: BtnVariant;
@@ -12,7 +12,8 @@ const variantClasses: Record<BtnVariant, string> = {
   primary: 'bg-ember text-ink font-sans text-sm font-semibold py-3.5 rounded-xl w-full',
   dark: 'bg-green-800 text-ember font-sans text-sm font-semibold py-3 rounded-xl w-full',
   outline: 'border-[1.5px] border-green-700 text-green-700 font-sans text-sm font-medium rounded-xl',
-  ghost: 'text-green-700 font-sans text-sm font-medium',
+  destructive: 'bg-red-500 text-white font-sans text-sm font-semibold py-2.5 rounded-xl w-full',
+  ghost: 'text-ink-faint font-sans text-sm font-medium',
 };
 
 export default function Btn({

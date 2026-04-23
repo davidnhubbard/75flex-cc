@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import PageHeader from '@/components/PageHeader'
+import StatCard from '@/components/ui/StatCard'
 import { createClient } from '@/lib/supabase'
 import {
   getActiveChallenge, getAllDailyLogs, calcDayNumber,
@@ -119,31 +120,24 @@ export default function ProgressContent() {
       {/* Stats row */}
       <div className="px-4 py-4 grid grid-cols-3 gap-3">
         {/* Streak (C17) */}
-        <div className={`rounded-card px-3 py-3 text-center ${streak > 0 ? 'bg-green-800' : 'bg-surface border-[1.5px] border-border'}`}>
-          <p className={`font-display text-2xl font-medium tabular-nums tracking-tighter ${streak > 0 ? 'text-ember' : 'text-ink-faint'}`}>
-            {streak > 0 ? streak : '—'}
-          </p>
-          <p className={`font-mono text-[8px] uppercase tracking-widest mt-0.5 ${streak > 0 ? 'text-green-400' : 'text-ink-faint'}`}>
-            {streak > 0 ? 'Day streak' : 'No streak yet'}
-          </p>
-          {streak === 0 && (
-            <p className="font-sans text-[9px] text-ink-faint mt-0.5">Ready for a new one</p>
-          )}
-        </div>
+        <StatCard
+          value={streak > 0 ? streak : '—'}
+          label={streak > 0 ? 'Day streak' : 'No streak yet'}
+          dark={streak > 0}
+          className={streak === 0 ? 'relative' : ''}
+        />
 
         {/* Show-up rate (C18: hidden until Day 4) */}
-        <div className="bg-surface border-[1.5px] border-border rounded-card px-3 py-3 text-center">
-          <p className="font-display text-2xl font-medium tabular-nums tracking-tighter text-ink">
-            {dayNumber >= 4 ? `${showUpRate}%` : '—'}
-          </p>
-          <p className="font-mono text-[8px] text-ink-faint uppercase tracking-widest mt-0.5">Show-up rate</p>
-        </div>
+        <StatCard
+          value={dayNumber >= 4 ? `${showUpRate}%` : '—'}
+          label="Show-up rate"
+        />
 
         {/* Days remaining */}
-        <div className="bg-surface border-[1.5px] border-border rounded-card px-3 py-3 text-center">
-          <p className="font-display text-2xl font-medium tabular-nums tracking-tighter text-ink">{daysRemaining}</p>
-          <p className="font-mono text-[8px] text-ink-faint uppercase tracking-widest mt-0.5">Days left</p>
-        </div>
+        <StatCard
+          value={daysRemaining}
+          label="Days left"
+        />
       </div>
 
       {/* Calendar (C19: Sunday-aligned grid) */}

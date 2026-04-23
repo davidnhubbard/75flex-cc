@@ -8,8 +8,8 @@ interface EyebrowProps extends HTMLAttributes<HTMLParagraphElement> {
 }
 
 const colorClasses: Record<EyebrowColor, string> = {
-  faint: 'font-mono text-[9px] text-ink-faint uppercase tracking-widest',
-  green: 'font-mono text-[9px] text-green-400 uppercase tracking-widest',
+  faint: 'font-mono text-[10px] text-ink-faint uppercase tracking-widest',
+  green: 'font-mono text-[10px] text-green-400 uppercase tracking-widest',
 };
 
 export default function Eyebrow({

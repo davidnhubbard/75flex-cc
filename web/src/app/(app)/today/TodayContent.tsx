@@ -7,6 +7,8 @@ import CompleteAllSheet from '@/components/CompleteAllSheet'
 import LockedDayOverlay from '@/components/LockedDayOverlay'
 import PageHeader from '@/components/PageHeader'
 import Btn from '@/components/ui/Btn'
+import Textarea from '@/components/ui/Textarea'
+import StatCard from '@/components/ui/StatCard'
 import { createClient } from '@/lib/supabase'
 import {
   getActiveChallenge, getCommitments, getOrCreateDailyLog,
@@ -336,10 +338,7 @@ export default function TodayContent() {
           </p>
           <div className="grid grid-cols-3 gap-2 mb-3">
             {[['Days logged', daysLogged], ['Show-up rate', `${showUpRate}%`], ['Days left', 75 - currentDay + 1]].map(([label, val]) => (
-              <div key={label as string} className="bg-green-50 rounded-xl p-2 text-center">
-                <p className="font-display text-base font-bold text-ink">{val}</p>
-                <p className="font-mono text-[8px] text-ink-soft">{label}</p>
-              </div>
+              <StatCard key={label as string} value={val} label={label as string} />
             ))}
           </div>
           <p className="font-sans text-xs text-ink-soft leading-relaxed mb-3">
@@ -410,14 +409,14 @@ export default function TodayContent() {
             ))}
 
             {noteOpen && (
-              <textarea
+              <Textarea
+                variant="light"
                 autoFocus
                 value={activeData.note}
                 onChange={e => setTabData(prev => ({ ...prev, [tab]: { ...prev[tab], note: e.target.value } }))}
                 onBlur={() => activeData.dailyLogId && saveNote(supabase, activeData.dailyLogId, activeData.note)}
                 placeholder="Add a note about this day…"
                 rows={3}
-                className="w-full bg-green-50 border-[1.5px] border-green-200 focus:border-green-600 rounded-xl px-3 py-2.5 font-sans text-sm text-ink placeholder:text-ink-faint outline-none resize-none"
               />
             )}
           </div>

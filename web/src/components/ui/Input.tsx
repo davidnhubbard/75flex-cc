@@ -8,7 +8,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 const variantClasses: Record<InputVariant, string> = {
-  light: 'w-full bg-green-50 border-[1.5px] border-green-200 focus:border-green-600 rounded-xl px-3 py-2.5 font-sans text-sm text-ink placeholder:text-ink-faint outline-none',
+  light: 'w-full bg-green-50 border-[1.5px] border-green-200 focus:border-ember rounded-xl px-3 py-2.5 font-sans text-sm text-ink placeholder:text-ink-faint outline-none',
   dark: 'w-full bg-green-800 border-[1.5px] border-green-700 focus:border-ember rounded-xl px-4 py-3 font-sans text-sm text-surface placeholder:text-green-500 outline-none',
 };
 

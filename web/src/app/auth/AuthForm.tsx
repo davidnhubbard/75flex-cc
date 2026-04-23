@@ -145,7 +145,7 @@ export default function AuthForm({ mode }: Props) {
         />
 
         {error && (
-          <p className="font-sans text-xs text-amber px-1">{error}</p>
+          <p className="font-sans text-xs text-red-400 px-1">{error}</p>
         )}
 
         <Btn

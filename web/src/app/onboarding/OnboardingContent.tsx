@@ -286,9 +286,9 @@ export default function OnboardingContent() {
           >
             Continue
           </Btn>
-          <button onClick={() => { setSlide(SLIDES.length - 1); setStep('slides') }} className="text-green-400 font-sans text-sm text-center py-1">
+          <Btn variant="ghost" onClick={() => { setSlide(SLIDES.length - 1); setStep('slides') }}>
             Back
-          </button>
+          </Btn>
         </div>
       </div>
     )
@@ -336,9 +336,9 @@ export default function OnboardingContent() {
           >
             Continue
           </Btn>
-          <button onClick={() => setStep('plan-1')} className="text-green-400 font-sans text-sm text-center py-1">
+          <Btn variant="ghost" onClick={() => setStep('plan-1')}>
             Back
-          </button>
+          </Btn>
         </div>
       </div>
     )
@@ -384,9 +384,9 @@ export default function OnboardingContent() {
           >
             {saving ? 'Starting…' : 'Start my challenge'}
           </Btn>
-          <button onClick={() => setStep('plan-2')} className="text-green-400 font-sans text-sm text-center py-1">
+          <Btn variant="ghost" onClick={() => setStep('plan-2')}>
             Back
-          </button>
+          </Btn>
         </div>
       </div>
     )

@@ -142,15 +142,16 @@ export default function ProfileContent() {
         </section>
 
         <section className="border-t border-border pt-4 flex flex-col gap-1">
-          <button className="w-full text-center font-sans text-xs text-ink-soft hover:text-ink transition-colors py-2">
+          <Btn variant="ghost" className="w-full justify-center px-0">
             Restart challenge from Day 1
-          </button>
-          <button
+          </Btn>
+          <Btn
+            variant="ghost"
             onClick={handleSignOut}
-            className="w-full text-center font-sans text-xs text-ink-faint hover:text-ink-soft transition-colors py-2"
+            className="w-full justify-center px-0"
           >
             Sign out
-          </button>
+          </Btn>
         </section>
       </div>
 

@@ -4,21 +4,29 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import PageHeader from '@/components/PageHeader'
 import StatCard from '@/components/ui/StatCard'
+import DayDetailSheet from '@/components/DayDetailSheet'
 import { createClient } from '@/lib/supabase'
 import {
   getActiveChallenge, getAllDailyLogs, calcDayNumber,
-  calcStreak, calcShowUpRate,
+  calcStreak, calcShowUpRate, getCommitments, getCommitmentLogs, getNote,
 } from '@/lib/queries'
 import type { Database } from '@/lib/database.types'
 
-type DailyLog = Database['public']['Tables']['daily_logs']['Row']
-type DayState = 'complete' | 'partial' | 'none' | 'future' | 'today'
+type DailyLog      = Database['public']['Tables']['daily_logs']['Row']
+type Commitment    = Database['public']['Tables']['commitments']['Row']
+type CommitmentLog = Database['public']['Tables']['commitment_logs']['Row']
+type DayState      = 'complete' | 'partial' | 'none' | 'future' | 'today'
 
 interface DayInfo {
   dayNumber: number
-  date: Date
-  state: DayState
-  log: DailyLog | null
+  date:      Date
+  state:     DayState
+  log:       DailyLog | null
+}
+
+interface DetailData {
+  logs: CommitmentLog[]
+  note: string
 }
 
 function addDays(date: Date, n: number) {
@@ -32,30 +40,27 @@ function formatDate(date: Date) {
 }
 
 const CELL_STATE: Record<DayState, string> = {
-  complete: 'bg-ember',
-  partial:  'bg-amber',
-  none:     'bg-surface border-[1.5px] border-border',
+  complete: 'bg-heart',
+  partial:  'bg-heart-soft',
+  none:     'bg-card border-[1.5px] border-border',
   future:   'bg-border/40',
-  today:    'bg-surface border-[1.5px] border-green-700 ring-1 ring-green-700',
-}
-
-const DOT_COLOR: Record<string, string> = {
-  complete: 'bg-green-700',
-  partial:  'bg-amber',
-  none:     'bg-border',
+  today:    'bg-card border-[1.5px] border-green-700 ring-1 ring-green-700',
 }
 
 export default function ProgressContent() {
   const router   = useRouter()
   const supabase = createClient()
 
-  const [loading,      setLoading]      = useState(true)
-  const [days,         setDays]         = useState<DayInfo[]>([])
-  const [dayNumber,    setDayNumber]    = useState(1)
-  const [streak,       setStreak]       = useState(0)
-  const [showUpRate,   setShowUpRate]   = useState(0)
-  const [startDay,     setStartDay]     = useState(0) // weekday index of Day 1 (0=Sun)
-  const [selected,     setSelected]     = useState<DayInfo | null>(null)
+  const [loading,       setLoading]       = useState(true)
+  const [days,          setDays]          = useState<DayInfo[]>([])
+  const [dayNumber,     setDayNumber]     = useState(1)
+  const [streak,        setStreak]        = useState(0)
+  const [showUpRate,    setShowUpRate]    = useState(0)
+  const [startDay,      setStartDay]      = useState(0)
+  const [commitments,   setCommitments]   = useState<Commitment[]>([])
+  const [selected,      setSelected]      = useState<DayInfo | null>(null)
+  const [detailData,    setDetailData]    = useState<DetailData | null>(null)
+  const [loadingDetail, setLoadingDetail] = useState(false)
 
   useEffect(() => { load() }, [])
 
@@ -64,8 +69,12 @@ export default function ProgressContent() {
     if (!challenge) { router.push('/onboarding'); return }
 
     const currentDay = calcDayNumber(challenge.start_date)
-    const logs       = await getAllDailyLogs(supabase, challenge.id)
     const start      = new Date(challenge.start_date)
+
+    const [logs, comms] = await Promise.all([
+      getAllDailyLogs(supabase, challenge.id),
+      getCommitments(supabase, challenge.id),
+    ])
 
     const daysList: DayInfo[] = Array.from({ length: 75 }, (_, i) => {
       const n    = i + 1
@@ -73,7 +82,7 @@ export default function ProgressContent() {
       const log  = logs.find(l => l.day_number === n) ?? null
 
       let state: DayState
-      if (n > currentDay)       state = 'future'
+      if (n > currentDay)        state = 'future'
       else if (n === currentDay) state = 'today'
       else if (!log || log.overall_state === 'none') state = 'none'
       else state = log.overall_state as 'complete' | 'partial'
@@ -83,16 +92,39 @@ export default function ProgressContent() {
 
     setDays(daysList)
     setDayNumber(currentDay)
+    setCommitments(comms)
     setStreak(calcStreak(logs, currentDay))
     setShowUpRate(calcShowUpRate(logs, currentDay))
     setStartDay(new Date(challenge.start_date).getDay())
     setLoading(false)
   }
 
-  function handleCellTap(day: DayInfo) {
+  async function handleCellTap(day: DayInfo) {
     if (day.state === 'future') return
     if (day.state === 'today') { router.push('/today'); return }
-    setSelected(prev => prev?.dayNumber === day.dayNumber ? null : day)
+
+    // Toggle off
+    if (selected?.dayNumber === day.dayNumber) {
+      setSelected(null)
+      setDetailData(null)
+      return
+    }
+
+    setSelected(day)
+    setDetailData(null)
+    setLoadingDetail(true)
+
+    const logId = day.log?.id
+    if (logId) {
+      const [logs, note] = await Promise.all([
+        getCommitmentLogs(supabase, logId),
+        getNote(supabase, logId),
+      ])
+      setDetailData({ logs, note })
+    } else {
+      setDetailData({ logs: [], note: '' })
+    }
+    setLoadingDetail(false)
   }
 
   const daysLogged    = days.filter(d => d.log && d.state !== 'future').length
@@ -119,30 +151,24 @@ export default function ProgressContent() {
 
       {/* Stats row */}
       <div className="px-4 py-4 grid grid-cols-3 gap-3">
-        {/* Streak (C17) */}
         <StatCard
           value={streak > 0 ? streak : '—'}
           label={streak > 0 ? 'Day streak' : 'No streak yet'}
           dark={streak > 0}
           className={streak === 0 ? 'relative' : ''}
         />
-
-        {/* Show-up rate (C18: hidden until Day 4) */}
         <StatCard
           value={dayNumber >= 4 ? `${showUpRate}%` : '—'}
           label="Show-up rate"
         />
-
-        {/* Days remaining */}
         <StatCard
           value={daysRemaining}
           label="Days left"
         />
       </div>
 
-      {/* Calendar (C19: Sunday-aligned grid) */}
+      {/* Calendar */}
       <div className="px-4 pb-4">
-        {/* Weekday headers */}
         <div className="grid grid-cols-7 gap-1 mb-1">
           {['S','M','T','W','T','F','S'].map((d, i) => (
             <p key={i} className="font-mono text-[8px] text-ink-faint text-center">{d}</p>
@@ -150,7 +176,6 @@ export default function ProgressContent() {
         </div>
 
         <div className="grid grid-cols-7 gap-1">
-          {/* Blank leading cells (C19) */}
           {Array.from({ length: startDay }).map((_, i) => (
             <div key={`blank-${i}`} className="aspect-square" />
           ))}
@@ -160,7 +185,9 @@ export default function ProgressContent() {
               key={day.dayNumber}
               onClick={() => handleCellTap(day)}
               disabled={day.state === 'future'}
-              className={`aspect-square rounded-lg flex items-center justify-center transition-transform active:scale-95 ${CELL_STATE[day.state]} ${day.state !== 'future' ? 'cursor-pointer' : 'cursor-default'}`}
+              className={`aspect-square rounded-lg flex items-center justify-center transition-transform active:scale-95 ${CELL_STATE[day.state]} ${
+                selected?.dayNumber === day.dayNumber ? 'ring-2 ring-green-700 ring-offset-1' : ''
+              } ${day.state !== 'future' ? 'cursor-pointer' : 'cursor-default'}`}
             >
               <span className={`font-mono text-[8px] ${
                 day.state === 'complete' ? 'text-ink' :
@@ -176,26 +203,18 @@ export default function ProgressContent() {
         </div>
       </div>
 
-      {/* Detail bar (C16) */}
+      {/* Day detail sheet */}
       {selected && (
-        <div className="mx-4 mb-4 bg-surface border-[1.5px] border-border rounded-card px-4 py-3">
-          <div className="flex items-center gap-2 mb-1">
-            <div className={`w-2 h-2 rounded-full ${DOT_COLOR[selected.log?.overall_state ?? 'none']}`} />
-            <p className="font-mono text-[9px] text-ink-faint uppercase tracking-widest">
-              Day {selected.dayNumber} · {formatDate(selected.date)}
-            </p>
-          </div>
-          <p className="font-sans text-sm font-medium text-ink">
-            {selected.log?.overall_state === 'complete' ? 'Full day — all commitments done' :
-             selected.log?.overall_state === 'partial'  ? 'Partial day — some commitments done' :
-             'Missed — nothing logged this day'}
-          </p>
-          {selected.log?.overall_state === 'none' && (
-            <p className="font-sans text-xs text-ink-soft mt-0.5">
-              Every day you show up counts. Keep going.
-            </p>
-          )}
-        </div>
+        <DayDetailSheet
+          dayNumber={selected.dayNumber}
+          date={formatDate(selected.date)}
+          overallState={selected.log?.overall_state ?? 'none'}
+          commitments={commitments}
+          commitmentLogs={detailData?.logs ?? []}
+          note={detailData?.note ?? ''}
+          loading={loadingDetail}
+          onClose={() => { setSelected(null); setDetailData(null) }}
+        />
       )}
     </div>
   )

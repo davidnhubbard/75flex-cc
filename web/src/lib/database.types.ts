@@ -33,6 +33,7 @@ export interface Database {
           definition: string | null
           sort_order: number
           active_from: number
+          required: boolean
           created_at: string
         }
         Insert: Omit<Database['public']['Tables']['commitments']['Row'], 'id' | 'created_at'>
@@ -70,6 +71,7 @@ export interface Database {
           commitment_id: string
           state: DayState
           numeric_value: number | null
+          photo_url: string | null
           created_at: string
           updated_at: string
         }
@@ -81,6 +83,7 @@ export interface Database {
           id: string
           challenge_id: string
           notes_text: string | null
+          photo_url: string | null
           created_at: string
         }
         Insert: Omit<Database['public']['Tables']['benchmarks']['Row'], 'id' | 'created_at'>

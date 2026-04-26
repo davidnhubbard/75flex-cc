@@ -3,18 +3,21 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import CommitmentCard from '@/components/CommitmentCard'
-import CompleteAllSheet from '@/components/CompleteAllSheet'
+import CameraSheet from '@/components/CameraSheet'
 import LockedDayOverlay from '@/components/LockedDayOverlay'
 import PageHeader from '@/components/PageHeader'
 import Btn from '@/components/ui/Btn'
 import Textarea from '@/components/ui/Textarea'
 import StatCard from '@/components/ui/StatCard'
+import Toast from '@/components/ui/Toast'
+import { useToast } from '@/hooks/useToast'
 import { createClient } from '@/lib/supabase'
 import {
   getActiveChallenge, getCommitments, getOrCreateDailyLog,
   getCommitmentLogs, saveCommitmentLog, recalcOverallState,
   calcDayNumber, todayISO, dateForDay, getNote, saveNote,
   getAllDailyLogs, calcShowUpRate,
+  uploadProgressPhoto, savePhotoUrl,
 } from '@/lib/queries'
 import type { Database, DayState } from '@/lib/database.types'
 
@@ -26,6 +29,7 @@ interface TabData {
   logDate: string
   dailyLogId: string | null
   states: Record<string, DayState>
+  photoUrls: Record<string, string>
   note: string
 }
 
@@ -49,6 +53,7 @@ export default function TodayContent() {
   // ── Challenge / commitment context ────────────────────────────────────────
   const [loading,       setLoading]      = useState(true)
   const [challengeId,   setChallengeId]  = useState('')
+  const [userId,        setUserId]       = useState('')
   const [startDate,     setStartDate]    = useState('')
   const [currentDay,    setCurrentDay]   = useState(1)
   const [commitments,   setCommitments]  = useState<Commitment[]>([])
@@ -61,9 +66,9 @@ export default function TodayContent() {
   // ── Tab state ─────────────────────────────────────────────────────────────
   const [tab,          setTab]          = useState<Tab>('today')
   const [tabData,      setTabData]      = useState<Record<Tab, TabData>>({
-    today:     { dayNumber: 1, logDate: '', dailyLogId: null, states: {}, note: '' },
-    yesterday: { dayNumber: 0, logDate: '', dailyLogId: null, states: {}, note: '' },
-    daybefore: { dayNumber: 0, logDate: '', dailyLogId: null, states: {}, note: '' },
+    today:     { dayNumber: 1, logDate: '', dailyLogId: null, states: {}, photoUrls: {}, note: '' },
+    yesterday: { dayNumber: 0, logDate: '', dailyLogId: null, states: {}, photoUrls: {}, note: '' },
+    daybefore: { dayNumber: 0, logDate: '', dailyLogId: null, states: {}, photoUrls: {}, note: '' },
   })
   const [pendingStates,  setPending]    = useState<Record<string, DayState>>({})
   const [hasChanges,     setHasChanges] = useState(false)
@@ -71,21 +76,24 @@ export default function TodayContent() {
   const [savedFlash,     setSavedFlash] = useState(false)
 
   // ── Sheets ────────────────────────────────────────────────────────────────
-  const [showCompleteAll, setShowCompleteAll] = useState(false)
-  const [noteOpen,        setNoteOpen]        = useState(false)
+  const [noteOpen,     setNoteOpen]     = useState(false)
+  const [cameraForId,  setCameraForId]  = useState<string | null>(null)
 
-  const loadedTabs  = useRef<Set<Tab>>(new Set())
-  const loadedDate  = useRef('')  // C27: track date at load time
+  const [uploadingPhotoId, setUploadingPhotoId] = useState<string | null>(null)
+  const { toastMessage, showToast, clearToast } = useToast()
+
+  const loadedTabs = useRef<Set<Tab>>(new Set())
+  const loadedDate = useRef('')
 
   useEffect(() => { setGreet(greeting()) }, [])
-  useEffect(() => { init() }, [])
+  useEffect(() => { init().catch((e: any) => showToast(e?.message ?? 'Failed to load')) }, [])
 
   // C27: day rollover — re-init when app comes back to foreground after midnight
   useEffect(() => {
     const onVisible = () => {
       if (document.visibilityState === 'visible' && loadedDate.current && todayISO() !== loadedDate.current) {
         loadedTabs.current.clear()
-        init()
+        init().catch((e: any) => showToast(e?.message ?? 'Failed to reload'))
       }
     }
     document.addEventListener('visibilitychange', onVisible)
@@ -110,6 +118,8 @@ export default function TodayContent() {
     const today = todayISO()
     loadedDate.current = today
 
+    const { data: { user } } = await supabase.auth.getUser()
+
     const [comms, dailyLog, allLogs] = await Promise.all([
       getCommitments(supabase, challenge.id),
       getOrCreateDailyLog(supabase, challenge.id, day, today),
@@ -121,8 +131,11 @@ export default function TodayContent() {
     ])
 
     const stateMap: Record<string, DayState> = {}
+    const photoMap: Record<string, string> = {}
     for (const c of comms) {
-      stateMap[c.id] = (logs.find(l => l.commitment_id === c.id)?.state as DayState) ?? 'none'
+      const log = logs.find(l => l.commitment_id === c.id)
+      stateMap[c.id] = (log?.state as DayState) ?? 'none'
+      if (log?.photo_url) photoMap[c.id] = log.photo_url
     }
 
     const missedRecent = day > 3 && [day - 1, day - 2, day - 3].filter(d => d >= 1).every(d => {
@@ -137,6 +150,7 @@ export default function TodayContent() {
     }
 
     setChallengeId(challenge.id)
+    setUserId(user?.id ?? '')
     setStartDate(challenge.start_date)
     setCurrentDay(day)
     setCommitments(comms)
@@ -146,7 +160,7 @@ export default function TodayContent() {
     setDaysLogged(allLogs.filter(l => l.overall_state !== 'none').length)
     setTabData(prev => ({
       ...prev,
-      today: { dayNumber: day, logDate: today, dailyLogId: dailyLog.id, states: stateMap, note },
+      today: { dayNumber: day, logDate: today, dailyLogId: dailyLog.id, states: stateMap, photoUrls: photoMap, note },
     }))
     loadedTabs.current.add('today')
     setLoading(false)
@@ -170,25 +184,33 @@ export default function TodayContent() {
     ])
 
     const stateMap: Record<string, DayState> = {}
+    const photoMap: Record<string, string> = {}
     for (const c of commitments) {
-      stateMap[c.id] = (logs.find(l => l.commitment_id === c.id)?.state as DayState) ?? 'none'
+      const log = logs.find(l => l.commitment_id === c.id)
+      stateMap[c.id] = (log?.state as DayState) ?? 'none'
+      if (log?.photo_url) photoMap[c.id] = log.photo_url
     }
 
     setTabData(prev => ({
       ...prev,
-      [t]: { dayNumber: dayNum, logDate, dailyLogId: dailyLog.id, states: stateMap, note },
+      [t]: { dayNumber: dayNum, logDate, dailyLogId: dailyLog.id, states: stateMap, photoUrls: photoMap, note },
     }))
   }
 
   async function switchTab(next: Tab) {
-    // Discard unsaved changes when switching away from a backdate tab
     if (tab !== 'today' && hasChanges) {
       setPending({})
       setHasChanges(false)
     }
     setNoteOpen(false)
     setTab(next)
-    if (next !== 'today') await loadBackdate(next)
+    if (next !== 'today') {
+      try {
+        await loadBackdate(next)
+      } catch (e: any) {
+        showToast(e?.message ?? "Couldn't load that day")
+      }
+    }
   }
 
   // ── Today: instant-save on tap ────────────────────────────────────────────
@@ -196,13 +218,18 @@ export default function TodayContent() {
   async function updateToday(commitmentId: string, next: DayState) {
     const { dailyLogId } = tabData.today
     if (!dailyLogId) return
+    const prev = tabData.today.states[commitmentId]
     const newStates = { ...tabData.today.states, [commitmentId]: next }
-    setTabData(prev => ({ ...prev, today: { ...prev.today, states: newStates } }))
-    await saveCommitmentLog(supabase, dailyLogId, commitmentId, next)
-    const allStates = commitments.map(c => newStates[c.id] ?? 'none')
-    const overall   = await recalcOverallState(supabase, dailyLogId, allStates)
-    // C31: route to celebration when day 75 is fully logged
-    if (overall === 'complete' && currentDay === 75) router.push('/complete')
+    setTabData(p => ({ ...p, today: { ...p.today, states: newStates } }))
+    try {
+      await saveCommitmentLog(supabase, dailyLogId, commitmentId, next)
+      const coreStates = commitments.filter(c => c.category !== 'photo' || c.required).map(c => newStates[c.id] ?? 'none')
+      const overall    = await recalcOverallState(supabase, dailyLogId, coreStates)
+      if (overall === 'complete' && currentDay === 75) router.push('/complete')
+    } catch {
+      setTabData(p => ({ ...p, today: { ...p.today, states: { ...p.today.states, [commitmentId]: prev } } }))
+      showToast("Couldn't save — check your connection")
+    }
   }
 
   // ── Backdate: stage changes, explicit Save ────────────────────────────────
@@ -213,52 +240,125 @@ export default function TodayContent() {
   }
 
   async function saveBackdate() {
-    const { dailyLogId, states } = tabData[tab]
+    const { dailyLogId, states, note } = tabData[tab]
     if (!dailyLogId || !hasChanges) return
     setSaving(true)
     const merged = { ...states, ...pendingStates }
-    await Promise.all(
-      Object.entries(pendingStates).map(([id, state]) =>
-        saveCommitmentLog(supabase, dailyLogId, id, state)
-      )
-    )
-    await recalcOverallState(supabase, dailyLogId, commitments.map(c => merged[c.id] ?? 'none'))
-    setTabData(prev => ({ ...prev, [tab]: { ...prev[tab], states: merged } }))
-    setPending({})
-    setHasChanges(false)
-    setSaving(false)
-    setSavedFlash(true)
-    setTimeout(() => setSavedFlash(false), 2000)
+    try {
+      await Promise.all([
+        ...Object.entries(pendingStates).map(([id, state]) =>
+          saveCommitmentLog(supabase, dailyLogId, id, state)
+        ),
+        saveNote(supabase, dailyLogId, note),
+      ])
+      const coreComms = commitments.filter(c => c.category !== 'photo' || c.required)
+      await recalcOverallState(supabase, dailyLogId, coreComms.map(c => merged[c.id] ?? 'none'))
+      setTabData(prev => ({ ...prev, [tab]: { ...prev[tab], states: merged } }))
+      setPending({})
+      setHasChanges(false)
+      setSavedFlash(true)
+      setTimeout(() => setSavedFlash(false), 2000)
+    } catch {
+      showToast("Couldn't save — check your connection")
+    } finally {
+      setSaving(false)
+    }
   }
 
-  // ── Complete All ──────────────────────────────────────────────────────────
+  // ── Complete All / Clear All ──────────────────────────────────────────────
 
   async function handleCompleteAll() {
+    const nonPhotoComms = commitments.filter(c => c.category !== 'photo')
     if (tab === 'today') {
       const { dailyLogId } = tabData.today
       if (!dailyLogId) return
-      const all = Object.fromEntries(commitments.map(c => [c.id, 'complete' as DayState]))
-      setTabData(prev => ({ ...prev, today: { ...prev.today, states: all } }))
-      await Promise.all(commitments.map(c => saveCommitmentLog(supabase, dailyLogId, c.id, 'complete')))
-      await recalcOverallState(supabase, dailyLogId, commitments.map(() => 'complete'))
-      // C31
+      const all = Object.fromEntries(nonPhotoComms.map(c => [c.id, 'complete' as DayState]))
+      setTabData(prev => ({ ...prev, today: { ...prev.today, states: { ...prev.today.states, ...all } } }))
+      await Promise.all(nonPhotoComms.map(c => saveCommitmentLog(supabase, dailyLogId, c.id, 'complete')))
+      await recalcOverallState(supabase, dailyLogId, nonPhotoComms.map(() => 'complete'))
       if (currentDay === 75) { router.push('/complete'); return }
     } else {
-      const all = Object.fromEntries(commitments.map(c => [c.id, 'complete' as DayState]))
-      setPending(all)
+      const all = Object.fromEntries(nonPhotoComms.map(c => [c.id, 'complete' as DayState]))
+      setPending(prev => ({ ...prev, ...all }))
       setHasChanges(true)
     }
-    setShowCompleteAll(false)
+  }
+
+  async function handleClearAll() {
+    const nonPhotoComms = commitments.filter(c => c.category !== 'photo')
+    const cleared = Object.fromEntries(nonPhotoComms.map(c => [c.id, 'none' as DayState]))
+    if (tab === 'today') {
+      const { dailyLogId } = tabData.today
+      if (!dailyLogId) return
+      setTabData(prev => ({ ...prev, today: { ...prev.today, states: { ...prev.today.states, ...cleared } } }))
+      await Promise.all(nonPhotoComms.map(c => saveCommitmentLog(supabase, dailyLogId, c.id, 'none')))
+      await recalcOverallState(supabase, dailyLogId, nonPhotoComms.map(() => 'none'))
+    } else {
+      setPending(prev => ({ ...prev, ...cleared }))
+      setHasChanges(true)
+    }
+  }
+
+  // ── Photo capture ─────────────────────────────────────────────────────────
+
+  function handlePhotoCardTap(commitmentId: string, next: DayState) {
+    if (next === 'complete') {
+      setCameraForId(commitmentId)
+    } else {
+      handlePhotoRemove(commitmentId)
+    }
+  }
+
+  async function handlePhotoRemove(commitmentId: string) {
+    const { dailyLogId } = tabData[tab]
+    if (!dailyLogId) return
+    const newStates = { ...tabData[tab].states, [commitmentId]: 'none' as DayState }
+    const newPhotos = { ...tabData[tab].photoUrls }
+    delete newPhotos[commitmentId]
+    setTabData(prev => ({ ...prev, [tab]: { ...prev[tab], states: newStates, photoUrls: newPhotos } }))
+    await saveCommitmentLog(supabase, dailyLogId, commitmentId, 'none')
+    await savePhotoUrl(supabase, dailyLogId, commitmentId, null)
+    const coreStates = commitments.filter(c => c.category !== 'photo' || c.required).map(c => newStates[c.id] ?? 'none')
+    await recalcOverallState(supabase, dailyLogId, coreStates)
+  }
+
+  async function handleCameraCapture(file: File) {
+    const commitmentId = cameraForId
+    setCameraForId(null)
+    if (!commitmentId || !userId || !challengeId) return
+
+    const { dailyLogId, dayNumber } = tabData[tab]
+    if (!dailyLogId) return
+
+    setUploadingPhotoId(commitmentId)
+    try {
+      const url = await uploadProgressPhoto(supabase, userId, challengeId, dayNumber, file)
+      await saveCommitmentLog(supabase, dailyLogId, commitmentId, 'complete')
+      await savePhotoUrl(supabase, dailyLogId, commitmentId, url)
+
+      const newStates = { ...tabData[tab].states, [commitmentId]: 'complete' as DayState }
+      const newPhotos = { ...tabData[tab].photoUrls, [commitmentId]: url }
+      setTabData(prev => ({ ...prev, [tab]: { ...prev[tab], states: newStates, photoUrls: newPhotos } }))
+      const coreStates = commitments.filter(c => c.category !== 'photo' || c.required).map(c => newStates[c.id] ?? 'none')
+      const overall = await recalcOverallState(supabase, dailyLogId, coreStates)
+      if (tab === 'today' && overall === 'complete' && currentDay === 75) router.push('/complete')
+    } catch {
+      showToast("Photo didn't upload — try again")
+    } finally {
+      setUploadingPhotoId(null)
+    }
   }
 
   // ── Derived ───────────────────────────────────────────────────────────────
 
-  const isToday    = tab === 'today'
-  const activeData = tabData[tab]
-  const isLocked   = !isToday && activeData.dayNumber > 0 && activeData.dayNumber < currentDay - 2
-  const liveStates = isToday ? activeData.states : { ...activeData.states, ...pendingStates }
-  const allDone    = commitments.length > 0 && commitments.every(c => liveStates[c.id] === 'complete')
-  const progress   = Math.round((currentDay / 75) * 100)
+  const isToday       = tab === 'today'
+  const activeData    = tabData[tab]
+  const isLocked      = !isToday && activeData.dayNumber > 0 && activeData.dayNumber < currentDay - 2
+  const liveStates    = isToday ? activeData.states : { ...activeData.states, ...pendingStates }
+  const livePhotoUrls = activeData.photoUrls
+  const coreCommitments = commitments.filter(c => c.category !== 'photo' || c.required)
+  const allDone  = coreCommitments.length > 0 && coreCommitments.every(c => liveStates[c.id] === 'complete')
+  const progress = Math.round((currentDay / 75) * 100)
   const tabs: Tab[] = challengeDone || currentDay === 1 ? [] : currentDay === 2
     ? ['today', 'yesterday']
     : ['today', 'yesterday', 'daybefore']
@@ -287,7 +387,7 @@ export default function TodayContent() {
         <PageHeader eyebrow="Challenge complete">
           <h1 className="font-display text-[22px] font-semibold tracking-tight text-surface">75 days. Done.</h1>
           <div className="mt-4 bg-green-900 rounded-full h-[3px]">
-            <div className="bg-ember h-[3px] rounded-full w-full" />
+            <div className="bg-heart h-[3px] rounded-full w-full" />
           </div>
           <p className="font-mono text-[9px] text-green-400 mt-1">100% complete</p>
         </PageHeader>
@@ -305,11 +405,11 @@ export default function TodayContent() {
           ))}
         </div>
 
-        <div className="sticky bottom-0 bg-surface border-t border-border px-4 py-3">
-          <Btn
-            variant="primary"
-            onClick={() => router.push('/onboarding')}
-          >
+        <div className="sticky bottom-0 bg-surface border-t border-border px-4 py-3 flex flex-col gap-2">
+          <Btn variant="dark" onClick={() => router.push('/complete')}>
+            View your results
+          </Btn>
+          <Btn variant="outline" onClick={() => router.push('/profile')}>
             Start a new challenge
           </Btn>
         </div>
@@ -324,17 +424,17 @@ export default function TodayContent() {
       <PageHeader eyebrow={`Day ${currentDay} of 75`}>
         <h1 className="font-display text-[22px] font-semibold tracking-tight text-surface">{greet}</h1>
         <div className="mt-4 bg-green-900 rounded-full h-[3px]">
-          <div className="bg-ember h-[3px] rounded-full transition-all" style={{ width: `${progress}%` }} />
+          <div className="bg-heart h-[3px] rounded-full transition-all" style={{ width: `${progress}%` }} />
         </div>
         <p className="font-mono text-[9px] text-green-400 mt-1">{progress}% complete</p>
       </PageHeader>
 
       {/* Re-engagement card (C29, C30) */}
       {reengaged && (
-        <div className="mx-4 mt-4 rounded-card border-[1.5px] border-green-700 bg-surface p-4">
-          <p className="font-mono text-[9px] text-ember uppercase tracking-widest mb-1">Still here</p>
+        <div className="mx-4 mt-4 rounded-card border-[1.5px] border-green-600 bg-card p-4">
+          <p className="font-mono text-[9px] text-heart uppercase tracking-widest mb-1">Welcome back</p>
           <p className="font-display text-[15px] font-bold text-ink leading-snug mb-3">
-            You've logged {daysLogged} {daysLogged === 1 ? 'day' : 'days'}. That's real progress.
+            You've logged {daysLogged} {daysLogged === 1 ? 'day' : 'days'}. Keep going or start fresh.
           </p>
           <div className="grid grid-cols-3 gap-2 mb-3">
             {[['Days logged', daysLogged], ['Show-up rate', `${showUpRate}%`], ['Days left', 75 - currentDay + 1]].map(([label, val]) => (
@@ -342,11 +442,12 @@ export default function TodayContent() {
             ))}
           </div>
           <p className="font-sans text-xs text-ink-soft leading-relaxed mb-3">
-            Life got in the way — that happens. Log something today and keep going.
+            Life got in the way — that happens. Jump back in today or restart the challenge from Day 1.
           </p>
-          <Btn variant="dark" onClick={() => setReengaged(false)}>
-            Log today
-          </Btn>
+          <div className="flex flex-col gap-2">
+            <Btn variant="dark" onClick={() => setReengaged(false)}>Log today</Btn>
+            <Btn variant="ghost" onClick={() => router.push('/profile')} className="text-center w-full">Restart from Day 1</Btn>
+          </div>
         </div>
       )}
 
@@ -376,45 +477,71 @@ export default function TodayContent() {
         />
       ) : (
         <>
-          {/* Backdate context note (C26) */}
+          {/* Backdate context note (C26) — eyebrow header with separator */}
           {!isToday && activeData.dayNumber > 0 && (
-            <p className="font-mono text-[9px] text-ink-faint uppercase tracking-widest px-4 pt-3">
-              Day {activeData.dayNumber} · {new Date(activeData.logDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-            </p>
+            <div className="px-4 pt-4 pb-3 border-b border-border">
+              <p className="font-mono text-[9px] text-ink-faint uppercase tracking-widest">
+                Day {activeData.dayNumber} · {new Date(activeData.logDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              </p>
+            </div>
           )}
 
-          {/* Mark all complete — subtle, above cards, today only */}
-          {isToday && !allDone && (
-            <div className="px-4 pt-3 flex justify-end">
-              <button
-                onClick={() => setShowCompleteAll(true)}
-                className="font-sans text-xs text-ink-faint"
-              >
-                Mark all complete →
-              </button>
+          {/* Mark all complete / Clear all */}
+          {commitments.length > 0 && (
+            <div className={`px-4 flex justify-end ${isToday ? 'pt-3' : ''}`}>
+              {allDone ? (
+                <button onClick={handleClearAll} className="font-sans text-xs text-ink-faint">
+                  Clear all →
+                </button>
+              ) : (
+                <button onClick={handleCompleteAll} className="font-sans text-xs text-ink-faint">
+                  Mark all complete →
+                </button>
+              )}
             </div>
           )}
 
           {/* Cards */}
           <div className="flex-1 px-4 py-4 flex flex-col gap-3">
-            {commitments.map(c => (
-              <CommitmentCard
-                key={c.id}
-                category={c.category}
-                name={c.name}
-                definition={c.definition}
-                state={liveStates[c.id] ?? 'none'}
-                onChange={next => isToday ? updateToday(c.id, next) : stageBackdate(c.id, next)}
-              />
-            ))}
+            {commitments.length === 0 && (
+              <div className="flex-1 flex flex-col items-center justify-center text-center py-12 gap-2">
+                <p className="font-sans text-sm font-medium text-ink">No commitments yet</p>
+                <p className="font-sans text-xs text-ink-soft">Add at least one commitment in Profile to start tracking.</p>
+              </div>
+            )}
+            {commitments.map(c => {
+              const isPhoto = c.category === 'photo'
+              return (
+                <CommitmentCard
+                  key={c.id}
+                  category={c.category}
+                  name={c.name}
+                  definition={c.definition}
+                  required={c.required}
+                  state={liveStates[c.id] ?? 'none'}
+                  photoUrl={livePhotoUrls[c.id]}
+                  uploading={uploadingPhotoId === c.id}
+                  onChange={next =>
+                    isPhoto
+                      ? handlePhotoCardTap(c.id, next)
+                      : isToday ? updateToday(c.id, next) : stageBackdate(c.id, next)
+                  }
+                />
+              )
+            })}
 
             {noteOpen && (
               <Textarea
                 variant="light"
                 autoFocus
                 value={activeData.note}
-                onChange={e => setTabData(prev => ({ ...prev, [tab]: { ...prev[tab], note: e.target.value } }))}
-                onBlur={() => activeData.dailyLogId && saveNote(supabase, activeData.dailyLogId, activeData.note)}
+                onChange={e => {
+                  setTabData(prev => ({ ...prev, [tab]: { ...prev[tab], note: e.target.value } }))
+                  if (!isToday) setHasChanges(true)
+                }}
+                onBlur={() => {
+                  if (isToday && activeData.dailyLogId) saveNote(supabase, activeData.dailyLogId, activeData.note)
+                }}
                 placeholder="Add a note about this day…"
                 rows={3}
               />
@@ -426,46 +553,37 @@ export default function TodayContent() {
             <Btn
               variant="outline"
               onClick={() => setNoteOpen(o => !o)}
-              className={isToday ? 'flex-1' : ''}
+              className={`px-5 border-green-600 text-green-700 ${isToday ? 'flex-1' : ''}`}
             >
               {noteOpen ? 'Hide note' : 'Add note'}
             </Btn>
 
             {!isToday && (
-              <>
-                <Btn
-                  variant="outline"
-                  onClick={() => !allDone && setShowCompleteAll(true)}
-                  disabled={allDone}
-                  className={`px-3 ${allDone ? 'border-border text-ink-faint' : ''}`}
-                >
-                  All
-                </Btn>
-                <Btn
-                  variant="primary"
-                  onClick={saveBackdate}
-                  disabled={!hasChanges || saving}
-                  className={`flex-1 ${
-                    savedFlash            ? 'bg-green-100 text-green-700 border-[1.5px] border-green-200' :
-                    !hasChanges || saving ? 'bg-border/50 text-ink-faint' :
-                                            ''
-                  }`}
-                >
-                  {savedFlash ? 'Saved ✓' : saving ? 'Saving…' : 'Save'}
-                </Btn>
-              </>
+              <Btn
+                variant="dark"
+                onClick={saveBackdate}
+                disabled={!hasChanges || saving}
+                className={`flex-1 ${
+                  savedFlash            ? 'bg-green-100 text-green-700 border-[1.5px] border-green-200' :
+                  !hasChanges || saving ? 'bg-border/50 text-ink-faint' :
+                                          ''
+                }`}
+              >
+                {savedFlash ? 'Saved ✓' : saving ? 'Saving…' : 'Save'}
+              </Btn>
             )}
           </div>
         </>
       )}
 
-      {showCompleteAll && (
-        <CompleteAllSheet
-          dayNumber={activeData.dayNumber}
-          onConfirm={handleCompleteAll}
-          onCancel={() => setShowCompleteAll(false)}
+      {cameraForId && (
+        <CameraSheet
+          onCapture={handleCameraCapture}
+          onClose={() => setCameraForId(null)}
         />
       )}
+
+      {toastMessage && <Toast message={toastMessage} onDismiss={clearToast} />}
     </div>
   )
 }

@@ -1,23 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase'
-import { createChallenge, createCommitments, todayISO } from '@/lib/queries'
+import { createChallenge, createCommitments, getActiveChallenge, todayISO } from '@/lib/queries'
 import Btn from '@/components/ui/Btn'
 import Eyebrow from '@/components/ui/Eyebrow'
+import { CATEGORIES } from '@/lib/categories'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type Template = '75_soft' | '75_hard'
-
-interface Category {
-  id: string
-  label: string
-  defaultName: string
-  defaultDefinition: string
-}
 
 interface Commitment {
   categoryId: string
@@ -51,17 +45,6 @@ const SLIDES = [
   },
 ]
 
-const CATEGORIES: Category[] = [
-  { id: 'physical',      label: 'Physical',       defaultName: 'One workout',    defaultDefinition: 'At least 30 minutes of intentional movement' },
-  { id: 'nutrition',     label: 'Nutrition',      defaultName: 'Nutrition',      defaultDefinition: 'Follow your plan, no junk food' },
-  { id: 'hydration',     label: 'Hydration',      defaultName: 'Water',          defaultDefinition: 'Drink at least 64 oz of water' },
-  { id: 'personal_dev',  label: 'Personal dev',   defaultName: 'Personal dev',   defaultDefinition: '10 minutes of reading or a podcast' },
-  { id: 'photo',         label: 'Progress photo', defaultName: 'Progress photo', defaultDefinition: '' },
-  { id: 'sleep',         label: 'Sleep',          defaultName: 'Sleep',          defaultDefinition: 'In bed by 10:30pm' },
-  { id: 'mindfulness',   label: 'Mindfulness',    defaultName: 'Mindfulness',    defaultDefinition: '10 minutes of meditation or journaling' },
-  { id: 'cold_shower',   label: 'Cold shower',    defaultName: 'Cold shower',    defaultDefinition: 'End shower with 30 seconds cold' },
-]
-
 // ─── Step type ───────────────────────────────────────────────────────────────
 
 type Step = 'slides' | 'plan-1' | 'plan-2' | 'plan-3'
@@ -69,7 +52,13 @@ type Step = 'slides' | 'plan-1' | 'plan-2' | 'plan-3'
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function OnboardingContent() {
-  const router = useRouter()
+  const router   = useRouter()
+  const supabase = createClient()
+
+  // Guard: redirect to /today if user already has an active challenge
+  useEffect(() => {
+    getActiveChallenge(supabase).then(c => { if (c) router.replace('/today') })
+  }, [])
 
   const [step, setStep]           = useState<Step>('slides')
   const [slideIndex, setSlide]    = useState(0)
@@ -180,7 +169,7 @@ export default function OnboardingContent() {
             <div
               key={i}
               className={`rounded-full transition-all ${
-                i === slideIndex ? 'w-4 h-1.5 bg-ember' : 'w-1.5 h-1.5 bg-green-700'
+                i === slideIndex ? 'w-4 h-1.5 bg-heart' : 'w-1.5 h-1.5 bg-green-700'
               }`}
             />
           ))}
@@ -231,17 +220,17 @@ export default function OnboardingContent() {
               key={t.id}
               onClick={() => setTemplate(t.id)}
               className={`w-full text-left rounded-card border-[1.5px] px-4 py-4 transition-colors ${
-                template === t.id ? 'border-ember bg-green-800' : 'border-green-700 bg-green-800/50'
+                template === t.id ? 'border-heart bg-green-800' : 'border-green-700 bg-green-800/50'
               }`}
             >
               <div className="flex items-center gap-2 mb-1">
                 <p className="font-display text-base font-bold text-surface">{t.name}</p>
                 <span className={`font-mono text-[8px] px-1.5 py-0.5 rounded uppercase tracking-widest ${
-                  t.id === '75_soft' ? 'bg-ember/20 text-ember' : 'bg-green-700 text-green-300'
+                  t.id === '75_soft' ? 'bg-heart/20 text-heart' : 'bg-green-700 text-green-300'
                 }`}>
                   {t.tag}
                 </span>
-                {template === t.id && <span className="ml-auto text-ember text-sm">✓</span>}
+                {template === t.id && <span className="ml-auto text-heart text-sm">✓</span>}
               </div>
               <p className="font-sans text-xs text-green-300 leading-relaxed mb-2">{t.desc}</p>
               <div className="flex flex-wrap gap-1">
@@ -304,7 +293,7 @@ export default function OnboardingContent() {
           <p className="font-sans text-xs text-green-300 mb-1">
             Select at least 2.
             {selected.size < 2 && (
-              <span className="text-ember"> Select at least {2 - selected.size} more to continue.</span>
+              <span className="text-heart"> Select at least {2 - selected.size} more to continue.</span>
             )}
           </p>
         </div>
@@ -317,11 +306,11 @@ export default function OnboardingContent() {
                 key={cat.id}
                 onClick={() => toggleCategory(cat.id)}
                 className={`rounded-card border-[1.5px] px-4 py-3 text-left transition-colors ${
-                  isSelected ? 'border-ember bg-green-800' : 'border-green-700 bg-green-800/50'
+                  isSelected ? 'border-heart bg-green-800' : 'border-green-700 bg-green-800/50'
                 }`}
               >
                 <p className="font-sans text-sm font-medium text-surface">{cat.label}</p>
-                {isSelected && <p className="font-mono text-[8px] text-ember mt-0.5">✓ selected</p>}
+                {isSelected && <p className="font-mono text-[8px] text-heart mt-0.5">✓ selected</p>}
               </button>
             )
           })}
@@ -332,7 +321,7 @@ export default function OnboardingContent() {
             variant="primary"
             onClick={() => setStep('plan-3')}
             disabled={!canContinueStep2}
-            className={!canContinueStep2 ? 'bg-ember/30 text-ink/40' : ''}
+            className={!canContinueStep2 ? 'bg-heart/30 text-ink/40' : ''}
           >
             Continue
           </Btn>
@@ -367,7 +356,7 @@ export default function OnboardingContent() {
                   onChange={e => updateCommitment(cat.id, 'definition', e.target.value)}
                   placeholder="What does this mean to you? (optional)"
                   rows={2}
-                  className="bg-green-700/50 border-[1.5px] border-green-600 rounded-lg px-3 py-2 font-sans text-xs text-surface placeholder:text-green-500 outline-none resize-none focus:border-ember"
+                  className="bg-green-700/50 border-[1.5px] border-green-600 rounded-lg px-3 py-2 font-sans text-xs text-surface placeholder:text-green-500 outline-none resize-none focus:border-heart"
                 />
               </div>
             )
@@ -375,12 +364,12 @@ export default function OnboardingContent() {
         </div>
 
         <div className="px-6 py-8 flex flex-col gap-3">
-          {saveError && <p className="font-sans text-xs text-amber text-center">{saveError}</p>}
+          {saveError && <p className="font-sans text-xs text-heart-deep text-center">{saveError}</p>}
           <Btn
             variant="primary"
             onClick={handleStart}
             disabled={!allNamed || saving}
-            className={(!allNamed || saving) ? 'bg-ember/30 text-ink/40' : ''}
+            className={(!allNamed || saving) ? 'bg-heart/30 text-ink/40' : ''}
           >
             {saving ? 'Starting…' : 'Start my challenge'}
           </Btn>

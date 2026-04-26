@@ -11,6 +11,7 @@ interface Commitment {
   category: string
   name: string
   definition: string
+  required?: boolean
   changeLog?: { day: number; from: string; to: string }[]
 }
 
@@ -18,16 +19,18 @@ interface Props {
   commitment: Commitment
   totalCommitments: number
   todayLogged: boolean
-  onSave: (id: string, definition: string) => void
+  onSave: (id: string, definition: string, required: boolean) => void
   onRemove: (id: string) => void
   onClose: () => void
 }
 
 export default function EditCommitmentSheet({ commitment, totalCommitments, todayLogged, onSave, onRemove, onClose }: Props) {
   const [definition, setDefinition] = useState(commitment.definition)
+  const [required,   setRequired]   = useState(commitment.required ?? false)
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
   const [logExpanded, setLogExpanded] = useState(false)
 
+  const isPhoto   = commitment.category === 'photo'
   const canRemove = totalCommitments > 2
   const effectNote = todayLogged ? 'Takes effect tomorrow' : 'Applies today'
   const log = commitment.changeLog ?? []
@@ -76,7 +79,26 @@ export default function EditCommitmentSheet({ commitment, totalCommitments, toda
           />
         </div>
 
-        <Btn variant="primary" onClick={() => onSave(commitment.id, definition)}>
+        {isPhoto && (
+          <button
+            onClick={() => setRequired(r => !r)}
+            className="flex items-center justify-between bg-card border-[1.5px] border-border rounded-card px-4 py-3"
+          >
+            <div className="text-left">
+              <p className="font-sans text-sm font-medium text-ink">Photo required</p>
+              <p className="font-sans text-[11px] text-ink-soft mt-0.5">
+                {required
+                  ? 'Day is incomplete without a photo'
+                  : 'Photo is optional — day can complete without it'}
+              </p>
+            </div>
+            <div className={`ml-4 w-11 h-6 rounded-full transition-colors flex items-center px-0.5 ${required ? 'bg-green-700' : 'bg-border'}`}>
+              <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform ${required ? 'translate-x-5' : 'translate-x-0'}`} />
+            </div>
+          </button>
+        )}
+
+        <Btn variant="primary" onClick={() => onSave(commitment.id, definition, required)}>
           Save changes
         </Btn>
         <p className="font-sans text-[11px] text-ink-soft text-center -mt-2">{effectNote}</p>

@@ -6,9 +6,12 @@ interface Props {
   category: string
   name: string
   definition?: string | null
+  required?: boolean
   state: State
   onChange: (next: State) => void
   readonly?: boolean
+  photoUrl?: string | null
+  uploading?: boolean
 }
 
 const NEXT: Record<State, State> = {
@@ -25,15 +28,15 @@ const NEXT_PHOTO: Record<State, State> = {
 }
 
 const CARD_STYLE: Record<State, string> = {
-  none:     'bg-surface border-border',
-  partial:  'bg-amber-light border-amber',
-  complete: 'bg-green-100 border-green-200',
+  none:     'bg-state-none-bg border-state-none',
+  partial:  'bg-state-partial-bg border-state-partial',
+  complete: 'bg-state-done-bg border-state-done',
 }
 
 const CHIP_STYLE: Record<State, string> = {
-  none:     'text-ink-faint',
-  partial:  'text-amber',
-  complete: 'text-green-700',
+  none:     'text-state-none-ink',
+  partial:  'text-state-partial-ink',
+  complete: 'text-state-done-ink',
 }
 
 const CHIP_LABEL: Record<State, string> = {
@@ -47,28 +50,40 @@ const PHOTO_CHIP: Record<'none' | 'complete', string> = {
   complete: 'TAKEN ✓',
 }
 
-export default function CommitmentCard({ category, name, definition, state, onChange, readonly }: Props) {
+export default function CommitmentCard({ category, name, definition, required, state, onChange, readonly, photoUrl, uploading }: Props) {
   const isPhoto  = category === 'photo'
   const next     = isPhoto ? NEXT_PHOTO[state] : NEXT[state]
-  const chipLabel = isPhoto
-    ? PHOTO_CHIP[state === 'partial' ? 'none' : state]
-    : CHIP_LABEL[state]
+  const chipLabel = uploading
+    ? 'UPLOADING…'
+    : isPhoto
+      ? PHOTO_CHIP[state === 'partial' ? 'none' : state]
+      : CHIP_LABEL[state]
 
   return (
     <button
-      onClick={() => !readonly && onChange(next)}
-      disabled={readonly}
-      className={`w-full text-left rounded-card border-[1.5px] px-4 py-3 transition-colors ${CARD_STYLE[state]} ${readonly ? 'opacity-40 cursor-default' : 'active:scale-[0.99]'}`}
+      onClick={() => !readonly && !uploading && onChange(next)}
+      disabled={readonly || uploading}
+      className={`w-full text-left rounded-card border-[1.5px] px-4 py-3 transition-colors ${CARD_STYLE[state]} ${readonly || uploading ? 'opacity-40 cursor-default' : 'active:scale-[0.99]'}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <p className="font-mono text-[9px] text-ink-soft uppercase tracking-widest mb-0.5">{category}</p>
-          <div className="flex items-center gap-1.5">
-            {isPhoto && <span className="text-sm">📷</span>}
-            <p className="font-sans text-sm font-medium text-ink leading-snug">{name}</p>
-          </div>
+          <p className="font-sans text-sm font-medium text-ink leading-snug">
+            <span className="font-mono text-[9px] font-normal text-ink-faint uppercase tracking-widest">{category} — </span>
+            {isPhoto && '📷 '}
+            {name}
+          </p>
+          {isPhoto && required && (
+            <p className="font-mono text-[8px] text-state-partial-ink uppercase tracking-widest mt-0.5">Required</p>
+          )}
           {definition && (
             <p className="font-sans text-[11px] text-ink-soft mt-0.5 leading-snug">{definition}</p>
+          )}
+          {isPhoto && photoUrl && (
+            <img
+              src={photoUrl}
+              alt="Progress photo"
+              className="mt-2 w-20 h-20 rounded-lg object-cover"
+            />
           )}
         </div>
         <span className={`font-mono text-[9px] font-medium tracking-widest mt-0.5 shrink-0 ${CHIP_STYLE[state]}`}>

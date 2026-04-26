@@ -14,6 +14,14 @@ export async function getActiveChallenge(db: DB) {
   return data
 }
 
+export async function archiveChallenge(db: DB, challengeId: string) {
+  const { error } = await db
+    .from('challenges')
+    .update({ status: 'archived' })
+    .eq('id', challengeId)
+  if (error) throw new Error(error.message)
+}
+
 export async function createChallenge(db: DB, payload: {
   title: string
   template: Database['public']['Tables']['challenges']['Insert']['template']
@@ -38,7 +46,7 @@ export async function createChallenge(db: DB, payload: {
     .select()
     .single()
 
-  if (error) throw error
+  if (error) throw new Error(error.message)
   return data
 }
 
@@ -58,6 +66,7 @@ export async function createCommitments(db: DB, challengeId: string, items: {
   name: string
   definition: string
   sortOrder: number
+  required?: boolean
 }[]) {
   const { error } = await db.from('commitments').insert(
     items.map(c => ({
@@ -67,9 +76,18 @@ export async function createCommitments(db: DB, challengeId: string, items: {
       definition:   c.definition || null,
       sort_order:   c.sortOrder,
       active_from:  1,
+      required:     c.required ?? false,
     }))
   )
-  if (error) throw error
+  if (error) throw new Error(error.message)
+}
+
+export async function updateCommitmentRequired(db: DB, commitmentId: string, required: boolean) {
+  const { error } = await db
+    .from('commitments')
+    .update({ required })
+    .eq('id', commitmentId)
+  if (error) throw new Error(error.message)
 }
 
 export async function updateCommitmentDefinition(db: DB, commitmentId: string, definition: string, dayNumber: number) {
@@ -92,7 +110,7 @@ export async function updateCommitmentDefinition(db: DB, commitmentId: string, d
     .update({ definition })
     .eq('id', commitmentId)
 
-  if (error) throw error
+  if (error) throw new Error(error.message)
 }
 
 // ─── Daily logs ───────────────────────────────────────────────────────────────
@@ -142,7 +160,7 @@ export async function getOrCreateDailyLog(db: DB, challengeId: string, dayNumber
     .select()
     .single()
 
-  if (error) throw error
+  if (error) throw new Error(error.message)
   return data
 }
 
@@ -211,7 +229,71 @@ export async function saveCommitmentLog(db: DB, dailyLogId: string, commitmentId
       { daily_log_id: dailyLogId, commitment_id: commitmentId, state },
       { onConflict: 'daily_log_id,commitment_id' }
     )
-  if (error) throw error
+  if (error) throw new Error(error.message)
+}
+
+// ─── Benchmark ────────────────────────────────────────────────────────────────
+
+export async function getBenchmark(db: DB, challengeId: string) {
+  const { data } = await db
+    .from('benchmarks')
+    .select('*')
+    .eq('challenge_id', challengeId)
+    .maybeSingle()
+  return data
+}
+
+export async function saveBenchmark(db: DB, challengeId: string, payload: {
+  notesText: string
+  photoUrl: string | null
+}) {
+  const { error } = await db.from('benchmarks').upsert(
+    { challenge_id: challengeId, notes_text: payload.notesText || null, photo_url: payload.photoUrl },
+    { onConflict: 'challenge_id' }
+  )
+  if (error) throw new Error(error.message)
+}
+
+export async function uploadBenchmarkPhoto(db: DB, userId: string, challengeId: string, file: File): Promise<string> {
+  const ext = file.type === 'image/png' ? 'png' : 'jpg'
+  const path = `${userId}/${challengeId}.${ext}`
+  const { error } = await db.storage
+    .from('benchmark-photos')
+    .upload(path, file, { upsert: true, contentType: file.type })
+  if (error) throw new Error(error.message)
+  const { data } = db.storage.from('benchmark-photos').getPublicUrl(path)
+  return data.publicUrl
+}
+
+export async function uploadProgressPhoto(
+  db: DB,
+  userId: string,
+  challengeId: string,
+  dayNumber: number,
+  file: File,
+): Promise<string> {
+  const ext = file.type === 'image/png' ? 'png' : 'jpg'
+  const path = `${userId}/${challengeId}/day-${dayNumber}.${ext}`
+  const { error } = await db.storage
+    .from('progress-photos')
+    .upload(path, file, { upsert: true, contentType: file.type })
+  if (error) throw new Error(error.message)
+  const { data } = db.storage.from('progress-photos').getPublicUrl(path)
+  return data.publicUrl
+}
+
+export async function savePhotoUrl(
+  db: DB,
+  dailyLogId: string,
+  commitmentId: string,
+  photoUrl: string | null,
+) {
+  const { error } = await db
+    .from('commitment_logs')
+    .update({ photo_url: photoUrl })
+    .eq('daily_log_id', dailyLogId)
+    .eq('commitment_id', commitmentId)
+  if (error) throw new Error(error.message)
 }
 
 export async function recalcOverallState(db: DB, dailyLogId: string, allStates: DayState[]) {

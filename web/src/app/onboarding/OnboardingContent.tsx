@@ -166,9 +166,9 @@ export default function OnboardingContent() {
 
         {/* Content */}
         <div className="flex-1 flex flex-col justify-center pb-10">
-          <Eyebrow color="green" className="text-[11px] mb-3">{slide.eyebrow}</Eyebrow>
-          <h1 className="font-display text-[36px] font-semibold tracking-tight text-surface leading-tight mb-6">{slide.title}</h1>
-          <p className="font-sans text-base text-green-200 leading-relaxed">{slide.body}</p>
+          <Eyebrow color="green" className="text-[13px] mb-4">{slide.eyebrow}</Eyebrow>
+          <h1 className="font-display text-[44px] font-semibold tracking-tight text-surface leading-tight mb-7">{slide.title}</h1>
+          <p className="font-sans text-lg text-green-200 leading-relaxed">{slide.body}</p>
         </div>
 
         {/* Dots */}
@@ -190,7 +190,7 @@ export default function OnboardingContent() {
               {slide.cta ?? 'Build my challenge'}
             </Btn>
           ) : (
-            <p className="text-center font-sans text-xs text-green-600">Tap to continue</p>
+            <p className="text-center font-sans text-sm text-green-600">Tap to continue</p>
           )}
         </div>
       </div>
@@ -202,9 +202,9 @@ export default function OnboardingContent() {
     return (
       <div className="min-h-screen bg-green-900 flex flex-col max-w-xl mx-auto px-6">
         <div className="pt-12">
-          <Eyebrow color="green" className="text-[10px]">Step 1 of 3</Eyebrow>
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-surface mt-1 mb-1">Choose a Starting Point</h1>
-          <p className="font-sans text-xs text-green-300 mb-6">You can customize everything on the next step.</p>
+          <Eyebrow color="green" className="text-[11px]">Step 1 of 3</Eyebrow>
+          <h1 className="font-display text-[28px] font-semibold tracking-tight text-surface mt-1 mb-1">Choose a Starting Point</h1>
+          <p className="font-sans text-sm text-green-300 mb-6">You can customize everything on the next step.</p>
         </div>
 
         <div className="flex flex-col gap-3 flex-1">
@@ -232,18 +232,18 @@ export default function OnboardingContent() {
               }`}
             >
               <div className="flex items-center gap-2 mb-1">
-                <p className="font-display text-base font-bold text-surface">{t.name}</p>
-                <span className={`font-mono text-[8px] px-1.5 py-0.5 rounded uppercase tracking-widest ${
+                <p className="font-display text-lg font-bold text-surface">{t.name}</p>
+                <span className={`font-mono text-[10px] px-1.5 py-0.5 rounded uppercase tracking-widest ${
                   t.id === '75_soft' ? 'bg-heart/20 text-heart' : 'bg-green-700 text-green-300'
                 }`}>
                   {t.tag}
                 </span>
                 {template === t.id && <span className="ml-auto text-heart text-sm">✓</span>}
               </div>
-              <p className="font-sans text-xs text-green-300 leading-relaxed mb-2">{t.desc}</p>
-              <div className="flex flex-wrap gap-1">
+              <p className="font-sans text-sm text-green-300 leading-relaxed mb-2">{t.desc}</p>
+              <div className="flex flex-wrap gap-1.5">
                 {t.commitments.map(c => (
-                  <span key={c} className="font-mono text-[8px] bg-green-700/60 text-green-200 px-1.5 py-0.5 rounded">
+                  <span key={c} className="font-mono text-[11px] bg-green-700/60 text-green-200 px-2 py-1 rounded">
                     {c}
                   </span>
                 ))}
@@ -296,9 +296,9 @@ export default function OnboardingContent() {
     return (
       <div className="min-h-screen bg-green-900 flex flex-col max-w-xl mx-auto px-6">
         <div className="pt-12">
-          <Eyebrow color="green" className="text-[10px]">Step 2 of 3</Eyebrow>
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-surface mt-1 mb-1">Choose Your Commitments</h1>
-          <p className="font-sans text-xs text-green-300 mb-1">
+          <Eyebrow color="green" className="text-[11px]">Step 2 of 3</Eyebrow>
+          <h1 className="font-display text-[28px] font-semibold tracking-tight text-surface mt-1 mb-1">Choose Your Commitments</h1>
+          <p className="font-sans text-sm text-green-300 mb-1">
             Select at least 2.
             {selected.size < 2 && (
               <span className="text-heart"> Select at least {2 - selected.size} more to continue.</span>
@@ -317,8 +317,8 @@ export default function OnboardingContent() {
                   isSelected ? 'border-heart bg-green-800' : 'border-green-700 bg-green-800/50'
                 }`}
               >
-                <p className="font-sans text-sm font-medium text-surface">{cat.label}</p>
-                {isSelected && <p className="font-mono text-[8px] text-heart mt-0.5">✓ selected</p>}
+                <p className="font-sans text-base font-medium text-surface">{cat.label}</p>
+                {isSelected && <p className="font-mono text-[10px] text-heart mt-0.5">✓ Selected</p>}
               </button>
             )
           })}
@@ -348,9 +348,9 @@ export default function OnboardingContent() {
     return (
       <div className="min-h-screen bg-green-900 flex flex-col max-w-xl mx-auto">
         <div className="px-6 pt-12">
-          <Eyebrow color="green" className="text-[10px]">Step 3 of 3</Eyebrow>
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-surface mt-1 mb-1">Define Your Commitments</h1>
-          <p className="font-sans text-xs text-green-300 mb-5">You can change these any time during your challenge.</p>
+          <Eyebrow color="green" className="text-[11px]">Step 3 of 3</Eyebrow>
+          <h1 className="font-display text-[28px] font-semibold tracking-tight text-surface mt-1 mb-1">Define Your Commitments</h1>
+          <p className="font-sans text-sm text-green-300 mb-5">You can change these any time during your challenge.</p>
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 flex flex-col gap-3 pb-4">

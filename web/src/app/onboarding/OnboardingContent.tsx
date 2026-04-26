@@ -155,7 +155,7 @@ export default function OnboardingContent() {
 
     return (
       <div
-        className="min-h-screen bg-green-900 flex flex-col max-w-xl mx-auto px-6 cursor-pointer select-none"
+        className="min-h-screen bg-green-800 flex flex-col max-w-xl mx-auto px-6 cursor-pointer select-none"
         onClick={!isLast ? nextSlide : undefined}
       >
         {/* Logo */}
@@ -177,7 +177,7 @@ export default function OnboardingContent() {
             <div
               key={i}
               className={`rounded-full transition-all ${
-                i === slideIndex ? 'w-4 h-1.5 bg-heart' : 'w-1.5 h-1.5 bg-green-700'
+                i === slideIndex ? 'w-4 h-1.5 bg-heart' : 'w-1.5 h-1.5 bg-green-600'
               }`}
             />
           ))}
@@ -190,7 +190,7 @@ export default function OnboardingContent() {
               {slide.cta ?? 'Build my challenge'}
             </Btn>
           ) : (
-            <p className="text-center font-sans text-sm text-green-600">Tap to continue</p>
+            <p className="text-center font-sans text-sm text-green-400">Tap to continue</p>
           )}
         </div>
       </div>
@@ -200,7 +200,7 @@ export default function OnboardingContent() {
   // Plan Step 1 — Template
   if (step === 'plan-1') {
     return (
-      <div className="min-h-screen bg-green-900 flex flex-col max-w-xl mx-auto px-6">
+      <div className="min-h-screen bg-green-800 flex flex-col max-w-xl mx-auto px-6">
         <div className="pt-12">
           <Eyebrow color="green" className="text-[11px]">Step 1 of 3</Eyebrow>
           <h1 className="font-display text-[28px] font-semibold tracking-tight text-surface mt-1 mb-1">Choose a Starting Point</h1>
@@ -228,13 +228,13 @@ export default function OnboardingContent() {
               key={t.id}
               onClick={() => setTemplate(t.id)}
               className={`w-full text-left rounded-card border-[1.5px] px-4 py-4 transition-colors ${
-                template === t.id ? 'border-heart bg-green-800' : 'border-green-700 bg-green-800/50'
+                template === t.id ? 'border-heart bg-green-600' : 'border-green-500 bg-green-700'
               }`}
             >
               <div className="flex items-center gap-2 mb-1">
                 <p className="font-display text-lg font-bold text-surface">{t.name}</p>
                 <span className={`font-mono text-[10px] px-1.5 py-0.5 rounded uppercase tracking-widest ${
-                  t.id === '75_soft' ? 'bg-heart/20 text-heart' : 'bg-green-700 text-green-300'
+                  t.id === '75_soft' ? 'bg-heart/20 text-heart' : 'bg-green-500/30 text-green-200'
                 }`}>
                   {t.tag}
                 </span>
@@ -243,7 +243,7 @@ export default function OnboardingContent() {
               <p className="font-sans text-sm text-green-300 leading-relaxed mb-2">{t.desc}</p>
               <div className="flex flex-wrap gap-1.5">
                 {t.commitments.map(c => (
-                  <span key={c} className="font-mono text-[11px] bg-green-700/60 text-green-200 px-2 py-1 rounded">
+                  <span key={c} className="font-mono text-[11px] bg-green-500/25 text-green-100 px-2 py-1 rounded">
                     {c}
                   </span>
                 ))}
@@ -294,7 +294,7 @@ export default function OnboardingContent() {
   // Plan Step 2 — Category selector
   if (step === 'plan-2') {
     return (
-      <div className="min-h-screen bg-green-900 flex flex-col max-w-xl mx-auto px-6">
+      <div className="min-h-screen bg-green-800 flex flex-col max-w-xl mx-auto px-6">
         <div className="pt-12">
           <Eyebrow color="green" className="text-[11px]">Step 2 of 3</Eyebrow>
           <h1 className="font-display text-[28px] font-semibold tracking-tight text-surface mt-1 mb-1">Choose Your Commitments</h1>
@@ -314,7 +314,7 @@ export default function OnboardingContent() {
                 key={cat.id}
                 onClick={() => toggleCategory(cat.id)}
                 className={`rounded-card border-[1.5px] px-4 py-3 text-left transition-colors ${
-                  isSelected ? 'border-heart bg-green-800' : 'border-green-700 bg-green-800/50'
+                  isSelected ? 'border-heart bg-green-600' : 'border-green-500 bg-green-700'
                 }`}
               >
                 <p className="font-sans text-base font-medium text-surface">{cat.label}</p>
@@ -346,7 +346,7 @@ export default function OnboardingContent() {
     const allNamed = selectedCategories.length > 0
 
     return (
-      <div className="min-h-screen bg-green-900 flex flex-col max-w-xl mx-auto">
+      <div className="min-h-screen bg-green-800 flex flex-col max-w-xl mx-auto">
         <div className="px-6 pt-12">
           <Eyebrow color="green" className="text-[11px]">Step 3 of 3</Eyebrow>
           <h1 className="font-display text-[28px] font-semibold tracking-tight text-surface mt-1 mb-1">Define Your Commitments</h1>
@@ -356,7 +356,7 @@ export default function OnboardingContent() {
         <div className="flex-1 overflow-y-auto px-6 flex flex-col gap-3 pb-4">
 
           {/* Duration picker */}
-          <div className="bg-green-800 border-[1.5px] border-green-700 rounded-card px-4 py-3 flex flex-col gap-2">
+          <div className="bg-green-700 border-[1.5px] border-green-600 rounded-card px-4 py-3 flex flex-col gap-2">
             <p className="font-mono text-[9px] text-green-400 uppercase tracking-widest">Challenge Length</p>
             <div className="flex gap-2">
               {[21, 30, 75, 90].map(d => (
@@ -366,7 +366,7 @@ export default function OnboardingContent() {
                   className={`flex-1 py-1.5 rounded-lg border-[1.5px] font-mono text-[10px] transition-colors ${
                     duration === d && !showCustomDuration
                       ? 'border-heart bg-heart/20 text-heart'
-                      : 'border-green-600 bg-green-700/50 text-green-300'
+                      : 'border-green-500 bg-green-600/50 text-green-200'
                   }`}
                 >
                   {d}{d === 75 ? '★' : ''}
@@ -377,7 +377,7 @@ export default function OnboardingContent() {
                 className={`flex-1 py-1.5 rounded-lg border-[1.5px] font-mono text-[10px] transition-colors ${
                   showCustomDuration
                     ? 'border-heart bg-heart/20 text-heart'
-                    : 'border-green-600 bg-green-700/50 text-green-300'
+                    : 'border-green-500 bg-green-600/50 text-green-200'
                 }`}
               >
                 Custom
@@ -394,7 +394,7 @@ export default function OnboardingContent() {
                     if (n >= 21 && n <= 180) setDuration(n)
                   }}
                   placeholder="21–180"
-                  className="flex-1 bg-green-700/50 border-[1.5px] border-green-600 rounded-lg px-3 py-2 font-mono text-xs text-surface placeholder:text-green-500 outline-none focus:border-heart"
+                  className="flex-1 bg-green-600/50 border-[1.5px] border-green-500 rounded-lg px-3 py-2 font-mono text-xs text-surface placeholder:text-green-400 outline-none focus:border-heart"
                 />
                 <p className="font-mono text-[9px] text-green-500">days</p>
               </div>
@@ -420,7 +420,7 @@ export default function OnboardingContent() {
                           onClick={() => setHydUnit(u)}
                           className={`flex-1 py-1.5 font-mono text-[10px] uppercase tracking-widest transition-colors ${
                             i === 1 ? 'border-l border-green-600' : ''
-                          } ${hydrationUnit === u ? 'bg-heart text-surface' : 'bg-green-700/50 text-green-400'}`}
+                          } ${hydrationUnit === u ? 'bg-heart text-surface' : 'bg-green-600/50 text-green-300'}`}
                         >
                           {u}
                         </button>
@@ -431,7 +431,7 @@ export default function OnboardingContent() {
                       value={hydrationGoal}
                       onChange={e => setHydGoal(e.target.value)}
                       placeholder={hydrationUnit === 'oz' ? 'e.g. 64' : 'e.g. 2000'}
-                      className="bg-green-700/50 border-[1.5px] border-green-600 rounded-lg px-3 py-2 font-sans text-xs text-surface placeholder:text-green-500 outline-none focus:border-heart"
+                      className="bg-green-600/50 border-[1.5px] border-green-500 rounded-lg px-3 py-2 font-sans text-xs text-surface placeholder:text-green-400 outline-none focus:border-heart"
                     />
                     <p className="font-mono text-[9px] text-green-500">
                       {hydrationUnit === 'oz' ? '64 oz ≈ 8 cups · 100 oz ≈ 3 liters' : '1000 ml = 1 liter · 3000 ml = 3 liters'}

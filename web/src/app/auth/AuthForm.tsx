@@ -66,7 +66,7 @@ export default function AuthForm({ mode }: Props) {
 
   if (checkEmail) {
     return (
-      <div className="min-h-screen bg-green-900 flex flex-col max-w-xl mx-auto px-6 justify-center">
+      <div className="min-h-screen bg-green-800 flex flex-col max-w-xl mx-auto px-6 justify-center">
         <div className="w-12 h-12 rounded-full bg-green-800 flex items-center justify-center mb-6">
           <span className="text-2xl">📬</span>
         </div>
@@ -84,7 +84,7 @@ export default function AuthForm({ mode }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-green-900 flex flex-col max-w-xl mx-auto px-6">
+    <div className="min-h-screen bg-green-800 flex flex-col max-w-xl mx-auto px-6">
       {/* Logo */}
       <div className="pt-14 pb-8 flex items-center gap-2">
         <Image src="/brand/75flex-logo-heart.png" alt="75 Flex" width={28} height={28} />

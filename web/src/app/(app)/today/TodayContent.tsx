@@ -58,6 +58,7 @@ export default function TodayContent() {
   const [userId,        setUserId]       = useState('')
   const [startDate,     setStartDate]    = useState('')
   const [currentDay,    setCurrentDay]   = useState(1)
+  const [durationDays,  setDurationDays] = useState(75)
   const [commitments,   setCommitments]  = useState<Commitment[]>([])
   const [greet,         setGreet]        = useState('Good morning')
   const [reengaged,     setReengaged]    = useState(false)
@@ -109,14 +110,15 @@ export default function TodayContent() {
     if (!challenge) { router.push('/onboarding'); return }
 
     // Compute raw diff for C32 detection (uncapped, unlike calcDayNumber)
+    const duration = challenge.duration_days ?? 75
     const startD = new Date(challenge.start_date)
     startD.setHours(0, 0, 0, 0)
     const nowD = new Date()
     nowD.setHours(0, 0, 0, 0)
     const rawDiff = Math.floor((nowD.getTime() - startD.getTime()) / 86_400_000)
-    const done = rawDiff >= 75  // C32: Day 76+
+    const done = rawDiff >= duration  // C32: challenge complete
 
-    const day   = Math.min(75, Math.max(1, rawDiff + 1))
+    const day   = Math.min(duration, Math.max(1, rawDiff + 1))
     const today = todayISO()
     loadedDate.current = today
 
@@ -147,8 +149,8 @@ export default function TodayContent() {
       return !log || log.overall_state === 'none'
     })
 
-    // C31: already complete on day 75 → celebration screen
-    if (day === 75 && dailyLog.overall_state === 'complete' && !done) {
+    // C31: already complete on final day → celebration screen
+    if (day === duration && dailyLog.overall_state === 'complete' && !done) {
       router.push('/complete')
       return
     }
@@ -157,6 +159,7 @@ export default function TodayContent() {
     setUserId(user?.id ?? '')
     setStartDate(challenge.start_date)
     setCurrentDay(day)
+    setDurationDays(duration)
     setCommitments(comms)
     setChallengeDone(done)
     setReengaged(!done && missedRecent)
@@ -231,7 +234,7 @@ export default function TodayContent() {
       await saveCommitmentLog(supabase, dailyLogId, commitmentId, next)
       const coreStates = commitments.filter(c => c.category !== 'photo' || c.required).map(c => newStates[c.id] ?? 'none')
       const overall    = await recalcOverallState(supabase, dailyLogId, coreStates)
-      if (overall === 'complete' && currentDay === 75) router.push('/complete')
+      if (overall === 'complete' && currentDay === durationDays) router.push('/complete')
     } catch {
       setTabData(p => ({ ...p, today: { ...p.today, states: { ...p.today.states, [commitmentId]: prev } } }))
       showToast("Couldn't save — check your connection")
@@ -282,7 +285,7 @@ export default function TodayContent() {
       setTabData(prev => ({ ...prev, today: { ...prev.today, states: { ...prev.today.states, ...all } } }))
       await Promise.all(nonPhotoComms.map(c => saveCommitmentLog(supabase, dailyLogId, c.id, 'complete')))
       await recalcOverallState(supabase, dailyLogId, nonPhotoComms.map(() => 'complete'))
-      if (currentDay === 75) { router.push('/complete'); return }
+      if (currentDay === durationDays) { router.push('/complete'); return }
     } else {
       const all = Object.fromEntries(nonPhotoComms.map(c => [c.id, 'complete' as DayState]))
       setPending(prev => ({ ...prev, ...all }))
@@ -350,7 +353,7 @@ export default function TodayContent() {
       const newStates = { ...tabData.today.states, [commitmentId]: state }
       const coreStates = commitments.filter(c => c.category !== 'photo' || c.required).map(c => newStates[c.id] ?? 'none')
       const overall = await recalcOverallState(supabase, dailyLogId, coreStates)
-      if (overall === 'complete' && currentDay === 75) router.push('/complete')
+      if (overall === 'complete' && currentDay === durationDays) router.push('/complete')
     } catch {
       setTabData(p => ({ ...p, today: { ...p.today,
         values: { ...p.today.values, [commitmentId]: prevValue },
@@ -379,7 +382,7 @@ export default function TodayContent() {
       const newStates = { ...tabData.today.states, [commitmentId]: state }
       const coreStates = commitments.filter(c => c.category !== 'photo' || c.required).map(c => newStates[c.id] ?? 'none')
       const overall = await recalcOverallState(supabase, dailyLogId, coreStates)
-      if (overall === 'complete' && currentDay === 75) router.push('/complete')
+      if (overall === 'complete' && currentDay === durationDays) router.push('/complete')
     } catch {
       setTabData(p => ({ ...p, today: { ...p.today,
         values: { ...p.today.values, [commitmentId]: prevValue },
@@ -408,7 +411,7 @@ export default function TodayContent() {
       setTabData(prev => ({ ...prev, [tab]: { ...prev[tab], states: newStates, photoUrls: newPhotos } }))
       const coreStates = commitments.filter(c => c.category !== 'photo' || c.required).map(c => newStates[c.id] ?? 'none')
       const overall = await recalcOverallState(supabase, dailyLogId, coreStates)
-      if (tab === 'today' && overall === 'complete' && currentDay === 75) router.push('/complete')
+      if (tab === 'today' && overall === 'complete' && currentDay === durationDays) router.push('/complete')
     } catch {
       showToast("Photo didn't upload — try again")
     } finally {
@@ -426,7 +429,7 @@ export default function TodayContent() {
   const liveValues    = activeData.values
   const coreCommitments = commitments.filter(c => c.category !== 'photo' || c.required)
   const allDone  = coreCommitments.length > 0 && coreCommitments.every(c => liveStates[c.id] === 'complete')
-  const progress = Math.round((currentDay / 75) * 100)
+  const progress = Math.round((currentDay / durationDays) * 100)
   const tabs: Tab[] = challengeDone || currentDay === 1 ? [] : currentDay === 2
     ? ['today', 'yesterday']
     : ['today', 'yesterday', 'daybefore']
@@ -453,7 +456,7 @@ export default function TodayContent() {
     return (
       <div className="flex flex-col min-h-full">
         <PageHeader eyebrow="Challenge complete">
-          <h1 className="font-display text-[22px] font-semibold tracking-tight text-surface">75 days. Done.</h1>
+          <h1 className="font-display text-[22px] font-semibold tracking-tight text-surface">{durationDays} days. Done.</h1>
           <div className="mt-4 bg-green-900 rounded-full h-[3px]">
             <div className="bg-heart h-[3px] rounded-full w-full" />
           </div>
@@ -489,7 +492,7 @@ export default function TodayContent() {
     <div className="flex flex-col min-h-full">
 
       {/* Header */}
-      <PageHeader eyebrow={`Day ${currentDay} of 75`}>
+      <PageHeader eyebrow={`Day ${currentDay} of ${durationDays}`}>
         <h1 className="font-display text-[22px] font-semibold tracking-tight text-surface">{greet}</h1>
         <div className="mt-4 bg-green-900 rounded-full h-[3px]">
           <div className="bg-heart h-[3px] rounded-full transition-all" style={{ width: `${progress}%` }} />
@@ -505,7 +508,7 @@ export default function TodayContent() {
             You've logged {daysLogged} {daysLogged === 1 ? 'day' : 'days'}. Keep going or start fresh.
           </p>
           <div className="grid grid-cols-3 gap-2 mb-3">
-            {[['Days logged', daysLogged], ['Show-up rate', `${showUpRate}%`], ['Days left', 75 - currentDay + 1]].map(([label, val]) => (
+            {[['Days logged', daysLogged], ['Show-up rate', `${showUpRate}%`], ['Days left', durationDays - currentDay + 1]].map(([label, val]) => (
               <StatCard key={label as string} value={val} label={label as string} className="!bg-green-100 !border-green-200" />
             ))}
           </div>

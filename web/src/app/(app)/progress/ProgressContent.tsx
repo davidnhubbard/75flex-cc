@@ -54,6 +54,7 @@ export default function ProgressContent() {
   const [loading,       setLoading]       = useState(true)
   const [days,          setDays]          = useState<DayInfo[]>([])
   const [dayNumber,     setDayNumber]     = useState(1)
+  const [durationDays,  setDurationDays]  = useState(75)
   const [streak,        setStreak]        = useState(0)
   const [showUpRate,    setShowUpRate]    = useState(0)
   const [startDay,      setStartDay]      = useState(0)
@@ -68,7 +69,8 @@ export default function ProgressContent() {
     const challenge = await getActiveChallenge(supabase)
     if (!challenge) { router.push('/onboarding'); return }
 
-    const currentDay = calcDayNumber(challenge.start_date)
+    const duration   = challenge.duration_days ?? 75
+    const currentDay = calcDayNumber(challenge.start_date, duration)
     const start      = new Date(challenge.start_date)
 
     const [logs, comms] = await Promise.all([
@@ -76,7 +78,7 @@ export default function ProgressContent() {
       getCommitments(supabase, challenge.id),
     ])
 
-    const daysList: DayInfo[] = Array.from({ length: 75 }, (_, i) => {
+    const daysList: DayInfo[] = Array.from({ length: duration }, (_, i) => {
       const n    = i + 1
       const date = addDays(start, i)
       const log  = logs.find(l => l.day_number === n) ?? null
@@ -92,6 +94,7 @@ export default function ProgressContent() {
 
     setDays(daysList)
     setDayNumber(currentDay)
+    setDurationDays(duration)
     setCommitments(comms)
     setStreak(calcStreak(logs, currentDay))
     setShowUpRate(calcShowUpRate(logs, currentDay))
@@ -128,7 +131,7 @@ export default function ProgressContent() {
   }
 
   const daysLogged    = days.filter(d => d.log && d.state !== 'future').length
-  const daysRemaining = Math.max(0, 75 - dayNumber)
+  const daysRemaining = Math.max(0, durationDays - dayNumber)
 
   if (loading) {
     return (
@@ -140,6 +143,7 @@ export default function ProgressContent() {
           {Array.from({ length: 75 }).map((_, i) => (
             <div key={i} className="aspect-square rounded-lg bg-border/40 animate-pulse" />
           ))}
+          {/* skeleton uses 75 cells — close enough for any duration */}
         </div>
       </div>
     )

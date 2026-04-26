@@ -27,7 +27,7 @@ interface Props {
 }
 
 export default function EditCommitmentSheet({ commitment, totalCommitments, todayLogged, onSave, onRemove, onClose }: Props) {
-  const [definition,  setDefinition]  = useState(commitment.definition)
+  const [definition,  setDefinition]  = useState(commitment.definition ?? '')
   const [required,    setRequired]    = useState(commitment.required ?? false)
   const [targetGoal,  setTargetGoal]  = useState(String(commitment.targetValue ?? ''))
   const [targetUnit,  setTargetUnit]  = useState<'oz' | 'ml'>(commitment.targetUnit ?? 'oz')

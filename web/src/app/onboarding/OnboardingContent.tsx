@@ -63,6 +63,9 @@ export default function OnboardingContent() {
   const [step, setStep]             = useState<Step>('slides')
   const [slideIndex, setSlide]      = useState(0)
   const [template, setTemplate]     = useState<Template>('75_soft')
+  const [duration, setDuration]     = useState(75)
+  const [customDuration, setCustomDuration] = useState('')
+  const [showCustomDuration, setShowCustomDuration] = useState(false)
   const [selected, setSelected]     = useState<Set<string>>(new Set())
   const [commitments, setCommits]   = useState<Record<string, Commitment>>({})
   const [hydrationGoal, setHydGoal] = useState('64')
@@ -118,9 +121,10 @@ export default function OnboardingContent() {
     try {
       const supabase = createClient()
       const challenge = await createChallenge(supabase, {
-        title:     template === '75_soft' ? '75 Soft challenge' : '75 Hard challenge',
+        title:        `${duration}-day challenge`,
         template,
-        startDate: todayISO(),
+        startDate:    todayISO(),
+        durationDays: duration,
       })
       await createCommitments(supabase, challenge.id,
         selectedCategories.map((cat, i) => ({
@@ -246,6 +250,55 @@ export default function OnboardingContent() {
               </div>
             </button>
           ))}
+        </div>
+
+        {/* Duration picker */}
+        <div className="mt-4 mb-2">
+          <p className="font-mono text-[9px] text-green-400 uppercase tracking-widest mb-3">Challenge length</p>
+          <div className="flex gap-2 flex-wrap">
+            {[21, 30, 75, 90].map(d => (
+              <button
+                key={d}
+                onClick={() => { setDuration(d); setShowCustomDuration(false) }}
+                className={`flex-1 py-2 rounded-lg border-[1.5px] font-mono text-[10px] transition-colors ${
+                  duration === d && !showCustomDuration
+                    ? 'border-heart bg-heart/20 text-heart'
+                    : 'border-green-700 bg-green-800/50 text-green-300'
+                }`}
+              >
+                {d}{d === 75 ? '★' : ''}
+              </button>
+            ))}
+            <button
+              onClick={() => setShowCustomDuration(true)}
+              className={`flex-1 py-2 rounded-lg border-[1.5px] font-mono text-[10px] transition-colors ${
+                showCustomDuration
+                  ? 'border-heart bg-heart/20 text-heart'
+                  : 'border-green-700 bg-green-800/50 text-green-300'
+              }`}
+            >
+              Custom
+            </button>
+          </div>
+          {showCustomDuration && (
+            <div className="mt-2 flex items-center gap-2">
+              <input
+                type="number"
+                value={customDuration}
+                onChange={e => {
+                  setCustomDuration(e.target.value)
+                  const n = parseInt(e.target.value)
+                  if (n >= 21 && n <= 180) setDuration(n)
+                }}
+                placeholder="21–180"
+                className="flex-1 bg-green-700/50 border-[1.5px] border-green-600 rounded-lg px-3 py-2 font-mono text-xs text-surface placeholder:text-green-500 outline-none focus:border-heart"
+              />
+              <p className="font-mono text-[9px] text-green-500">days</p>
+            </div>
+          )}
+          <p className="font-mono text-[9px] text-green-600 mt-2">
+            {duration} days · ends {new Date(Date.now() + (duration - 1) * 86400000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+          </p>
         </div>
 
         <div className="py-8 flex flex-col gap-3">

@@ -18,6 +18,7 @@ export interface Database {
           start_date: string
           end_date: string
           status: ChallengeStatus
+          duration_days: number
           created_at: string
           updated_at: string
         }

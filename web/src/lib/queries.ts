@@ -26,9 +26,11 @@ export async function createChallenge(db: DB, payload: {
   title: string
   template: Database['public']['Tables']['challenges']['Insert']['template']
   startDate: string
+  durationDays?: number
 }) {
+  const duration = payload.durationDays ?? 75
   const end = new Date(payload.startDate)
-  end.setDate(end.getDate() + 74)
+  end.setDate(end.getDate() + duration - 1)
 
   const { data: { user } } = await db.auth.getUser()
   if (!user) throw new Error('Not authenticated')
@@ -36,12 +38,13 @@ export async function createChallenge(db: DB, payload: {
   const { data, error } = await db
     .from('challenges')
     .insert({
-      user_id:    user.id,
-      title:      payload.title,
-      template:   payload.template,
-      start_date: payload.startDate,
-      end_date:   end.toISOString().split('T')[0],
-      status:     'active',
+      user_id:      user.id,
+      title:        payload.title,
+      template:     payload.template,
+      start_date:   payload.startDate,
+      end_date:     end.toISOString().split('T')[0],
+      status:       'active',
+      duration_days: duration,
     })
     .select()
     .single()
@@ -127,13 +130,13 @@ export async function updateCommitmentDefinition(db: DB, commitmentId: string, d
 
 // ─── Daily logs ───────────────────────────────────────────────────────────────
 
-export function calcDayNumber(startDate: string): number {
+export function calcDayNumber(startDate: string, durationDays = 75): number {
   const start = new Date(startDate)
   const today = new Date()
   start.setHours(0, 0, 0, 0)
   today.setHours(0, 0, 0, 0)
   const diff = Math.floor((today.getTime() - start.getTime()) / 86_400_000)
-  return Math.min(75, Math.max(1, diff + 1))
+  return Math.min(durationDays, Math.max(1, diff + 1))
 }
 
 export function todayISO(): string {

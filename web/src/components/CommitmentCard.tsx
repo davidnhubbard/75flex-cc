@@ -97,7 +97,6 @@ export default function CommitmentCard({
         {/* Header */}
         <div className="flex items-start justify-between gap-3 mb-3">
           <p className="font-sans text-sm font-medium text-ink leading-snug">
-            <span className="font-mono text-[9px] font-normal text-ink-faint uppercase tracking-widest">hydration — </span>
             💧 {name}
           </p>
           <span className={`font-mono text-[9px] font-medium tracking-widest mt-0.5 shrink-0 ${CHIP_STYLE[state]}`}>
@@ -113,8 +112,8 @@ export default function CommitmentCard({
           title={state !== 'complete' ? `Tap to mark ${goal} ${unit} complete` : undefined}
         >
           <div className="flex justify-between items-center mb-1.5">
-            <span className="font-mono text-[10px] text-ink-soft">{currentValue} / {goal} {unit}</span>
-            <span className="font-mono text-[10px] text-ink-faint">{pct}%</span>
+            <span className="font-mono text-xs text-ink-soft">{currentValue} / {goal} {unit}</span>
+            <span className="font-mono text-xs text-ink-faint">{pct}%</span>
           </div>
           <div className="h-2 bg-border rounded-full overflow-hidden">
             <div
@@ -131,7 +130,7 @@ export default function CommitmentCard({
               <button
                 key={amt}
                 onClick={() => onAddAmount!(amt)}
-                className="flex-1 py-1.5 rounded-lg border-[1.5px] border-state-none bg-state-none-bg font-mono text-[9px] text-ink-soft active:scale-95 transition-transform"
+                className="flex-1 py-2 rounded-lg border-[1.5px] border-state-none bg-state-none-bg font-mono text-xs text-ink-soft active:scale-95 transition-transform"
               >
                 +{amt}
               </button>
@@ -145,12 +144,12 @@ export default function CommitmentCard({
                   onChange={e => setCustomInput(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleCustomSubmit()}
                   placeholder="amt"
-                  className="w-full rounded-lg border-[1.5px] border-green-400 bg-state-none-bg font-mono text-[9px] text-ink px-2 py-1.5 outline-none"
+                  className="w-full rounded-lg border-[1.5px] border-green-400 bg-state-none-bg font-mono text-xs text-ink px-2 py-2 outline-none"
                   autoFocus
                 />
                 <button
                   onClick={handleCustomSubmit}
-                  className="px-2.5 py-1.5 rounded-lg bg-green-700 font-mono text-[9px] text-surface"
+                  className="px-2.5 py-2 rounded-lg bg-green-700 font-mono text-xs text-surface"
                 >
                   +
                 </button>
@@ -158,7 +157,7 @@ export default function CommitmentCard({
             ) : (
               <button
                 onClick={() => setShowCustom(true)}
-                className="px-3 py-1.5 rounded-lg border-[1.5px] border-dashed border-state-none font-mono text-[9px] text-ink-faint"
+                className="px-3 py-2 rounded-lg border-[1.5px] border-dashed border-state-none font-mono text-xs text-ink-faint"
               >
                 +?
               </button>
@@ -186,15 +185,16 @@ export default function CommitmentCard({
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <p className="font-sans text-sm font-medium text-ink leading-snug">
-            <span className="font-mono text-[9px] font-normal text-ink-faint uppercase tracking-widest">{category} — </span>
             {isPhoto && '📷 '}
             {name}
+            {isPhoto && (
+              <span className="font-sans text-sm font-normal text-ink-soft ml-1">
+                ({required ? 'Required' : 'Optional'})
+              </span>
+            )}
           </p>
-          {isPhoto && required && (
-            <p className="font-mono text-[8px] text-state-partial-ink uppercase tracking-widest mt-0.5">Required</p>
-          )}
           {definition && (
-            <p className="font-sans text-[11px] text-ink-soft mt-0.5 leading-snug">{definition}</p>
+            <p className="font-sans text-sm text-ink-soft mt-0.5 leading-snug">{definition}</p>
           )}
           {isPhoto && photoUrl && (
             <img

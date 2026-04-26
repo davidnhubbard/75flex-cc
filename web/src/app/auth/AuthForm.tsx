@@ -66,8 +66,8 @@ export default function AuthForm({ mode }: Props) {
 
   if (checkEmail) {
     return (
-      <div className="min-h-screen bg-green-800 flex flex-col max-w-xl mx-auto px-6 justify-center">
-        <div className="w-12 h-12 rounded-full bg-green-800 flex items-center justify-center mb-6">
+      <div className="min-h-screen bg-green-700 flex flex-col max-w-xl mx-auto px-6 justify-center">
+        <div className="w-12 h-12 rounded-full bg-green-700 flex items-center justify-center mb-6">
           <span className="text-2xl">📬</span>
         </div>
         <h1 className="font-display text-[28px] font-semibold tracking-tight text-surface leading-tight mb-2">
@@ -84,7 +84,7 @@ export default function AuthForm({ mode }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-green-800 flex flex-col max-w-xl mx-auto px-6">
+    <div className="min-h-screen bg-green-700 flex flex-col max-w-xl mx-auto px-6">
       {/* Logo */}
       <div className="pt-14 pb-8 flex items-center gap-2">
         <Image src="/brand/75flex-logo-heart.png" alt="75 Flex" width={28} height={28} />
@@ -145,7 +145,10 @@ export default function AuthForm({ mode }: Props) {
         />
 
         {error && (
-          <p className="font-sans text-xs text-red-400 px-1">{error}</p>
+          <div className="bg-red-950/80 border border-red-500/70 rounded-xl px-4 py-3 flex items-start gap-2">
+            <span className="text-red-400 text-sm mt-px shrink-0">⚠</span>
+            <p className="font-sans text-sm text-red-200 leading-snug">{error}</p>
+          </div>
         )}
 
         <Btn

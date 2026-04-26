@@ -95,7 +95,10 @@ export default function CameraSheet({ onCapture, onClose }: Props) {
                 <p className="font-sans text-xs text-white/50 absolute">Starting camera…</p>
               )}
               {error ? (
-                <p className="font-sans text-sm text-white/70 px-8 text-center">{error}</p>
+                <div className="mx-6 bg-red-950/90 border border-red-500/70 rounded-xl px-4 py-3 flex items-start gap-2">
+                  <span className="text-red-400 text-sm mt-px shrink-0">⚠</span>
+                  <p className="font-sans text-sm text-red-200 leading-snug">{error}</p>
+                </div>
               ) : (
                 <video
                   ref={videoRef}

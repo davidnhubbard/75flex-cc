@@ -112,8 +112,9 @@ export default function OnboardingContent() {
 
   // ── Finish ──────────────────────────────────────────────────────────────
 
-  const [saving, setSaving] = useState(false)
-  const [saveError, setSaveError] = useState<string | null>(null)
+  const [saving,      setSaving]      = useState(false)
+  const [saveError,   setSaveError]   = useState<string | null>(null)
+  const [showWelcome, setShowWelcome] = useState(false)
 
   async function handleStart() {
     setSaving(true)
@@ -136,11 +137,66 @@ export default function OnboardingContent() {
           targetUnit:  cat.id === 'hydration' ? hydrationUnit : undefined,
         }))
       )
-      router.push('/today')
+      setSaving(false)
+      setShowWelcome(true)
     } catch (e: any) {
       setSaveError(e.message ?? 'Something went wrong')
       setSaving(false)
     }
+  }
+
+  // ── Welcome overlay ─────────────────────────────────────────────────────
+
+  if (showWelcome) {
+    const NAV_ITEMS = [
+      { label: 'Today',    desc: 'Tap each commitment as you finish it. Changes save instantly.' },
+      { label: 'Progress', desc: 'Your calendar — every day you\'ve shown up, at a glance.' },
+      { label: 'Profile',  desc: 'Your plan. Redefine commitments, adjust the duration, or add new habits — any time.' },
+      { label: '? Button', desc: 'Quick help, available on every screen.' },
+    ]
+    return (
+      <div className="min-h-screen bg-green-800 flex flex-col max-w-xl mx-auto px-6">
+        <div className="flex-1 flex flex-col justify-center py-16">
+          {/* Success mark */}
+          <div className="w-14 h-14 rounded-full bg-green-600 border-2 border-green-400 flex items-center justify-center mb-8">
+            <span className="text-green-200 text-xl font-bold">✓</span>
+          </div>
+
+          <p className="font-mono text-[10px] text-amber-400 uppercase tracking-widest mb-2">Challenge started</p>
+          <h1 className="font-display text-[40px] font-semibold tracking-tight text-surface leading-tight mb-4">
+            You&apos;re In.
+          </h1>
+          <p className="font-sans text-sm text-green-300 leading-relaxed mb-8">
+            Your {duration}-day challenge starts today. Here&apos;s how to get around:
+          </p>
+
+          <div className="flex flex-col gap-5 mb-10">
+            {NAV_ITEMS.map(item => (
+              <div key={item.label} className="flex gap-4">
+                <span className="font-mono text-[10px] text-amber-400 uppercase tracking-widest w-16 shrink-0 pt-0.5">
+                  {item.label}
+                </span>
+                <p className="font-sans text-sm text-green-200 leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <p className="font-sans text-xs text-green-400 leading-relaxed">
+            Nothing is locked in — your commitments, definitions, and challenge length can all change as you go.
+          </p>
+        </div>
+
+        <div className="pb-10">
+          <Btn
+            variant="primary"
+            onClick={() => router.push('/today')}
+            className="!bg-green-300 !text-green-900 hover:brightness-110"
+          >
+            Let&apos;s Go →
+          </Btn>
+        </div>
+      </div>
+    )
   }
 
   // ── Render ──────────────────────────────────────────────────────────────
@@ -155,13 +211,13 @@ export default function OnboardingContent() {
 
     return (
       <div
-        className="min-h-screen bg-green-800 flex flex-col max-w-xl mx-auto px-6 cursor-pointer select-none"
+        className="min-h-screen bg-green-700 flex flex-col max-w-xl mx-auto px-6 cursor-pointer select-none"
         onClick={!isLast ? nextSlide : undefined}
       >
         {/* Logo */}
-        <div className="pt-12 pb-2 flex items-center gap-2">
-          <Image src="/brand/75flex-logo-heart.png" alt="75 Flex" width={24} height={24} className="opacity-80" />
-          <Eyebrow color="green" className="text-[11px]">75 Flex</Eyebrow>
+        <div className="pt-12 pb-2 flex items-center gap-3">
+          <Image src="/brand/75flex-logo-heart.png" alt="75 Flex" width={36} height={36} className="opacity-90" />
+          <Eyebrow color="green" className="text-[15px]">75 Flex</Eyebrow>
         </div>
 
         {/* Content */}
@@ -177,7 +233,7 @@ export default function OnboardingContent() {
             <div
               key={i}
               className={`rounded-full transition-all ${
-                i === slideIndex ? 'w-4 h-1.5 bg-heart' : 'w-1.5 h-1.5 bg-green-600'
+                i === slideIndex ? 'w-4 h-1.5 bg-amber-400' : 'w-1.5 h-1.5 bg-green-500'
               }`}
             />
           ))}
@@ -186,7 +242,7 @@ export default function OnboardingContent() {
         {/* Nav */}
         <div className="pb-10 flex flex-col gap-3">
           {isLast ? (
-            <Btn variant="primary" onClick={e => { e.stopPropagation(); nextSlide() }}>
+            <Btn variant="primary" onClick={e => { e.stopPropagation(); nextSlide() }} className="!bg-green-300 !text-green-900 hover:brightness-110">
               {slide.cta ?? 'Build my challenge'}
             </Btn>
           ) : (
@@ -200,7 +256,7 @@ export default function OnboardingContent() {
   // Plan Step 1 — Template
   if (step === 'plan-1') {
     return (
-      <div className="min-h-screen bg-green-800 flex flex-col max-w-xl mx-auto px-6">
+      <div className="min-h-screen bg-green-700 flex flex-col max-w-xl mx-auto px-6">
         <div className="pt-12">
           <Eyebrow color="green" className="text-[11px]">Step 1 of 3</Eyebrow>
           <h1 className="font-display text-[28px] font-semibold tracking-tight text-surface mt-1 mb-1">Choose a Starting Point</h1>
@@ -228,7 +284,7 @@ export default function OnboardingContent() {
               key={t.id}
               onClick={() => setTemplate(t.id)}
               className={`w-full text-left rounded-card border-[1.5px] px-4 py-4 transition-colors ${
-                template === t.id ? 'border-heart bg-green-600' : 'border-green-500 bg-green-700'
+                template === t.id ? 'border-amber-400 bg-green-500' : 'border-green-500 bg-green-600'
               }`}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -238,7 +294,7 @@ export default function OnboardingContent() {
                 }`}>
                   {t.tag}
                 </span>
-                {template === t.id && <span className="ml-auto text-heart text-sm">✓</span>}
+                {template === t.id && <span className="ml-auto text-amber-400 text-sm">✓</span>}
               </div>
               <p className="font-sans text-sm text-green-300 leading-relaxed mb-2">{t.desc}</p>
               <div className="flex flex-wrap gap-1.5">
@@ -255,6 +311,7 @@ export default function OnboardingContent() {
         <div className="py-8 flex flex-col gap-3">
           <Btn
             variant="primary"
+            className="!bg-green-300 !text-green-900 hover:brightness-110"
             onClick={() => {
               // Pre-select default categories for the chosen template
               if (template === '75_soft') {
@@ -294,7 +351,7 @@ export default function OnboardingContent() {
   // Plan Step 2 — Category selector
   if (step === 'plan-2') {
     return (
-      <div className="min-h-screen bg-green-800 flex flex-col max-w-xl mx-auto px-6">
+      <div className="min-h-screen bg-green-700 flex flex-col max-w-xl mx-auto px-6">
         <div className="pt-12">
           <Eyebrow color="green" className="text-[11px]">Step 2 of 3</Eyebrow>
           <h1 className="font-display text-[28px] font-semibold tracking-tight text-surface mt-1 mb-1">Choose Your Commitments</h1>
@@ -314,11 +371,11 @@ export default function OnboardingContent() {
                 key={cat.id}
                 onClick={() => toggleCategory(cat.id)}
                 className={`rounded-card border-[1.5px] px-4 py-3 text-left transition-colors ${
-                  isSelected ? 'border-heart bg-green-600' : 'border-green-500 bg-green-700'
+                  isSelected ? 'border-amber-400 bg-green-500' : 'border-green-500 bg-green-600'
                 }`}
               >
                 <p className="font-sans text-base font-medium text-surface">{cat.label}</p>
-                {isSelected && <p className="font-mono text-[10px] text-heart mt-0.5">✓ Selected</p>}
+                {isSelected && <p className="font-mono text-[10px] text-amber-400 mt-0.5">✓ Selected</p>}
               </button>
             )
           })}
@@ -329,7 +386,7 @@ export default function OnboardingContent() {
             variant="primary"
             onClick={() => setStep('plan-3')}
             disabled={!canContinueStep2}
-            className={!canContinueStep2 ? 'bg-heart/30 text-ink/40' : ''}
+            className={!canContinueStep2 ? '!bg-green-700 !text-green-500' : '!bg-green-300 !text-green-900 hover:brightness-110'}
           >
             Continue
           </Btn>
@@ -356,17 +413,22 @@ export default function OnboardingContent() {
         <div className="flex-1 overflow-y-auto px-6 flex flex-col gap-3 pb-4">
 
           {/* Duration picker */}
-          <div className="bg-green-700 border-[1.5px] border-green-600 rounded-card px-4 py-3 flex flex-col gap-2">
-            <p className="font-mono text-[9px] text-green-400 uppercase tracking-widest">Challenge Length</p>
+          <div className="bg-green-600 border-[1.5px] border-green-500 rounded-card px-4 py-4 flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <p className="font-mono text-[10px] text-green-300 uppercase tracking-widest">Challenge Length</p>
+              <p className="font-mono text-[10px] text-green-100">
+                {duration} days · ends {new Date(Date.now() + (duration - 1) * 86400000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              </p>
+            </div>
             <div className="flex gap-2">
               {[21, 30, 75, 90].map(d => (
                 <button
                   key={d}
                   onClick={() => { setDuration(d); setShowCustomDuration(false) }}
-                  className={`flex-1 py-1.5 rounded-lg border-[1.5px] font-mono text-[10px] transition-colors ${
+                  className={`flex-1 py-2 rounded-lg border-[1.5px] font-mono text-[11px] transition-colors ${
                     duration === d && !showCustomDuration
-                      ? 'border-heart bg-heart/20 text-heart'
-                      : 'border-green-500 bg-green-600/50 text-green-200'
+                      ? 'border-green-300 bg-green-300/20 text-green-300'
+                      : 'border-green-500 bg-green-900/40 text-surface'
                   }`}
                 >
                   {d}{d === 75 ? '★' : ''}
@@ -374,10 +436,10 @@ export default function OnboardingContent() {
               ))}
               <button
                 onClick={() => setShowCustomDuration(true)}
-                className={`flex-1 py-1.5 rounded-lg border-[1.5px] font-mono text-[10px] transition-colors ${
+                className={`flex-1 py-2 rounded-lg border-[1.5px] font-mono text-[11px] transition-colors ${
                   showCustomDuration
-                    ? 'border-heart bg-heart/20 text-heart'
-                    : 'border-green-500 bg-green-600/50 text-green-200'
+                    ? 'border-green-300 bg-green-300/20 text-green-300'
+                    : 'border-green-500 bg-green-900/40 text-surface'
                 }`}
               >
                 Custom
@@ -393,36 +455,30 @@ export default function OnboardingContent() {
                     const n = parseInt(e.target.value)
                     if (n >= 21 && n <= 180) setDuration(n)
                   }}
-                  placeholder="21–180"
-                  className="flex-1 bg-green-600/50 border-[1.5px] border-green-500 rounded-lg px-3 py-2 font-mono text-xs text-surface placeholder:text-green-400 outline-none focus:border-heart"
+                  placeholder="21–180 days"
+                  className="flex-1 bg-green-900/40 border-[1.5px] border-green-500 rounded-lg px-3 py-2 font-mono text-xs text-surface placeholder:text-green-300 outline-none focus:border-green-300"
                 />
-                <p className="font-mono text-[9px] text-green-500">days</p>
               </div>
             )}
-            <p className="font-mono text-[9px] text-green-500">
-              {duration} days · ends {new Date(Date.now() + (duration - 1) * 86400000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-            </p>
           </div>
 
           {selectedCategories.map(cat => {
             const c = commitments[cat.id] ?? { categoryId: cat.id, name: cat.defaultName, definition: '' }
             return (
-              <div key={cat.id} className="bg-green-800 border-[1.5px] border-green-700 rounded-card px-4 py-3 flex flex-col gap-2">
-                <p className="font-mono text-[9px] text-green-400 uppercase tracking-widest">{cat.label}</p>
+              <div key={cat.id} className="bg-green-600 border-[1.5px] border-green-500 rounded-card px-4 py-4 flex flex-col gap-2">
+                <p className="font-display text-base font-semibold text-surface leading-tight">{c.name}</p>
                 {cat.id === 'hydration' ? (
                   <>
-                    <p className="font-sans text-xs text-green-300">Daily water goal</p>
-                    {/* Unit toggle */}
-                    <div className="flex rounded-lg overflow-hidden border-[1.5px] border-green-600">
+                    <div className="flex rounded-lg overflow-hidden border-[1.5px] border-green-500 mt-1">
                       {(['oz', 'ml'] as const).map((u, i) => (
                         <button
                           key={u}
                           onClick={() => setHydUnit(u)}
-                          className={`flex-1 py-1.5 font-mono text-[10px] uppercase tracking-widest transition-colors ${
-                            i === 1 ? 'border-l border-green-600' : ''
-                          } ${hydrationUnit === u ? 'bg-heart text-surface' : 'bg-green-600/50 text-green-300'}`}
+                          className={`flex-1 py-2 font-sans text-xs font-medium transition-colors ${
+                            i === 1 ? 'border-l border-green-500' : ''
+                          } ${hydrationUnit === u ? 'bg-green-300 text-green-900' : 'bg-green-900/40 text-green-200'}`}
                         >
-                          {u}
+                          {u === 'oz' ? 'Ounces' : 'Milliliters'}
                         </button>
                       ))}
                     </div>
@@ -431,9 +487,9 @@ export default function OnboardingContent() {
                       value={hydrationGoal}
                       onChange={e => setHydGoal(e.target.value)}
                       placeholder={hydrationUnit === 'oz' ? 'e.g. 64' : 'e.g. 2000'}
-                      className="bg-green-600/50 border-[1.5px] border-green-500 rounded-lg px-3 py-2 font-sans text-xs text-surface placeholder:text-green-400 outline-none focus:border-heart"
+                      className="bg-green-900/40 border-[1.5px] border-green-500 rounded-lg px-3 py-2 font-sans text-sm text-surface placeholder:text-green-300 outline-none focus:border-green-300"
                     />
-                    <p className="font-mono text-[9px] text-green-500">
+                    <p className="font-mono text-[10px] text-green-200">
                       {hydrationUnit === 'oz' ? '64 oz ≈ 8 cups · 100 oz ≈ 3 liters' : '1000 ml = 1 liter · 3000 ml = 3 liters'}
                     </p>
                   </>
@@ -441,9 +497,11 @@ export default function OnboardingContent() {
                   <textarea
                     value={c.definition}
                     onChange={e => updateCommitment(cat.id, 'definition', e.target.value)}
-                    placeholder="What does this mean to you? (optional)"
+                    placeholder={cat.id === 'photo'
+                      ? 'An optional daily photo — your workout, a meal, or any moment that captures where you are in this journey.'
+                      : 'What does this mean to you? (optional)'}
                     rows={2}
-                    className="bg-green-700/50 border-[1.5px] border-green-600 rounded-lg px-3 py-2 font-sans text-xs text-surface placeholder:text-green-500 outline-none resize-none focus:border-heart"
+                    className="bg-green-900/40 border-[1.5px] border-green-500 rounded-lg px-3 py-2 font-sans text-sm text-surface placeholder:text-green-300 outline-none resize-none focus:border-green-300"
                   />
                 )}
               </div>
@@ -452,14 +510,19 @@ export default function OnboardingContent() {
         </div>
 
         <div className="px-6 py-8 flex flex-col gap-3">
-          {saveError && <p className="font-sans text-xs text-heart-deep text-center">{saveError}</p>}
+          {saveError && (
+            <div className="bg-red-950/80 border border-red-500/70 rounded-xl px-4 py-3 flex items-start gap-2">
+              <span className="text-red-400 text-sm mt-px shrink-0">⚠</span>
+              <p className="font-sans text-sm text-red-200 leading-snug">{saveError}</p>
+            </div>
+          )}
           <Btn
             variant="primary"
             onClick={handleStart}
             disabled={!allNamed || saving}
-            className={(!allNamed || saving) ? 'bg-heart/30 text-ink/40' : ''}
+            className={(!allNamed || saving) ? '!bg-green-700 !text-green-500' : '!bg-green-300 !text-green-900 hover:brightness-110'}
           >
-            {saving ? 'Starting…' : 'Start my challenge'}
+            {saving ? 'Starting…' : 'Start My Challenge'}
           </Btn>
           <Btn variant="ghost" onClick={() => setStep('plan-2')}>
             Back

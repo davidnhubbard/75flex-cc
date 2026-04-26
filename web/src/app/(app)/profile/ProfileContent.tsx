@@ -12,6 +12,7 @@ import Eyebrow from '@/components/ui/Eyebrow'
 import Toast from '@/components/ui/Toast'
 import { useToast } from '@/hooks/useToast'
 import { createClient } from '@/lib/supabase'
+import { CATEGORIES } from '@/lib/categories'
 import {
   getActiveChallenge, getCommitments, updateCommitmentDefinition, updateCommitmentRequired,
   archiveChallenge, calcDayNumber, getBenchmark, saveBenchmark, uploadBenchmarkPhoto,
@@ -248,10 +249,10 @@ export default function ProfileContent() {
         {/* Benchmark */}
         <section>
           <div className="flex items-center justify-between mb-2">
-            <Eyebrow>Starting benchmark</Eyebrow>
+            <h2 className="font-sans text-base font-semibold text-ink">Starting Benchmark</h2>
             <button
               onClick={() => setShowBenchmark(true)}
-              className="font-sans text-xs text-ink-faint"
+              className="font-sans text-xs text-ink-soft"
             >
               {benchmark ? 'Edit' : '+ Add'}
             </button>
@@ -260,7 +261,7 @@ export default function ProfileContent() {
           {benchmark ? (
             <button
               onClick={() => setShowBenchmark(true)}
-              className="w-full text-left bg-card border-[1.5px] border-border rounded-card overflow-hidden"
+              className="w-full text-left bg-state-none-bg border-[1.5px] border-state-none rounded-card overflow-hidden"
             >
               {benchmark.photo_url && (
                 <img
@@ -275,17 +276,17 @@ export default function ProfileContent() {
                     {benchmark.notes_text}
                   </p>
                 ) : (
-                  <p className="font-sans text-xs text-ink-faint">No notes — tap to add</p>
+                  <p className="font-sans text-sm text-ink-soft">No notes — tap to add</p>
                 )}
               </div>
             </button>
           ) : (
             <button
               onClick={() => setShowBenchmark(true)}
-              className="w-full bg-surface border-[1.5px] border-dashed border-border rounded-card px-4 py-5 flex flex-col items-center text-center gap-1"
+              className="w-full bg-state-none-bg border-[1.5px] border-dashed border-state-none rounded-card px-4 py-5 flex flex-col items-center text-center gap-1"
             >
               <p className="font-sans text-sm font-medium text-ink">No starting benchmark</p>
-              <p className="font-sans text-xs text-ink-soft">Add a photo and notes to remember where you started.</p>
+              <p className="font-sans text-sm text-ink-soft">Add a photo and notes to remember where you started.</p>
             </button>
           )}
         </section>
@@ -293,11 +294,13 @@ export default function ProfileContent() {
         {/* My Plan */}
         <section>
           <div className="flex items-center justify-between mb-2">
-            <Eyebrow>{planEditMode ? 'Editing plan' : 'My plan'}</Eyebrow>
+            <h2 className="font-sans text-base font-semibold text-ink">
+              {planEditMode ? 'Editing Plan' : 'My Plan'}
+            </h2>
             {!planEditMode && (
               <button
                 onClick={enterEditMode}
-                className="font-sans text-xs text-ink-faint"
+                className="font-sans text-xs text-ink-soft"
               >
                 Edit
               </button>
@@ -310,15 +313,16 @@ export default function ProfileContent() {
                 <button
                   key={c.id}
                   onClick={() => setEditing(c)}
-                  className="w-full bg-card border-[1.5px] border-green-200 rounded-card px-4 py-3 flex items-center justify-between"
+                  className="w-full bg-state-none-bg border-[1.5px] border-state-none rounded-card px-4 py-3 flex items-center justify-between"
                 >
                   <div className="text-left">
-                    <p className="font-mono text-[9px] text-ink-faint uppercase tracking-widest">{c.category}</p>
-                    <p className="font-sans text-sm font-medium text-ink mt-0.5">{c.name}</p>
-                    {c.category === 'hydration' && c.target_value ? (
-                      <p className="font-sans text-[11px] text-ink-soft mt-0.5">Goal: {c.target_value} {c.target_unit ?? 'oz'}</p>
+                    <p className="font-sans text-sm font-medium text-ink">{c.name}</p>
+                    {c.category === 'photo' ? (
+                      <p className="font-sans text-sm text-ink-soft mt-0.5">{c.required ? 'Required' : 'Optional'}</p>
+                    ) : c.category === 'hydration' && c.target_value ? (
+                      <p className="font-sans text-sm text-ink-soft mt-0.5">Goal: {c.target_value} {c.target_unit ?? 'oz'}</p>
                     ) : c.definition ? (
-                      <p className="font-sans text-[11px] text-ink-soft mt-0.5 leading-snug">{c.definition}</p>
+                      <p className="font-sans text-sm text-ink-soft mt-0.5 leading-snug">{c.definition}</p>
                     ) : null}
                   </div>
                   <span className="text-ink-faint ml-3 shrink-0">›</span>
@@ -326,14 +330,15 @@ export default function ProfileContent() {
               ) : (
                 <div
                   key={c.id}
-                  className="w-full bg-card border-[1.5px] border-border rounded-card px-4 py-3"
+                  className="w-full bg-state-none-bg border-[1.5px] border-state-none rounded-card px-4 py-3"
                 >
-                  <p className="font-mono text-[9px] text-ink-faint uppercase tracking-widest">{c.category}</p>
-                  <p className="font-sans text-sm font-medium text-ink mt-0.5">{c.name}</p>
-                  {c.category === 'hydration' && c.target_value ? (
-                    <p className="font-sans text-[11px] text-ink-soft mt-0.5">Goal: {c.target_value} {c.target_unit ?? 'oz'}</p>
+                  <p className="font-sans text-sm font-medium text-ink">{c.name}</p>
+                  {c.category === 'photo' ? (
+                    <p className="font-sans text-sm text-ink-soft mt-0.5">{c.required ? 'Required' : 'Optional'}</p>
+                  ) : c.category === 'hydration' && c.target_value ? (
+                    <p className="font-sans text-sm text-ink-soft mt-0.5">Goal: {c.target_value} {c.target_unit ?? 'oz'}</p>
                   ) : c.definition ? (
-                    <p className="font-sans text-[11px] text-ink-soft mt-0.5 leading-snug">{c.definition}</p>
+                    <p className="font-sans text-sm text-ink-soft mt-0.5 leading-snug">{c.definition}</p>
                   ) : null}
                 </div>
               )
@@ -367,14 +372,17 @@ export default function ProfileContent() {
           </div>
         </section>
 
-        <section className="border-t border-border pt-4 flex flex-col gap-1">
-          <Btn
-            variant="ghost"
-            onClick={() => setShowRestart(true)}
-            className="w-full justify-center px-0"
-          >
-            Restart challenge from Day 1
-          </Btn>
+        <section className="border-t border-border pt-4 flex flex-col gap-2">
+          <div className="flex flex-col items-center gap-0.5">
+            <Btn
+              variant="ghost"
+              onClick={() => setShowRestart(true)}
+              className="w-full justify-center px-0 !text-red-500"
+            >
+              Restart challenge from Day 1
+            </Btn>
+            <p className="font-sans text-xs text-ink-faint">You'll be asked to confirm — nothing is lost.</p>
+          </div>
           <Btn
             variant="ghost"
             onClick={handleSignOut}

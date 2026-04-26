@@ -28,8 +28,9 @@ export default function RestartSheet({ onConfirm, onCancel, confirming }: Props)
           variant="dark"
           onClick={onConfirm}
           disabled={confirming}
+          className="!bg-red-600 hover:!bg-red-700"
         >
-          {confirming ? 'Archiving…' : 'Archive and restart'}
+          {confirming ? 'Archiving…' : 'Yes, restart from Day 1'}
         </Btn>
         <Btn variant="ghost" onClick={onCancel} className="text-center w-full">
           Keep going

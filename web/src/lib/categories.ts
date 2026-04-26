@@ -6,7 +6,7 @@ export interface Category {
 }
 
 export const CATEGORIES: Category[] = [
-  { id: 'physical',     label: 'Physical',             defaultName: 'One Workout',          defaultDefinition: 'At least 30 minutes of intentional movement' },
+  { id: 'physical',     label: 'Physical',             defaultName: 'Physical Fitness',     defaultDefinition: 'At least 30 minutes of intentional exercise — a workout, a run, or a class. Not just incidental daily movement.' },
   { id: 'nutrition',    label: 'Nutrition',            defaultName: 'Nutrition',            defaultDefinition: 'Follow your plan, no junk food' },
   { id: 'hydration',    label: 'Hydration',            defaultName: 'Water',                defaultDefinition: 'Drink at least 64 oz of water' },
   { id: 'personal_dev', label: 'Personal Development', defaultName: 'Personal Development', defaultDefinition: '10 minutes of reading or a podcast' },

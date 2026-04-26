@@ -61,6 +61,7 @@ export interface Database {
           day_number: number
           log_date: string
           overall_state: DayState
+          reflection: 'felt_good' | 'tough_but_done' | 'almost_quit' | null
           logged_at: string | null
           updated_at: string
         }

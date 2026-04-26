@@ -6,6 +6,12 @@ import type { Database } from '@/lib/database.types'
 type Commitment    = Database['public']['Tables']['commitments']['Row']
 type CommitmentLog = Database['public']['Tables']['commitment_logs']['Row']
 
+const REFLECTION_LABEL: Record<string, string> = {
+  felt_good:     '✦ Felt good',
+  tough_but_done: '💪 Tough, but done',
+  almost_quit:   '😤 Almost quit',
+}
+
 interface Props {
   dayNumber:      number
   date:           string
@@ -13,6 +19,7 @@ interface Props {
   commitments:    Commitment[]
   commitmentLogs: CommitmentLog[]
   note:           string
+  reflection:     string | null
   loading:        boolean
   onClose:        () => void
 }
@@ -30,7 +37,7 @@ const OVERALL_LABEL: Record<string, { text: string; color: string }> = {
 }
 
 export default function DayDetailSheet({
-  dayNumber, date, overallState, commitments, commitmentLogs, note, loading, onClose,
+  dayNumber, date, overallState, commitments, commitmentLogs, note, reflection, loading, onClose,
 }: Props) {
   const overall = OVERALL_LABEL[overallState] ?? OVERALL_LABEL.none
 
@@ -63,12 +70,7 @@ export default function DayDetailSheet({
               return (
                 <div key={c.id} className="py-2.5">
                   <div className="flex items-center justify-between">
-                    <p className="font-sans text-sm text-ink">
-                      <span className="font-mono text-[9px] font-normal text-ink-faint uppercase tracking-widest">
-                        {c.category} — {' '}
-                      </span>
-                      {c.name}
-                    </p>
+                    <p className="font-sans text-sm font-medium text-ink">{c.name}</p>
                     <span className={`font-mono text-[9px] font-medium tracking-widest shrink-0 ml-3 ${chip.color}`}>
                       {chip.label}
                     </span>
@@ -84,6 +86,15 @@ export default function DayDetailSheet({
               )
             })}
           </div>
+
+          {/* Reflection */}
+          {reflection && (
+            <>
+              <div className="h-px bg-border my-3" />
+              <p className="font-mono text-[9px] text-ink-faint uppercase tracking-widest mb-1.5">How it went</p>
+              <p className="font-sans text-sm text-ink-soft">{REFLECTION_LABEL[reflection] ?? reflection}</p>
+            </>
+          )}
 
           {/* Note */}
           {note && (

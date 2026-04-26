@@ -12,6 +12,7 @@ import StatCard from '@/components/ui/StatCard'
 import Toast from '@/components/ui/Toast'
 import { useToast } from '@/hooks/useToast'
 import { createClient } from '@/lib/supabase'
+import { getDailyMessage } from '@/lib/messages'
 import {
   getActiveChallenge, getCommitments, getOrCreateDailyLog,
   getCommitmentLogs, saveCommitmentLog, recalcOverallState,
@@ -19,6 +20,7 @@ import {
   getAllDailyLogs, calcShowUpRate,
   uploadProgressPhoto, savePhotoUrl,
   addHydration, setHydration,
+  saveReflection, type Reflection,
 } from '@/lib/queries'
 import type { Database, DayState } from '@/lib/database.types'
 
@@ -83,6 +85,7 @@ export default function TodayContent() {
   const [cameraForId,  setCameraForId]  = useState<string | null>(null)
 
   const [uploadingPhotoId, setUploadingPhotoId] = useState<string | null>(null)
+  const [reflection,       setReflection]       = useState<Reflection | null>(null)
   const { toastMessage, showToast, clearToast } = useToast()
 
   const loadedTabs = useRef<Set<Tab>>(new Set())
@@ -165,6 +168,7 @@ export default function TodayContent() {
     setReengaged(!done && missedRecent)
     setShowUpRate(calcShowUpRate(allLogs, day))
     setDaysLogged(allLogs.filter(l => l.overall_state !== 'none').length)
+    setReflection((dailyLog.reflection as Reflection | null) ?? null)
     setTabData(prev => ({
       ...prev,
       today: { dayNumber: day, logDate: today, dailyLogId: dailyLog.id, states: stateMap, photoUrls: photoMap, values: valuesMap, note },
@@ -392,6 +396,19 @@ export default function TodayContent() {
     }
   }
 
+  async function handleReflection(value: Reflection) {
+    const { dailyLogId } = tabData.today
+    if (!dailyLogId) return
+    const next = reflection === value ? null : value   // tap again to deselect
+    setReflection(next)
+    try {
+      await saveReflection(supabase, dailyLogId, next)
+    } catch {
+      setReflection(reflection)
+      showToast("Couldn't save — check your connection")
+    }
+  }
+
   async function handleCameraCapture(file: File) {
     const commitmentId = cameraForId
     setCameraForId(null)
@@ -529,7 +546,7 @@ export default function TodayContent() {
             <button
               key={t}
               onClick={() => switchTab(t)}
-              className={`flex-1 py-2.5 font-sans text-xs font-medium transition-colors ${
+              className={`flex-1 py-2.5 font-sans text-sm font-medium transition-colors ${
                 tab === t ? 'text-ink border-b-2 border-green-700' : 'text-ink-faint'
               }`}
             >
@@ -556,6 +573,30 @@ export default function TodayContent() {
               </p>
             </div>
           )}
+
+          {/* Daily message (B28) — today only, not when re-engagement card is showing */}
+          {isToday && !reengaged && commitments.length > 0 && (() => {
+            const msg = getDailyMessage(currentDay, daysLogged)
+            return (
+              <>
+                <div className="mx-4 mt-4 rounded-card border-[1.5px] border-state-none bg-state-none-bg px-4 py-3 flex flex-col gap-3">
+                  <div>
+                    <p className="font-sans text-sm font-medium text-ink mb-1">Daily Inspiration</p>
+                    <p className="font-sans text-sm text-ink-soft leading-snug">{msg.inspiration}</p>
+                  </div>
+                  <div className="h-px bg-state-none" />
+                  <p className="font-sans text-sm text-ink-soft leading-snug">
+                    <span className="font-semibold text-ink">Pro tip:</span> {msg.tip}
+                  </p>
+                </div>
+                <div className="mx-4 mt-4 flex items-center gap-3">
+                  <div className="flex-1 h-px bg-border" />
+                  <span className="font-mono text-[9px] text-ink-faint uppercase tracking-widest">Update your progress</span>
+                  <div className="flex-1 h-px bg-border" />
+                </div>
+              </>
+            )
+          })()}
 
           {/* Mark all complete / Clear all */}
           {commitments.length > 0 && (
@@ -606,6 +647,38 @@ export default function TodayContent() {
                 />
               )
             })}
+
+            {/* End-of-day reflection (B31) — today only, once something is logged */}
+            {isToday && Object.values(liveStates).some(s => s !== 'none') && (
+              <div className="rounded-card border-[1.5px] border-state-none bg-state-none-bg px-4 py-3 flex flex-col gap-3">
+                <p className="font-sans text-sm font-medium text-ink">How did today go?</p>
+                <div className="flex flex-col gap-2">
+                  {([
+                    { value: 'felt_good',     emoji: '✦', label: 'Felt good' },
+                    { value: 'tough_but_done', emoji: '💪', label: 'Tough, but done' },
+                    { value: 'almost_quit',   emoji: '😤', label: 'Almost quit' },
+                  ] as { value: Reflection; emoji: string; label: string }[]).map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => handleReflection(opt.value)}
+                      className={`w-full text-left px-3 py-2.5 rounded-lg border-[1.5px] flex items-center gap-3 transition-colors ${
+                        reflection === opt.value
+                          ? 'bg-state-done-bg border-state-done'
+                          : 'bg-surface border-border'
+                      }`}
+                    >
+                      <span className="text-base">{opt.emoji}</span>
+                      <span className={`font-sans text-sm ${reflection === opt.value ? 'font-medium text-ink' : 'text-ink-soft'}`}>
+                        {opt.label}
+                      </span>
+                      {reflection === opt.value && (
+                        <span className="ml-auto font-mono text-[9px] text-state-done-ink uppercase tracking-widest">Selected</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {noteOpen && (
               <Textarea

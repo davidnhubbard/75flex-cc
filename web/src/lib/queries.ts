@@ -210,6 +210,18 @@ export async function saveNote(db: DB, dailyLogId: string, text: string) {
   }
 }
 
+// ─── Reflection ───────────────────────────────────────────────────────────────
+
+export type Reflection = 'felt_good' | 'tough_but_done' | 'almost_quit'
+
+export async function saveReflection(db: DB, dailyLogId: string, reflection: Reflection | null) {
+  const { error } = await db
+    .from('daily_logs')
+    .update({ reflection })
+    .eq('id', dailyLogId)
+  if (error) throw new Error(error.message)
+}
+
 // ─── Stats ────────────────────────────────────────────────────────────────────
 
 export function calcStreak(logs: { day_number: number; overall_state: string }[], currentDay: number) {

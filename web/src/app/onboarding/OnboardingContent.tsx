@@ -23,24 +23,24 @@ interface Commitment {
 
 const SLIDES = [
   {
-    eyebrow: 'Welcome to',
-    title: '75 Flex',
-    body: 'A 75-day personal challenge engine built on one idea: consistency over perfection. Same structure as 75 Hard — your rules.',
+    eyebrow: 'Welcome to 75 Flex',
+    title: 'A daily physical and mental challenge. Your way.',
+    body: 'Commit to a set of daily habits for as long as you choose. Track your progress, reflect on your journey, and keep going even when life gets in the way.',
   },
   {
-    eyebrow: 'Your challenge',
-    title: 'Your rules.',
-    body: 'Pick the commitments that matter to you. Define what "done" means. No rigid templates, no one-size-fits-all.',
+    eyebrow: 'How it works',
+    title: 'You define the challenge.',
+    body: 'Pick the commitments that matter to you — workouts, reading, diet, photos. Set your own standard for what "done" looks like each day.',
   },
   {
-    eyebrow: 'No forced resets',
-    title: 'Ever.',
-    body: 'Missing a day doesn\'t restart your challenge. Life happens. Your history is preserved and you keep going from where you left off.',
+    eyebrow: 'Built for real life',
+    title: 'Miss a day? Keep going.',
+    body: 'This isn\'t about perfection. Your history is always preserved. Pick up where you left off — your progress doesn\'t disappear.',
   },
   {
     eyebrow: 'Ready?',
     title: 'Build your challenge.',
-    body: 'It takes about 2 minutes. You can change anything later.',
+    body: 'Takes about 2 minutes. Your commitments aren\'t locked in — you can redefine, add, or remove them any time during your challenge.',
     cta: 'Build my challenge',
   },
 ]
@@ -60,11 +60,13 @@ export default function OnboardingContent() {
     getActiveChallenge(supabase).then(c => { if (c) router.replace('/today') })
   }, [])
 
-  const [step, setStep]           = useState<Step>('slides')
-  const [slideIndex, setSlide]    = useState(0)
-  const [template, setTemplate]   = useState<Template>('75_soft')
-  const [selected, setSelected]   = useState<Set<string>>(new Set())
-  const [commitments, setCommits] = useState<Record<string, Commitment>>({})
+  const [step, setStep]             = useState<Step>('slides')
+  const [slideIndex, setSlide]      = useState(0)
+  const [template, setTemplate]     = useState<Template>('75_soft')
+  const [selected, setSelected]     = useState<Set<string>>(new Set())
+  const [commitments, setCommits]   = useState<Record<string, Commitment>>({})
+  const [hydrationGoal, setHydGoal] = useState('64')
+  const [hydrationUnit, setHydUnit] = useState<'oz' | 'ml'>('oz')
 
   // ── Slides ──────────────────────────────────────────────────────────────
 
@@ -122,10 +124,12 @@ export default function OnboardingContent() {
       })
       await createCommitments(supabase, challenge.id,
         selectedCategories.map((cat, i) => ({
-          category:   cat.id,
-          name:       commitments[cat.id]?.name ?? cat.defaultName,
-          definition: commitments[cat.id]?.definition ?? '',
-          sortOrder:  i,
+          category:    cat.id,
+          name:        commitments[cat.id]?.name ?? cat.defaultName,
+          definition:  cat.id === 'hydration' ? '' : (commitments[cat.id]?.definition ?? ''),
+          sortOrder:   i,
+          targetValue: cat.id === 'hydration' ? parseFloat(hydrationGoal) || 64 : undefined,
+          targetUnit:  cat.id === 'hydration' ? hydrationUnit : undefined,
         }))
       )
       router.push('/today')
@@ -351,13 +355,43 @@ export default function OnboardingContent() {
             return (
               <div key={cat.id} className="bg-green-800 border-[1.5px] border-green-700 rounded-card px-4 py-3 flex flex-col gap-2">
                 <p className="font-mono text-[9px] text-green-400 uppercase tracking-widest">{cat.label}</p>
-                <textarea
-                  value={c.definition}
-                  onChange={e => updateCommitment(cat.id, 'definition', e.target.value)}
-                  placeholder="What does this mean to you? (optional)"
-                  rows={2}
-                  className="bg-green-700/50 border-[1.5px] border-green-600 rounded-lg px-3 py-2 font-sans text-xs text-surface placeholder:text-green-500 outline-none resize-none focus:border-heart"
-                />
+                {cat.id === 'hydration' ? (
+                  <>
+                    <p className="font-sans text-xs text-green-300">Daily water goal</p>
+                    {/* Unit toggle */}
+                    <div className="flex rounded-lg overflow-hidden border-[1.5px] border-green-600">
+                      {(['oz', 'ml'] as const).map((u, i) => (
+                        <button
+                          key={u}
+                          onClick={() => setHydUnit(u)}
+                          className={`flex-1 py-1.5 font-mono text-[10px] uppercase tracking-widest transition-colors ${
+                            i === 1 ? 'border-l border-green-600' : ''
+                          } ${hydrationUnit === u ? 'bg-heart text-surface' : 'bg-green-700/50 text-green-400'}`}
+                        >
+                          {u}
+                        </button>
+                      ))}
+                    </div>
+                    <input
+                      type="number"
+                      value={hydrationGoal}
+                      onChange={e => setHydGoal(e.target.value)}
+                      placeholder={hydrationUnit === 'oz' ? 'e.g. 64' : 'e.g. 2000'}
+                      className="bg-green-700/50 border-[1.5px] border-green-600 rounded-lg px-3 py-2 font-sans text-xs text-surface placeholder:text-green-500 outline-none focus:border-heart"
+                    />
+                    <p className="font-mono text-[9px] text-green-500">
+                      {hydrationUnit === 'oz' ? '64 oz ≈ 8 cups · 100 oz ≈ 3 liters' : '1000 ml = 1 liter · 3000 ml = 3 liters'}
+                    </p>
+                  </>
+                ) : (
+                  <textarea
+                    value={c.definition}
+                    onChange={e => updateCommitment(cat.id, 'definition', e.target.value)}
+                    placeholder="What does this mean to you? (optional)"
+                    rows={2}
+                    className="bg-green-700/50 border-[1.5px] border-green-600 rounded-lg px-3 py-2 font-sans text-xs text-surface placeholder:text-green-500 outline-none resize-none focus:border-heart"
+                  />
+                )}
               </div>
             )
           })}

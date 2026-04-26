@@ -12,6 +12,8 @@ interface Commitment {
   name: string
   definition: string
   required?: boolean
+  targetValue?: number | null
+  targetUnit?: 'oz' | 'ml' | null
   changeLog?: { day: number; from: string; to: string }[]
 }
 
@@ -19,18 +21,21 @@ interface Props {
   commitment: Commitment
   totalCommitments: number
   todayLogged: boolean
-  onSave: (id: string, definition: string, required: boolean) => void
+  onSave: (id: string, definition: string, required: boolean, targetValue?: number, targetUnit?: 'oz' | 'ml') => void
   onRemove: (id: string) => void
   onClose: () => void
 }
 
 export default function EditCommitmentSheet({ commitment, totalCommitments, todayLogged, onSave, onRemove, onClose }: Props) {
-  const [definition, setDefinition] = useState(commitment.definition)
-  const [required,   setRequired]   = useState(commitment.required ?? false)
+  const [definition,  setDefinition]  = useState(commitment.definition)
+  const [required,    setRequired]    = useState(commitment.required ?? false)
+  const [targetGoal,  setTargetGoal]  = useState(String(commitment.targetValue ?? ''))
+  const [targetUnit,  setTargetUnit]  = useState<'oz' | 'ml'>(commitment.targetUnit ?? 'oz')
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
   const [logExpanded, setLogExpanded] = useState(false)
 
-  const isPhoto   = commitment.category === 'photo'
+  const isPhoto     = commitment.category === 'photo'
+  const isHydration = commitment.category === 'hydration'
   const canRemove = totalCommitments > 2
   const effectNote = todayLogged ? 'Takes effect tomorrow' : 'Applies today'
   const log = commitment.changeLog ?? []
@@ -66,18 +71,49 @@ export default function EditCommitmentSheet({ commitment, totalCommitments, toda
       </div>
 
       <div className="px-5 py-4 flex flex-col gap-4">
-        <div>
-          <Eyebrow color="faint" className="block mb-1.5 text-ink-soft">
-            Your definition
-          </Eyebrow>
-          <Textarea
-            variant="light"
-            value={definition}
-            onChange={e => setDefinition(e.target.value)}
-            rows={3}
-            placeholder="What does this mean to you?"
-          />
-        </div>
+        {isHydration ? (
+          <div>
+            <Eyebrow color="faint" className="block mb-2 text-ink-soft">Daily water goal</Eyebrow>
+            {/* Unit toggle */}
+            <div className="flex mb-3 rounded-lg overflow-hidden border-[1.5px] border-border">
+              {(['oz', 'ml'] as const).map((u, i) => (
+                <button
+                  key={u}
+                  onClick={() => setTargetUnit(u)}
+                  className={`flex-1 py-2 font-mono text-[10px] uppercase tracking-widest transition-colors ${
+                    i === 1 ? 'border-l border-border' : ''
+                  } ${targetUnit === u ? 'bg-green-700 text-surface' : 'bg-card text-ink-faint'}`}
+                >
+                  {u}
+                </button>
+              ))}
+            </div>
+            {/* Goal input */}
+            <input
+              type="number"
+              value={targetGoal}
+              onChange={e => setTargetGoal(e.target.value)}
+              placeholder={targetUnit === 'oz' ? 'e.g. 64' : 'e.g. 2000'}
+              className="w-full rounded-lg border-[1.5px] border-border bg-card font-sans text-sm text-ink px-3 py-2.5 outline-none focus:border-green-500"
+            />
+            <p className="font-mono text-[9px] text-ink-faint mt-1.5">
+              {targetUnit === 'oz' ? '64 oz ≈ 8 cups · 100 oz ≈ 3 liters' : '1000 ml = 1 liter · 3000 ml = 3 liters'}
+            </p>
+          </div>
+        ) : (
+          <div>
+            <Eyebrow color="faint" className="block mb-1.5 text-ink-soft">
+              Your definition
+            </Eyebrow>
+            <Textarea
+              variant="light"
+              value={definition}
+              onChange={e => setDefinition(e.target.value)}
+              rows={3}
+              placeholder="What does this mean to you?"
+            />
+          </div>
+        )}
 
         {isPhoto && (
           <button
@@ -98,7 +134,17 @@ export default function EditCommitmentSheet({ commitment, totalCommitments, toda
           </button>
         )}
 
-        <Btn variant="primary" onClick={() => onSave(commitment.id, definition, required)}>
+        <Btn
+          variant="primary"
+          disabled={isHydration && !parseFloat(targetGoal)}
+          onClick={() => {
+            if (isHydration) {
+              onSave(commitment.id, '', false, parseFloat(targetGoal), targetUnit)
+            } else {
+              onSave(commitment.id, definition, required)
+            }
+          }}
+        >
           Save changes
         </Btn>
         <p className="font-sans text-[11px] text-ink-soft text-center -mt-2">{effectNote}</p>

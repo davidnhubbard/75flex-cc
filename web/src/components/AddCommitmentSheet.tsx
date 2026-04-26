@@ -7,32 +7,43 @@ import { CATEGORIES } from '@/lib/categories'
 
 interface Props {
   usedCategoryIds: string[]
-  onAdd: (categoryId: string, definition: string, required: boolean) => Promise<void>
+  onAdd: (categoryId: string, definition: string, required: boolean, targetValue?: number, targetUnit?: 'oz' | 'ml') => void
   onClose: () => void
 }
 
 export default function AddCommitmentSheet({ usedCategoryIds, onAdd, onClose }: Props) {
   const available = CATEGORIES.filter(c => !usedCategoryIds.includes(c.id))
-  const [selected,   setSelected]   = useState<string | null>(null)
-  const [definition, setDefinition] = useState('')
-  const [required,   setRequired]   = useState(false)
-  const [saving,     setSaving]     = useState(false)
+  const [selected,    setSelected]    = useState<string | null>(null)
+  const [definition,  setDefinition]  = useState('')
+  const [required,    setRequired]    = useState(false)
+  const [targetGoal,  setTargetGoal]  = useState('')
+  const [targetUnit,  setTargetUnit]  = useState<'oz' | 'ml'>('oz')
+  const [saving,      setSaving]      = useState(false)
 
-  const cat = CATEGORIES.find(c => c.id === selected)
-  const isPhoto = selected === 'photo'
+  const cat        = CATEGORIES.find(c => c.id === selected)
+  const isPhoto    = selected === 'photo'
+  const isHydration = selected === 'hydration'
 
   function handleSelect(id: string) {
     const c = CATEGORIES.find(c => c.id === id)!
     setSelected(id)
     setDefinition(c.defaultDefinition)
     setRequired(false)
+    setTargetGoal('')
+    setTargetUnit('oz')
   }
 
-  async function handleAdd() {
-    if (!selected) return
+  const canAdd = selected && (isHydration ? !!parseFloat(targetGoal) : true)
+
+  function handleAdd() {
+    if (!selected || saving) return
     setSaving(true)
     try {
-      await onAdd(selected, definition, required)
+      if (isHydration) {
+        onAdd(selected, '', false, parseFloat(targetGoal), targetUnit)
+      } else {
+        onAdd(selected, definition, required)
+      }
     } finally {
       setSaving(false)
     }
@@ -75,18 +86,51 @@ export default function AddCommitmentSheet({ usedCategoryIds, onAdd, onClose }: 
 
             {selected && (
               <>
-                <div>
-                  <p className="font-mono text-[9px] text-ink-faint uppercase tracking-widest mb-1.5">
-                    What does {cat?.label} mean to you? (optional)
-                  </p>
-                  <Textarea
-                    variant="light"
-                    value={definition}
-                    onChange={e => setDefinition(e.target.value)}
-                    placeholder="Define your own standard…"
-                    rows={3}
-                  />
-                </div>
+                {isHydration ? (
+                  <div>
+                    <p className="font-mono text-[9px] text-ink-faint uppercase tracking-widest mb-2">
+                      Daily water goal
+                    </p>
+                    {/* Unit toggle */}
+                    <div className="flex mb-3 rounded-lg overflow-hidden border-[1.5px] border-border">
+                      {(['oz', 'ml'] as const).map((u, i) => (
+                        <button
+                          key={u}
+                          onClick={() => setTargetUnit(u)}
+                          className={`flex-1 py-2 font-mono text-[10px] uppercase tracking-widest transition-colors ${
+                            i === 1 ? 'border-l border-border' : ''
+                          } ${targetUnit === u ? 'bg-green-700 text-surface' : 'bg-card text-ink-faint'}`}
+                        >
+                          {u}
+                        </button>
+                      ))}
+                    </div>
+                    {/* Goal input */}
+                    <input
+                      type="number"
+                      value={targetGoal}
+                      onChange={e => setTargetGoal(e.target.value)}
+                      placeholder={targetUnit === 'oz' ? 'e.g. 64' : 'e.g. 2000'}
+                      className="w-full rounded-lg border-[1.5px] border-border bg-card font-sans text-sm text-ink px-3 py-2.5 outline-none focus:border-green-500"
+                    />
+                    <p className="font-mono text-[9px] text-ink-faint mt-1.5">
+                      {targetUnit === 'oz' ? '64 oz ≈ 8 cups · 100 oz ≈ 3 liters' : '1000 ml = 1 liter · 3000 ml = 3 liters'}
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="font-mono text-[9px] text-ink-faint uppercase tracking-widest mb-1.5">
+                      What does {cat?.label} mean to you? (optional)
+                    </p>
+                    <Textarea
+                      variant="light"
+                      value={definition}
+                      onChange={e => setDefinition(e.target.value)}
+                      placeholder="Define your own standard…"
+                      rows={3}
+                    />
+                  </div>
+                )}
 
                 {isPhoto && (
                   <button
@@ -112,7 +156,7 @@ export default function AddCommitmentSheet({ usedCategoryIds, onAdd, onClose }: 
             <Btn
               variant="dark"
               onClick={handleAdd}
-              disabled={!selected || saving}
+              disabled={!canAdd || saving}
             >
               {saving ? 'Adding…' : 'Add commitment'}
             </Btn>

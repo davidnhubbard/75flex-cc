@@ -18,6 +18,7 @@ import {
   calcDayNumber, todayISO, dateForDay, getNote, saveNote,
   getAllDailyLogs, calcShowUpRate,
   uploadProgressPhoto, savePhotoUrl,
+  addHydration, setHydration,
 } from '@/lib/queries'
 import type { Database, DayState } from '@/lib/database.types'
 
@@ -30,6 +31,7 @@ interface TabData {
   dailyLogId: string | null
   states: Record<string, DayState>
   photoUrls: Record<string, string>
+  values: Record<string, number>   // numeric totals for hydration
   note: string
 }
 
@@ -66,9 +68,9 @@ export default function TodayContent() {
   // ── Tab state ─────────────────────────────────────────────────────────────
   const [tab,          setTab]          = useState<Tab>('today')
   const [tabData,      setTabData]      = useState<Record<Tab, TabData>>({
-    today:     { dayNumber: 1, logDate: '', dailyLogId: null, states: {}, photoUrls: {}, note: '' },
-    yesterday: { dayNumber: 0, logDate: '', dailyLogId: null, states: {}, photoUrls: {}, note: '' },
-    daybefore: { dayNumber: 0, logDate: '', dailyLogId: null, states: {}, photoUrls: {}, note: '' },
+    today:     { dayNumber: 1, logDate: '', dailyLogId: null, states: {}, photoUrls: {}, values: {}, note: '' },
+    yesterday: { dayNumber: 0, logDate: '', dailyLogId: null, states: {}, photoUrls: {}, values: {}, note: '' },
+    daybefore: { dayNumber: 0, logDate: '', dailyLogId: null, states: {}, photoUrls: {}, values: {}, note: '' },
   })
   const [pendingStates,  setPending]    = useState<Record<string, DayState>>({})
   const [hasChanges,     setHasChanges] = useState(false)
@@ -132,10 +134,12 @@ export default function TodayContent() {
 
     const stateMap: Record<string, DayState> = {}
     const photoMap: Record<string, string> = {}
+    const valuesMap: Record<string, number> = {}
     for (const c of comms) {
       const log = logs.find(l => l.commitment_id === c.id)
       stateMap[c.id] = (log?.state as DayState) ?? 'none'
       if (log?.photo_url) photoMap[c.id] = log.photo_url
+      if (c.category === 'hydration' && log?.numeric_value != null) valuesMap[c.id] = log.numeric_value
     }
 
     const missedRecent = day > 3 && [day - 1, day - 2, day - 3].filter(d => d >= 1).every(d => {
@@ -160,7 +164,7 @@ export default function TodayContent() {
     setDaysLogged(allLogs.filter(l => l.overall_state !== 'none').length)
     setTabData(prev => ({
       ...prev,
-      today: { dayNumber: day, logDate: today, dailyLogId: dailyLog.id, states: stateMap, photoUrls: photoMap, note },
+      today: { dayNumber: day, logDate: today, dailyLogId: dailyLog.id, states: stateMap, photoUrls: photoMap, values: valuesMap, note },
     }))
     loadedTabs.current.add('today')
     setLoading(false)
@@ -185,15 +189,17 @@ export default function TodayContent() {
 
     const stateMap: Record<string, DayState> = {}
     const photoMap: Record<string, string> = {}
+    const valuesMap: Record<string, number> = {}
     for (const c of commitments) {
       const log = logs.find(l => l.commitment_id === c.id)
       stateMap[c.id] = (log?.state as DayState) ?? 'none'
       if (log?.photo_url) photoMap[c.id] = log.photo_url
+      if (c.category === 'hydration' && log?.numeric_value != null) valuesMap[c.id] = log.numeric_value
     }
 
     setTabData(prev => ({
       ...prev,
-      [t]: { dayNumber: dayNum, logDate, dailyLogId: dailyLog.id, states: stateMap, photoUrls: photoMap, note },
+      [t]: { dayNumber: dayNum, logDate, dailyLogId: dailyLog.id, states: stateMap, photoUrls: photoMap, values: valuesMap, note },
     }))
   }
 
@@ -322,6 +328,67 @@ export default function TodayContent() {
     await recalcOverallState(supabase, dailyLogId, coreStates)
   }
 
+  // ── Hydration ─────────────────────────────────────────────────────────────
+
+  async function handleHydrationAdd(commitmentId: string, amount: number) {
+    const { dailyLogId } = tabData.today
+    if (!dailyLogId) return
+    const c = commitments.find(c => c.id === commitmentId)
+    if (!c?.target_value) return
+
+    const prevValue = tabData.today.values[commitmentId] ?? 0
+    const prevState = tabData.today.states[commitmentId] ?? 'none'
+    const newValue  = prevValue + amount
+    const newState: DayState = newValue >= c.target_value ? 'complete' : 'partial'
+
+    setTabData(p => ({ ...p, today: { ...p.today,
+      values: { ...p.today.values, [commitmentId]: newValue },
+      states: { ...p.today.states, [commitmentId]: newState },
+    }}))
+    try {
+      const { state } = await addHydration(supabase, dailyLogId, commitmentId, amount, c.target_value)
+      const newStates = { ...tabData.today.states, [commitmentId]: state }
+      const coreStates = commitments.filter(c => c.category !== 'photo' || c.required).map(c => newStates[c.id] ?? 'none')
+      const overall = await recalcOverallState(supabase, dailyLogId, coreStates)
+      if (overall === 'complete' && currentDay === 75) router.push('/complete')
+    } catch {
+      setTabData(p => ({ ...p, today: { ...p.today,
+        values: { ...p.today.values, [commitmentId]: prevValue },
+        states: { ...p.today.states, [commitmentId]: prevState },
+      }}))
+      showToast("Couldn't save — check your connection")
+    }
+  }
+
+  async function handleHydrationSet(commitmentId: string, value: number) {
+    const { dailyLogId } = tabData.today
+    if (!dailyLogId) return
+    const c = commitments.find(c => c.id === commitmentId)
+    if (!c?.target_value) return
+
+    const prevValue = tabData.today.values[commitmentId] ?? 0
+    const prevState = tabData.today.states[commitmentId] ?? 'none'
+    const newState: DayState = value >= c.target_value ? 'complete' : value > 0 ? 'partial' : 'none'
+
+    setTabData(p => ({ ...p, today: { ...p.today,
+      values: { ...p.today.values, [commitmentId]: value },
+      states: { ...p.today.states, [commitmentId]: newState },
+    }}))
+    try {
+      const { state } = await setHydration(supabase, dailyLogId, commitmentId, value, c.target_value)
+      const newStates = { ...tabData.today.states, [commitmentId]: state }
+      const coreStates = commitments.filter(c => c.category !== 'photo' || c.required).map(c => newStates[c.id] ?? 'none')
+      const overall = await recalcOverallState(supabase, dailyLogId, coreStates)
+      if (overall === 'complete' && currentDay === 75) router.push('/complete')
+    } catch {
+      setTabData(p => ({ ...p, today: { ...p.today,
+        values: { ...p.today.values, [commitmentId]: prevValue },
+        states: { ...p.today.states, [commitmentId]: prevState },
+      }}))
+      showToast("Couldn't save — check your connection")
+    }
+  }
+
   async function handleCameraCapture(file: File) {
     const commitmentId = cameraForId
     setCameraForId(null)
@@ -356,6 +423,7 @@ export default function TodayContent() {
   const isLocked      = !isToday && activeData.dayNumber > 0 && activeData.dayNumber < currentDay - 2
   const liveStates    = isToday ? activeData.states : { ...activeData.states, ...pendingStates }
   const livePhotoUrls = activeData.photoUrls
+  const liveValues    = activeData.values
   const coreCommitments = commitments.filter(c => c.category !== 'photo' || c.required)
   const allDone  = coreCommitments.length > 0 && coreCommitments.every(c => liveStates[c.id] === 'complete')
   const progress = Math.round((currentDay / 75) * 100)
@@ -510,7 +578,8 @@ export default function TodayContent() {
               </div>
             )}
             {commitments.map(c => {
-              const isPhoto = c.category === 'photo'
+              const isPhoto     = c.category === 'photo'
+              const isHydration = c.category === 'hydration' && !!c.target_value
               return (
                 <CommitmentCard
                   key={c.id}
@@ -521,6 +590,11 @@ export default function TodayContent() {
                   state={liveStates[c.id] ?? 'none'}
                   photoUrl={livePhotoUrls[c.id]}
                   uploading={uploadingPhotoId === c.id}
+                  targetValue={isHydration ? c.target_value : undefined}
+                  targetUnit={isHydration ? c.target_unit : undefined}
+                  currentValue={isHydration ? (liveValues[c.id] ?? 0) : undefined}
+                  onAddAmount={isHydration && isToday ? amt => handleHydrationAdd(c.id, amt) : undefined}
+                  onSetValue={isHydration && isToday ? val => handleHydrationSet(c.id, val) : undefined}
                   onChange={next =>
                     isPhoto
                       ? handlePhotoCardTap(c.id, next)

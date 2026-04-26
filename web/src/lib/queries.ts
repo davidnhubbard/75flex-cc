@@ -67,6 +67,8 @@ export async function createCommitments(db: DB, challengeId: string, items: {
   definition: string
   sortOrder: number
   required?: boolean
+  targetValue?: number
+  targetUnit?: 'oz' | 'ml'
 }[]) {
   const { error } = await db.from('commitments').insert(
     items.map(c => ({
@@ -77,8 +79,18 @@ export async function createCommitments(db: DB, challengeId: string, items: {
       sort_order:   c.sortOrder,
       active_from:  1,
       required:     c.required ?? false,
+      target_value: c.targetValue ?? null,
+      target_unit:  c.targetUnit ?? null,
     }))
   )
+  if (error) throw new Error(error.message)
+}
+
+export async function updateHydrationGoal(db: DB, commitmentId: string, targetValue: number, targetUnit: 'oz' | 'ml') {
+  const { error } = await db
+    .from('commitments')
+    .update({ target_value: targetValue, target_unit: targetUnit })
+    .eq('id', commitmentId)
   if (error) throw new Error(error.message)
 }
 
@@ -222,14 +234,52 @@ export async function getCommitmentLogs(db: DB, dailyLogId: string) {
   return data ?? []
 }
 
-export async function saveCommitmentLog(db: DB, dailyLogId: string, commitmentId: string, state: DayState) {
+export async function saveCommitmentLog(
+  db: DB,
+  dailyLogId: string,
+  commitmentId: string,
+  state: DayState,
+  numericValue?: number,
+) {
+  const payload: Record<string, unknown> = { daily_log_id: dailyLogId, commitment_id: commitmentId, state }
+  if (numericValue !== undefined) payload.numeric_value = numericValue
   const { error } = await db
     .from('commitment_logs')
-    .upsert(
-      { daily_log_id: dailyLogId, commitment_id: commitmentId, state },
-      { onConflict: 'daily_log_id,commitment_id' }
-    )
+    .upsert(payload, { onConflict: 'daily_log_id,commitment_id' })
   if (error) throw new Error(error.message)
+}
+
+export async function addHydration(
+  db: DB,
+  dailyLogId: string,
+  commitmentId: string,
+  addAmount: number,
+  targetValue: number,
+): Promise<{ newValue: number; state: DayState }> {
+  const { data: existing } = await db
+    .from('commitment_logs')
+    .select('numeric_value')
+    .eq('daily_log_id', dailyLogId)
+    .eq('commitment_id', commitmentId)
+    .maybeSingle()
+
+  const current = existing?.numeric_value ?? 0
+  const newValue = current + addAmount
+  const state: DayState = newValue >= targetValue ? 'complete' : newValue > 0 ? 'partial' : 'none'
+  await saveCommitmentLog(db, dailyLogId, commitmentId, state, newValue)
+  return { newValue, state }
+}
+
+export async function setHydration(
+  db: DB,
+  dailyLogId: string,
+  commitmentId: string,
+  value: number,
+  targetValue: number,
+): Promise<{ newValue: number; state: DayState }> {
+  const state: DayState = value >= targetValue ? 'complete' : value > 0 ? 'partial' : 'none'
+  await saveCommitmentLog(db, dailyLogId, commitmentId, state, value)
+  return { newValue: value, state }
 }
 
 // ─── Benchmark ────────────────────────────────────────────────────────────────
@@ -262,7 +312,7 @@ export async function uploadBenchmarkPhoto(db: DB, userId: string, challengeId: 
     .upload(path, file, { upsert: true, contentType: file.type })
   if (error) throw new Error(error.message)
   const { data } = db.storage.from('benchmark-photos').getPublicUrl(path)
-  return data.publicUrl
+  return `${data.publicUrl}?t=${Date.now()}`
 }
 
 export async function uploadProgressPhoto(

@@ -34,6 +34,8 @@ export interface Database {
           sort_order: number
           active_from: number
           required: boolean
+          target_value: number | null
+          target_unit: 'oz' | 'ml' | null
           created_at: string
         }
         Insert: Omit<Database['public']['Tables']['commitments']['Row'], 'id' | 'created_at'>

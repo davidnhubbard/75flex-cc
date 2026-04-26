@@ -5,7 +5,7 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export default function Card({ className = '', ...props }: CardProps) {
-  const baseClasses = 'bg-surface border-[1.5px] border-border rounded-card';
+  const baseClasses = 'bg-card border-[1.5px] border-border rounded-card';
   const combined = `${baseClasses} ${className}`.trim();
 
   return <div className={combined} {...props} />;

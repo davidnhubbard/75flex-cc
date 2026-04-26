@@ -163,7 +163,7 @@ export default function AuthForm({ mode }: Props) {
         {isLogin ? "Don't have an account? " : 'Already have an account? '}
         <Link
           href={isLogin ? '/auth/signup' : '/auth/login'}
-          className="text-ember underline"
+          className="text-heart underline"
         >
           {isLogin ? 'Sign up' : 'Sign in'}
         </Link>

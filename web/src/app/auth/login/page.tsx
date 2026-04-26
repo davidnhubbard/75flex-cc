@@ -1,6 +1,9 @@
-import { Suspense } from 'react'
-import AuthForm from '../AuthForm'
+'use client'
+
+import dynamic from 'next/dynamic'
+
+const AuthForm = dynamic(() => import('../AuthForm'), { ssr: false })
 
 export default function LoginPage() {
-  return <Suspense><AuthForm mode="login" /></Suspense>
+  return <AuthForm mode="login" />
 }

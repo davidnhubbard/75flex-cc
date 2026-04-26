@@ -12,6 +12,8 @@ const tabs = [
 export default function BottomNav() {
   const pathname = usePathname()
 
+  if (pathname === '/complete') return null
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-surface border-t border-border h-12 flex max-w-xl mx-auto">
       {tabs.map(({ href, label, icon }) => {

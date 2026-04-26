@@ -75,7 +75,7 @@ export default function DevNavPage() {
                 <Link
                   key={screen.id}
                   href={screen.href}
-                  className="flex items-center justify-between bg-surface border-[1.5px] border-border rounded-card px-4 py-3 hover:border-green-400 transition-colors"
+                  className="flex items-center justify-between bg-card border-[1.5px] border-border rounded-card px-4 py-3 hover:border-green-400 transition-colors"
                 >
                   <div>
                     <div className="flex items-center gap-2">

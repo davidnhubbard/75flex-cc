@@ -12,7 +12,7 @@ export default function HelpButton({ variant = 'dark' }: Props) {
   const [sheet, setSheet] = useState<'none' | 'help' | 'about'>('none')
 
   const btnStyle = variant === 'dark'
-    ? 'bg-ember/15 border-ember text-ember'
+    ? 'bg-white border-white text-green-900'
     : 'bg-green-100 border-green-600 text-green-700'
 
   return (

@@ -36,9 +36,9 @@ export default function AboutSheet({ onClose }: Props) {
         </div>
         <button
           onClick={onClose}
-          className="w-8 h-8 rounded-full bg-ember/15 border border-ember/40 flex items-center justify-center"
+          className="w-8 h-8 rounded-full bg-heart/15 border border-heart/40 flex items-center justify-center"
         >
-          <span className="font-sans text-xs text-ember">×</span>
+          <span className="font-sans text-xs text-heart">×</span>
         </button>
       </div>
 
@@ -46,7 +46,7 @@ export default function AboutSheet({ onClose }: Props) {
       <div className="flex-1 overflow-y-auto px-5 pb-10 flex flex-col gap-8">
         {SECTIONS.map(s => (
           <div key={s.heading}>
-            <p className="font-display text-[17px] font-bold text-ember leading-snug mb-2">
+            <p className="font-display text-[17px] font-bold text-heart leading-snug mb-2">
               {s.heading}
             </p>
             <p className="font-sans text-sm text-green-100 leading-relaxed">{s.body}</p>

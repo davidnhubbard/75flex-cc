@@ -7,11 +7,11 @@ import { createClient } from '@/lib/supabase'
 import Eyebrow from '@/components/ui/Eyebrow'
 
 const PERSONAS = [
-  { email: 'new@75flex.dev',           password: 'testtest', label: 'New User',       description: 'No challenge started' },
-  { email: 'day2@75flex.dev',          password: 'testtest', label: 'Day 2',          description: '2 days in' },
-  { email: 'reengagement@75flex.dev',  password: 'testtest', label: 'Re-engage',      description: 'Day 15, 4 missed' },
-  { email: 'day60@75flex.dev',         password: 'testtest', label: 'Day 60',         description: '60 days in' },
-  { email: 'day75@75flex.dev',         password: 'testtest', label: 'Day 75',         description: 'Just completed' },
+  { email: 'davidnhubbard+new@gmail.com',         password: 'testtest', label: 'New User',  description: 'No challenge started' },
+  { email: 'davidnhubbard+day2@gmail.com',        password: 'testtest', label: 'Day 2',     description: '2 days in' },
+  { email: 'davidnhubbard+reengage@gmail.com',    password: 'testtest', label: 'Re-engage', description: 'Day 15, 4 missed' },
+  { email: 'davidnhubbard+day60@gmail.com',       password: 'testtest', label: 'Day 60',    description: '60 days in' },
+  { email: 'davidnhubbard+day75@gmail.com',       password: 'testtest', label: 'Day 75',    description: 'Just completed' },
 ]
 
 export default function DevSwitcher() {
@@ -41,7 +41,7 @@ export default function DevSwitcher() {
     <div className="fixed bottom-16 right-3 z-50 flex flex-col items-end gap-2">
       {open && (
         <div className="bg-white border border-border rounded-card shadow-lg p-3 w-48 flex flex-col gap-1.5">
-          <Link href="/dev" className="block text-ember mb-2 hover:underline">
+          <Link href="/dev" className="block text-heart mb-2 hover:underline">
             <Eyebrow color="green" className="text-[9px]">← Screen navigator</Eyebrow>
           </Link>
           <Eyebrow className="mb-1">Switch persona</Eyebrow>
@@ -60,7 +60,7 @@ export default function DevSwitcher() {
       )}
       <button
         onClick={() => setOpen(o => !o)}
-        className="bg-green-800 text-ember font-mono text-[10px] px-3 py-1.5 rounded-full shadow-lg hover:bg-green-700 transition-colors"
+        className="bg-green-800 text-heart font-mono text-[10px] px-3 py-1.5 rounded-full shadow-lg hover:bg-green-700 transition-colors"
       >
         {open ? '× close' : '⚙ dev'}
       </button>

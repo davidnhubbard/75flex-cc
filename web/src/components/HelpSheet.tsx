@@ -9,15 +9,18 @@ interface Props {
 }
 
 const LINKS = [
-  { label: 'Use on your computer', sub: 'Access 75flex on the web', href: '#' },
-  { label: 'Help & FAQ',           sub: 'Common questions answered',  href: '#' },
-  { label: 'Contact & feedback',   sub: 'Get in touch with us',       href: '#' },
-  { label: "What's new",           sub: 'Recent updates',             href: '#' },
+  { label: 'Use on your computer', sub: 'Access 75 Flex on the web',        href: '#' },
+  { label: 'Help & FAQ',           sub: 'Common questions answered',          href: '#' },
+  { label: 'Contact & feedback',   sub: 'Get in touch with the team',         href: '#' },
+  { label: 'Report a bug',         sub: 'Something not working?',             href: '#' },
+  { label: "What's new",           sub: 'Recent updates and improvements',    href: '#' },
+  { label: 'Privacy policy',       sub: 'How we handle your data',            href: '#' },
+  { label: 'Rate the app',         sub: 'Leave a review',                     href: '#' },
 ]
 
 export default function HelpSheet({ onClose, onAbout }: Props) {
   return (
-    <Sheet onClose={onClose}>
+    <Sheet onClose={onClose} className="bg-paper">
       <div className="px-5 mb-4 -mx-6 mt-4">
         <Eyebrow>Help</Eyebrow>
         <p className="font-display text-xl font-bold text-ink mt-0.5">75 Flex</p>

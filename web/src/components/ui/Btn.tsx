@@ -9,10 +9,10 @@ interface BtnProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses: Record<BtnVariant, string> = {
-  primary: 'bg-ember text-ink font-sans text-sm font-semibold py-3.5 rounded-xl w-full',
-  dark: 'bg-green-800 text-ember font-sans text-sm font-semibold py-3 rounded-xl w-full',
-  outline: 'border-[1.5px] border-green-700 text-green-700 font-sans text-sm font-medium rounded-xl',
-  destructive: 'bg-red-500 text-white font-sans text-sm font-semibold py-2.5 rounded-xl w-full',
+  primary: 'bg-heart text-surface hover:bg-heart-deep font-sans text-sm font-semibold py-3.5 rounded-xl w-full',
+  dark: 'bg-green-700 text-surface font-sans text-sm font-semibold py-3 rounded-xl w-full',
+  outline: 'bg-card border-[1.5px] border-border text-ink font-sans text-sm font-medium rounded-xl py-3',
+  destructive: 'bg-heart-deep text-surface font-sans text-sm font-semibold py-2.5 rounded-xl w-full',
   ghost: 'text-ink-faint font-sans text-sm font-medium',
 };
 

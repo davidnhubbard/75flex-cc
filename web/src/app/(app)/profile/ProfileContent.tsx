@@ -412,7 +412,11 @@ export default function ProfileContent() {
 
       {editing && (
         <EditCommitmentSheet
-          commitment={editing}
+          commitment={{
+            ...editing,
+            targetValue: editing.target_value ?? undefined,
+            targetUnit:  (editing.target_unit as 'oz' | 'ml' | null) ?? undefined,
+          }}
           totalCommitments={commitments.length}
           todayLogged={todayLogged}
           onSave={handleSave}

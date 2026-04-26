@@ -40,7 +40,7 @@ export default function CompleteContent() {
       <div className="flex-1 flex flex-col justify-center items-center text-center py-16">
         <p className="font-mono text-[10px] text-green-400 uppercase tracking-widest mb-4">Day {durationDays} complete</p>
         <h1 className="font-display text-[40px] font-semibold tracking-tight text-heart leading-tight mb-4">
-          You did it.
+          You Did It.
         </h1>
         <p className="font-sans text-sm text-green-200 leading-relaxed max-w-xs mb-10">
           {durationDays} days. Your rules. Your consistency. That&apos;s something worth celebrating.

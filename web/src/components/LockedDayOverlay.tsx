@@ -16,7 +16,7 @@ export default function LockedDayOverlay({ dayNumber, logDate, onDismiss }: Prop
       <div className="w-12 h-12 rounded-full bg-border/50 flex items-center justify-center mb-4">
         <span className="text-xl">🔒</span>
       </div>
-      <p className="font-display text-lg font-bold text-ink mb-1">This day is closed.</p>
+      <p className="font-display text-lg font-bold text-ink mb-1">This Day Is Closed.</p>
       <p className="font-sans text-sm text-ink-soft leading-relaxed mb-1">
         Day {dayNumber} — {dateLabel}
       </p>

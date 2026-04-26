@@ -42,7 +42,7 @@ export default function BenchmarkSheet({ initialPhotoUrl, initialNotes, onSave, 
         <div className="w-10 h-1 bg-border rounded-full mx-auto mb-1" />
 
         <p className="font-display text-[18px] font-semibold tracking-tight text-ink leading-snug">
-          Starting benchmark
+          Starting Benchmark
         </p>
 
         {/* Photo */}

@@ -56,7 +56,7 @@ export default function AddCommitmentSheet({ usedCategoryIds, onAdd, onClose }: 
         <div className="w-10 h-1 bg-border rounded-full mx-auto mb-1" />
 
         <p className="font-display text-[18px] font-semibold tracking-tight text-ink">
-          Add a commitment
+          Add a Commitment
         </p>
 
         {available.length === 0 ? (

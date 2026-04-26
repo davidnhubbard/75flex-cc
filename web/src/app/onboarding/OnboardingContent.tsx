@@ -24,24 +24,24 @@ interface Commitment {
 const SLIDES = [
   {
     eyebrow: 'Welcome to 75 Flex',
-    title: 'A daily physical and mental challenge. Your way.',
+    title: 'A Daily Physical and Mental Challenge. Your Way.',
     body: 'Commit to a set of daily habits for as long as you choose. Track your progress, reflect on your journey, and keep going even when life gets in the way.',
   },
   {
     eyebrow: 'How it works',
-    title: 'You define the challenge.',
+    title: 'You Define the Challenge.',
     body: 'Pick the commitments that matter to you — workouts, reading, diet, photos. Set your own standard for what "done" looks like each day.',
   },
   {
     eyebrow: 'Built for real life',
-    title: 'Miss a day? Keep going.',
+    title: 'Miss a Day? Keep Going.',
     body: 'This isn\'t about perfection. Your history is always preserved. Pick up where you left off — your progress doesn\'t disappear.',
   },
   {
     eyebrow: 'Ready?',
-    title: 'Build your challenge.',
+    title: 'Build Your Challenge.',
     body: 'Takes about 2 minutes. Your commitments aren\'t locked in — you can redefine, add, or remove them any time during your challenge.',
-    cta: 'Build my challenge',
+    cta: 'Build My Challenge',
   },
 ]
 
@@ -203,7 +203,7 @@ export default function OnboardingContent() {
       <div className="min-h-screen bg-green-900 flex flex-col max-w-xl mx-auto px-6">
         <div className="pt-12">
           <Eyebrow color="green" className="text-[10px]">Step 1 of 3</Eyebrow>
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-surface mt-1 mb-1">Choose a starting point</h1>
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-surface mt-1 mb-1">Choose a Starting Point</h1>
           <p className="font-sans text-xs text-green-300 mb-6">You can customize everything on the next step.</p>
         </div>
 
@@ -346,7 +346,7 @@ export default function OnboardingContent() {
       <div className="min-h-screen bg-green-900 flex flex-col max-w-xl mx-auto px-6">
         <div className="pt-12">
           <Eyebrow color="green" className="text-[10px]">Step 2 of 3</Eyebrow>
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-surface mt-1 mb-1">Choose your commitments</h1>
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-surface mt-1 mb-1">Choose Your Commitments</h1>
           <p className="font-sans text-xs text-green-300 mb-1">
             Select at least 2.
             {selected.size < 2 && (
@@ -398,7 +398,7 @@ export default function OnboardingContent() {
       <div className="min-h-screen bg-green-900 flex flex-col max-w-xl mx-auto">
         <div className="px-6 pt-12">
           <Eyebrow color="green" className="text-[10px]">Step 3 of 3</Eyebrow>
-          <h1 className="font-display text-2xl font-semibold tracking-tight text-surface mt-1 mb-1">Define your commitments</h1>
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-surface mt-1 mb-1">Define Your Commitments</h1>
           <p className="font-sans text-xs text-green-300 mb-5">You can change these any time during your challenge.</p>
         </div>
 

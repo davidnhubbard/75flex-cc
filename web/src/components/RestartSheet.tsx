@@ -17,7 +17,7 @@ export default function RestartSheet({ onConfirm, onCancel, confirming }: Props)
 
         <div>
           <p className="font-display text-[18px] font-semibold tracking-tight text-ink leading-snug mb-1">
-            Start a new challenge?
+            Start a New Challenge?
           </p>
           <p className="font-sans text-sm text-ink-soft leading-relaxed">
             Your current challenge and all its history will be archived — nothing is deleted. A fresh 75-day challenge starts today.

@@ -13,7 +13,7 @@ export default function CompleteAllSheet({ dayNumber, onConfirm, onCancel }: Pro
   return (
     <Sheet onClose={onCancel}>
       <p className="font-display text-lg font-bold text-ink text-center leading-snug">
-        Mark all commitments as complete for Day {dayNumber}?
+        Mark All Commitments as Complete for Day {dayNumber}?
       </p>
       <p className="font-sans text-sm text-ink-soft text-center mt-2">
         This will set every commitment to done.

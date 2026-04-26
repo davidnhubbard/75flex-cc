@@ -71,7 +71,7 @@ export default function AuthForm({ mode }: Props) {
           <span className="text-2xl">📬</span>
         </div>
         <h1 className="font-display text-[28px] font-semibold tracking-tight text-surface leading-tight mb-2">
-          Check your email.
+          Check Your Email.
         </h1>
         <p className="font-sans text-sm text-green-300 leading-relaxed mb-8">
           We sent a confirmation link to <span className="text-surface">{email}</span>. Click it to activate your account, then come back and sign in.
@@ -93,7 +93,7 @@ export default function AuthForm({ mode }: Props) {
 
       {/* Heading */}
       <h1 className="font-display text-[28px] font-semibold tracking-tight text-surface leading-tight mb-1">
-        {isLogin ? 'Welcome back.' : 'Create your account.'}
+        {isLogin ? 'Welcome Back.' : 'Create Your Account.'}
       </h1>
       <p className="font-sans text-sm text-green-300 mb-8">
         {isLogin ? 'Sign in to continue your challenge.' : 'Start your 75-day journey.'}

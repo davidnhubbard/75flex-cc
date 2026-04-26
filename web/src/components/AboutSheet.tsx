@@ -8,19 +8,19 @@ interface Props {
 
 const SECTIONS = [
   {
-    heading: 'Your challenge. Your rules.',
+    heading: 'Your Challenge. Your Rules.',
     body: '75 Flex is a 75-day personal challenge engine. You define what you commit to — not us. Pick the categories that matter to you and set your own definitions of success.',
   },
   {
-    heading: 'Consistency over perfection.',
+    heading: 'Consistency Over Perfection.',
     body: 'Partial effort counts. A day where you did half your commitments is still a day you showed up. Progress is never erased.',
   },
   {
-    heading: 'No forced resets. Ever.',
+    heading: 'No Forced Resets. Ever.',
     body: "Missing a day doesn't restart your challenge. Life happens. Your history is always preserved, and you keep going from where you left off.",
   },
   {
-    heading: 'Built to be on your side.',
+    heading: 'Built to Be on Your Side.',
     body: 'The app never shames you for a missed day. No red. No guilt. Just an honest record of what happened and space to keep going.',
   },
 ]

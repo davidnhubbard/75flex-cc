@@ -37,9 +37,9 @@ interface TabData {
 
 function greeting() {
   const h = new Date().getHours()
-  if (h < 12) return 'Good morning'
-  if (h < 17) return 'Good afternoon'
-  return 'Good evening'
+  if (h < 12) return 'Good Morning'
+  if (h < 17) return 'Good Afternoon'
+  return 'Good Evening'
 }
 
 const TAB_LABEL: Record<Tab, string> = {
@@ -456,7 +456,7 @@ export default function TodayContent() {
     return (
       <div className="flex flex-col min-h-full">
         <PageHeader eyebrow="Challenge complete">
-          <h1 className="font-display text-[22px] font-semibold tracking-tight text-surface">{durationDays} days. Done.</h1>
+          <h1 className="font-display text-[22px] font-semibold tracking-tight text-surface">{durationDays} Days. Done.</h1>
           <div className="mt-4 bg-green-900 rounded-full h-[3px]">
             <div className="bg-heart h-[3px] rounded-full w-full" />
           </div>

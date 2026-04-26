@@ -8,6 +8,9 @@ export type ChallengeTemplate = '75_hard' | '75_soft' | 'custom'
 
 export interface Database {
   public: {
+    Views: Record<string, never>
+    Functions: Record<string, never>
+    Enums: Record<string, never>
     Tables: {
       challenges: {
         Row: {
@@ -24,6 +27,7 @@ export interface Database {
         }
         Insert: Omit<Database['public']['Tables']['challenges']['Row'], 'id' | 'created_at' | 'updated_at'>
         Update: Partial<Database['public']['Tables']['challenges']['Insert']>
+        Relationships: never[]
       }
       commitments: {
         Row: {
@@ -41,6 +45,7 @@ export interface Database {
         }
         Insert: Omit<Database['public']['Tables']['commitments']['Row'], 'id' | 'created_at'>
         Update: Partial<Database['public']['Tables']['commitments']['Insert']>
+        Relationships: never[]
       }
       commitment_history: {
         Row: {
@@ -53,6 +58,7 @@ export interface Database {
         }
         Insert: Omit<Database['public']['Tables']['commitment_history']['Row'], 'id'>
         Update: never
+        Relationships: never[]
       }
       daily_logs: {
         Row: {
@@ -65,8 +71,9 @@ export interface Database {
           logged_at: string | null
           updated_at: string
         }
-        Insert: Omit<Database['public']['Tables']['daily_logs']['Row'], 'id' | 'updated_at'>
-        Update: Partial<Database['public']['Tables']['daily_logs']['Insert']>
+        Insert: Omit<Database['public']['Tables']['daily_logs']['Row'], 'id' | 'updated_at' | 'reflection' | 'logged_at'>
+        Update: Partial<Omit<Database['public']['Tables']['daily_logs']['Row'], 'id' | 'updated_at'>>
+        Relationships: never[]
       }
       commitment_logs: {
         Row: {
@@ -79,8 +86,15 @@ export interface Database {
           created_at: string
           updated_at: string
         }
-        Insert: Omit<Database['public']['Tables']['commitment_logs']['Row'], 'id' | 'created_at' | 'updated_at'>
+        Insert: {
+          daily_log_id: string
+          commitment_id: string
+          state: DayState
+          numeric_value?: number | null
+          photo_url?: string | null
+        }
         Update: Partial<Database['public']['Tables']['commitment_logs']['Insert']>
+        Relationships: never[]
       }
       benchmarks: {
         Row: {
@@ -92,6 +106,7 @@ export interface Database {
         }
         Insert: Omit<Database['public']['Tables']['benchmarks']['Row'], 'id' | 'created_at'>
         Update: Partial<Database['public']['Tables']['benchmarks']['Insert']>
+        Relationships: never[]
       }
       day_notes: {
         Row: {
@@ -103,6 +118,7 @@ export interface Database {
         }
         Insert: Omit<Database['public']['Tables']['day_notes']['Row'], 'id' | 'created_at' | 'updated_at'>
         Update: Partial<Database['public']['Tables']['day_notes']['Insert']>
+        Relationships: never[]
       }
     }
   }

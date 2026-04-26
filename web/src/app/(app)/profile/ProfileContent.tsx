@@ -422,6 +422,7 @@ export default function ProfileContent() {
         <EditCommitmentSheet
           commitment={{
             ...editing,
+            definition:  editing.definition ?? '',
             targetValue: editing.target_value ?? undefined,
             targetUnit:  (editing.target_unit as 'oz' | 'ml' | null) ?? undefined,
           }}

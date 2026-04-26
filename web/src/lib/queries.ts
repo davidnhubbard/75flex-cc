@@ -1,7 +1,10 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database, DayState } from './database.types'
+import type { createClient } from './supabase'
 
-type DB = SupabaseClient<Database>
+// Derive DB from our own createClient wrapper — this is always in sync
+// with whatever @supabase/ssr returns, avoiding generic version-mismatch
+// errors between @supabase/ssr and @supabase/supabase-js.
+type DB = ReturnType<typeof createClient>
 
 // ─── Challenge ────────────────────────────────────────────────────────────────
 
@@ -256,11 +259,17 @@ export async function saveCommitmentLog(
   state: DayState,
   numericValue?: number,
 ) {
-  const payload: Record<string, unknown> = { daily_log_id: dailyLogId, commitment_id: commitmentId, state }
-  if (numericValue !== undefined) payload.numeric_value = numericValue
   const { error } = await db
     .from('commitment_logs')
-    .upsert(payload, { onConflict: 'daily_log_id,commitment_id' })
+    .upsert(
+      {
+        daily_log_id:  dailyLogId,
+        commitment_id: commitmentId,
+        state,
+        ...(numericValue !== undefined ? { numeric_value: numericValue } : {}),
+      },
+      { onConflict: 'daily_log_id,commitment_id' }
+    )
   if (error) throw new Error(error.message)
 }
 

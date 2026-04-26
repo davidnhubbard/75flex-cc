@@ -1,9 +1,6 @@
+import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Eyebrow from '@/components/ui/Eyebrow'
-
-if (process.env.NODE_ENV === 'production') {
-  throw new Error('Dev nav is not available in production')
-}
 
 interface Screen {
   id: string
@@ -56,6 +53,8 @@ const SECTIONS: { title: string; screens: Screen[] }[] = [
 ]
 
 export default function DevNavPage() {
+  if (process.env.NODE_ENV === 'production') notFound()
+
   return (
     <div className="min-h-screen bg-green-50 pb-10">
       <div className="bg-green-800 px-5 pt-10 pb-5">

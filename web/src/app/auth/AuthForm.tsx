@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Btn from '@/components/ui/Btn'
 import Input from '@/components/ui/Input'
 import Eyebrow from '@/components/ui/Eyebrow'
@@ -14,14 +14,21 @@ interface Props {
 }
 
 export default function AuthForm({ mode }: Props) {
-  const router   = useRouter()
-  const supabase = createClient()
+  const router       = useRouter()
+  const searchParams = useSearchParams()
+  const supabase     = createClient()
 
   const [email,       setEmail]      = useState('')
   const [password,    setPassword]   = useState('')
   const [error,       setError]      = useState<string | null>(null)
   const [loading,     setLoading]    = useState(false)
   const [checkEmail,  setCheckEmail] = useState(false)
+
+  // Surface errors forwarded from the OAuth callback via ?error=
+  useEffect(() => {
+    const urlError = searchParams.get('error')
+    if (urlError) setError(decodeURIComponent(urlError))
+  }, [searchParams])
 
   async function handleGoogle() {
     setLoading(true)
@@ -30,10 +37,14 @@ export default function AuthForm({ mode }: Props) {
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
+        queryParams: { access_type: 'offline', prompt: 'select_account' },
       },
     })
-    if (error) { setError(error.message); setLoading(false) }
-    // On success the browser redirects — no need to do anything else
+    if (error) {
+      setError(error.message)
+      setLoading(false)
+    }
+    // On success the browser navigates away — loading stays true intentionally
   }
 
   async function handleEmail(e: React.FormEvent) {

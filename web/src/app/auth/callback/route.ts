@@ -4,17 +4,21 @@ import { getActiveChallenge } from '@/lib/queries'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
-  const code  = searchParams.get('code')
-  const error = searchParams.get('error')
+  const code        = searchParams.get('code')
+  const error       = searchParams.get('error')
+  const errorDesc   = searchParams.get('error_description')
 
   if (error) {
-    return NextResponse.redirect(`${origin}/auth/login?error=${encodeURIComponent(error)}`)
+    const msg = errorDesc ?? error
+    console.error('[auth/callback] OAuth error:', error, errorDesc)
+    return NextResponse.redirect(`${origin}/auth/login?error=${encodeURIComponent(msg)}`)
   }
 
   if (code) {
     const supabase = await createClient()
     const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
     if (exchangeError) {
+      console.error('[auth/callback] exchangeCodeForSession failed:', exchangeError.message)
       return NextResponse.redirect(`${origin}/auth/login?error=${encodeURIComponent(exchangeError.message)}`)
     }
 
@@ -22,5 +26,6 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}${challenge ? '/today' : '/onboarding'}`)
   }
 
-  return NextResponse.redirect(`${origin}/auth/login`)
+  console.error('[auth/callback] No code or error in callback params')
+  return NextResponse.redirect(`${origin}/auth/login?error=${encodeURIComponent('Sign-in was cancelled or timed out')}`)
 }

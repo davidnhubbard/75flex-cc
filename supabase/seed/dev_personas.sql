@@ -45,13 +45,13 @@ IF uid_day2 IS NOT NULL THEN
   DELETE FROM benchmarks       WHERE challenge_id IN (SELECT id FROM challenges WHERE user_id = uid_day2);
   DELETE FROM challenges       WHERE user_id = uid_day2;
 
-  INSERT INTO challenges (user_id, title, template, start_date, end_date, status)
-  VALUES (uid_day2, '75 Flex', '75_soft', CURRENT_DATE - 1, CURRENT_DATE + 73, 'active')
+  INSERT INTO challenges (user_id, title, template, start_date, end_date, status, duration_days)
+  VALUES (uid_day2, '75 Flex', '75_soft', CURRENT_DATE - 1, CURRENT_DATE + 73, 'active', 75)
   RETURNING id INTO cid;
 
-  INSERT INTO commitments (challenge_id, category, name, definition, sort_order, active_from) VALUES
-    (cid, 'physical',  'One Workout',    '30 minutes minimum, any movement counts', 0, 1),
-    (cid, 'hydration', 'Drink 2L Water', null, 1, 1);
+  INSERT INTO commitments (challenge_id, category, name, definition, sort_order, active_from, target_value, target_unit) VALUES
+    (cid, 'physical',  'One Workout',    '30 minutes minimum, any movement counts', 0, 1, null, null),
+    (cid, 'hydration', 'Drink 2L Water', null, 1, 1, 2000, 'ml');
 
   SELECT array_agg(id ORDER BY sort_order) INTO comms FROM commitments WHERE challenge_id = cid;
 
@@ -81,14 +81,14 @@ IF uid_reengage IS NOT NULL THEN
   DELETE FROM benchmarks       WHERE challenge_id IN (SELECT id FROM challenges WHERE user_id = uid_reengage);
   DELETE FROM challenges       WHERE user_id = uid_reengage;
 
-  INSERT INTO challenges (user_id, title, template, start_date, end_date, status)
-  VALUES (uid_reengage, '75 Flex', '75_soft', CURRENT_DATE - 14, CURRENT_DATE + 60, 'active')
+  INSERT INTO challenges (user_id, title, template, start_date, end_date, status, duration_days)
+  VALUES (uid_reengage, '75 Flex', '75_soft', CURRENT_DATE - 14, CURRENT_DATE + 60, 'active', 75)
   RETURNING id INTO cid;
 
-  INSERT INTO commitments (challenge_id, category, name, definition, sort_order, active_from) VALUES
-    (cid, 'physical',  'One Workout',    '30 min exercise',    0, 1),
-    (cid, 'nutrition', 'No Junk Food',   null,                 1, 1),
-    (cid, 'hydration', 'Drink 2L Water', null,                 2, 1);
+  INSERT INTO commitments (challenge_id, category, name, definition, sort_order, active_from, target_value, target_unit) VALUES
+    (cid, 'physical',  'One Workout',    '30 min exercise',    0, 1, null, null),
+    (cid, 'nutrition', 'No Junk Food',   null,                 1, 1, null, null),
+    (cid, 'hydration', 'Drink 2L Water', null,                 2, 1, 2000, 'ml');
 
   SELECT array_agg(id ORDER BY sort_order) INTO comms FROM commitments WHERE challenge_id = cid;
 
@@ -125,15 +125,15 @@ IF uid_day60 IS NOT NULL THEN
   DELETE FROM benchmarks       WHERE challenge_id IN (SELECT id FROM challenges WHERE user_id = uid_day60);
   DELETE FROM challenges       WHERE user_id = uid_day60;
 
-  INSERT INTO challenges (user_id, title, template, start_date, end_date, status)
-  VALUES (uid_day60, '75 Hard', '75_hard', CURRENT_DATE - 59, CURRENT_DATE + 15, 'active')
+  INSERT INTO challenges (user_id, title, template, start_date, end_date, status, duration_days)
+  VALUES (uid_day60, '75 Hard', '75_hard', CURRENT_DATE - 59, CURRENT_DATE + 15, 'active', 75)
   RETURNING id INTO cid;
 
-  INSERT INTO commitments (challenge_id, category, name, definition, sort_order, active_from) VALUES
-    (cid, 'physical',     'Two Workouts',   'Two 45-min sessions, one must be outdoor', 0, 1),
-    (cid, 'nutrition',    'Clean Diet',      'No alcohol, no cheat meals',               1, 1),
-    (cid, 'hydration',    'Drink 1 Gallon',  null,                                       2, 1),
-    (cid, 'personal_dev', 'Read 10 Pages',   'Non-fiction only',                         3, 1);
+  INSERT INTO commitments (challenge_id, category, name, definition, sort_order, active_from, target_value, target_unit) VALUES
+    (cid, 'physical',     'Two Workouts',   'Two 45-min sessions, one must be outdoor', 0, 1, null,  null),
+    (cid, 'nutrition',    'Clean Diet',      'No alcohol, no cheat meals',               1, 1, null,  null),
+    (cid, 'hydration',    'Drink 1 Gallon',  null,                                       2, 1, 128,   'oz'),
+    (cid, 'personal_dev', 'Read 10 Pages',   'Non-fiction only',                         3, 1, null,  null);
 
   SELECT array_agg(id ORDER BY sort_order) INTO comms FROM commitments WHERE challenge_id = cid;
 
@@ -175,14 +175,14 @@ IF uid_day75 IS NOT NULL THEN
   DELETE FROM benchmarks       WHERE challenge_id IN (SELECT id FROM challenges WHERE user_id = uid_day75);
   DELETE FROM challenges       WHERE user_id = uid_day75;
 
-  INSERT INTO challenges (user_id, title, template, start_date, end_date, status)
-  VALUES (uid_day75, '75 Flex', '75_soft', CURRENT_DATE - 74, CURRENT_DATE, 'active')
+  INSERT INTO challenges (user_id, title, template, start_date, end_date, status, duration_days)
+  VALUES (uid_day75, '75 Flex', '75_soft', CURRENT_DATE - 74, CURRENT_DATE, 'active', 75)
   RETURNING id INTO cid;
 
-  INSERT INTO commitments (challenge_id, category, name, definition, sort_order, active_from) VALUES
-    (cid, 'physical',  'One Workout',    '30 min minimum', 0, 1),
-    (cid, 'nutrition', 'No Junk Food',   null,             1, 1),
-    (cid, 'hydration', 'Drink 2L Water', null,             2, 1);
+  INSERT INTO commitments (challenge_id, category, name, definition, sort_order, active_from, target_value, target_unit) VALUES
+    (cid, 'physical',  'One Workout',    '30 min minimum', 0, 1, null, null),
+    (cid, 'nutrition', 'No Junk Food',   null,             1, 1, null, null),
+    (cid, 'hydration', 'Drink 2L Water', null,             2, 1, 2000, 'ml');
 
   SELECT array_agg(id ORDER BY sort_order) INTO comms FROM commitments WHERE challenge_id = cid;
 

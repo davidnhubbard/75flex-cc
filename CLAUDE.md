@@ -15,7 +15,7 @@ It gives you enough context to continue development without re-deriving everythi
 
 ```
 75flex-cc/
-  web/          ← Next.js 14 app (primary focus)
+  web/          ← Next.js 15 app (primary focus)
   supabase/
     migrations/ ← SQL migrations applied manually via Supabase SQL editor (CLI not available on Windows)
     seed/       ← dev_personas.sql — seed data for 4 test personas
@@ -28,7 +28,7 @@ It gives you enough context to continue development without re-deriving everythi
 
 ## Tech stack
 
-- **Next.js 14** (App Router, all routes under `web/src/app/`)
+- **Next.js 15** (App Router, all routes under `web/src/app/`)
 - **Supabase** — Postgres + Auth + Storage
 - **Tailwind CSS** — custom token system, no component library
 - **TypeScript** throughout
@@ -125,11 +125,17 @@ web/src/
 ### Migrations
 - Supabase CLI doesn't work on Windows — all migrations run manually in Supabase SQL editor
 - Check `supabase/migrations/` for pending migrations before schema work
-- **Pending:** `20260424000001_commitment_required.sql` — adds `required boolean` to commitments
+- `20260424000001_commitment_required.sql` is already reflected in code
+- **Potential pending (if not yet run):** `20260426000003_daily_log_reflection.sql` (B31 reflection persistence)
 
 ### Auth
 - Login/Signup pages use `dynamic(() => import('../AuthForm'), { ssr: false })` to fix password-manager hydration errors
-- Google OAuth needs Supabase callback URL in Google Cloud Console (B1 — not yet fixed)
+- OAuth callback route now uses typed cookie handoff in `web/src/app/auth/callback/route.ts`
+
+### Re-engagement behavior
+- Re-engagement card dismissal now persists per "missed-days episode" using localStorage
+- Key format: `reengagement:<challengeId>:<episodeStartDay>`
+- Once the user logs activity for that episode, the card stays dismissed across reloads
 
 ---
 
@@ -152,11 +158,11 @@ Eight categories in `web/src/lib/categories.ts`. The `photo` category has specia
 ## Known open bugs
 
 See `BUGS.md` at repo root for the full list. Key open items:
-- **B1** — Google OAuth not configured
-- **B7** — Profile plan needs view/edit mode separation
 - **B15** — Photo thumbnail should open fullscreen with Delete/Replace
 - **B23** — App has no branding on many pages
 - **B25** — Photo feature not discoverable (no hints to add "Progress photo" commitment)
+- **B27** — Beta access model undefined
+- **B30** — Pricing + subscription model not implemented
 
 ---
 

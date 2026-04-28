@@ -66,7 +66,15 @@ export default function ProgressContent() {
   useEffect(() => { load() }, [])
 
   async function load() {
-    const challenge = await getActiveChallenge(supabase)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { router.push('/auth/login'); return }
+
+    // Guard against transient auth/session timing by retrying once
+    // before deciding there is no active challenge.
+    let challenge = await getActiveChallenge(supabase)
+    if (!challenge) {
+      challenge = await getActiveChallenge(supabase)
+    }
     if (!challenge) { router.push('/onboarding'); return }
 
     const duration   = challenge.duration_days ?? 75

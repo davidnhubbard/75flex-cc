@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Btn from '@/components/ui/Btn'
 import Textarea from '@/components/ui/Textarea'
 import { CATEGORIES } from '@/lib/categories'
@@ -9,9 +9,10 @@ interface Props {
   usedCategoryIds: string[]
   onAdd: (categoryId: string, definition: string, required: boolean, targetValue?: number, targetUnit?: 'oz' | 'ml') => void
   onClose: () => void
+  initialCategoryId?: string
 }
 
-export default function AddCommitmentSheet({ usedCategoryIds, onAdd, onClose }: Props) {
+export default function AddCommitmentSheet({ usedCategoryIds, onAdd, onClose, initialCategoryId }: Props) {
   const available = CATEGORIES.filter(c => !usedCategoryIds.includes(c.id))
   const [selected,    setSelected]    = useState<string | null>(null)
   const [definition,  setDefinition]  = useState('')
@@ -32,6 +33,12 @@ export default function AddCommitmentSheet({ usedCategoryIds, onAdd, onClose }: 
     setTargetGoal('')
     setTargetUnit('oz')
   }
+
+  useEffect(() => {
+    if (!initialCategoryId) return
+    if (!available.find(c => c.id === initialCategoryId)) return
+    handleSelect(initialCategoryId)
+  }, [initialCategoryId])
 
   const canAdd = selected && (isHydration ? !!parseFloat(targetGoal) : true)
 

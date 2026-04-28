@@ -1,8 +1,9 @@
 import { createServerClient } from '@supabase/ssr'
+import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import type { Database } from '@/lib/database.types'
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code      = searchParams.get('code')
   const error     = searchParams.get('error')
@@ -28,9 +29,13 @@ export async function GET(request: Request) {
           // Read cookies from the incoming request
           getAll() { return request.cookies.getAll() },
           // Write session cookies directly onto the outgoing redirect response
-          setAll(cookiesToSet) {
+          setAll(cookiesToSet: {
+            name: string
+            value: string
+            options: Parameters<typeof response.cookies.set>[2]
+          }[]) {
             cookiesToSet.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2])
+              response.cookies.set(name, value, options)
             )
           },
         },

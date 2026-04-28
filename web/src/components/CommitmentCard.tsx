@@ -14,6 +14,7 @@ interface Props {
   readonly?: boolean
   photoUrl?: string | null
   uploading?: boolean
+  onPhotoPreview?: (photoUrl: string) => void
   // Hydration-specific
   targetValue?: number | null
   targetUnit?: 'oz' | 'ml' | null
@@ -66,7 +67,7 @@ const BAR_COLOR: Record<State, string> = {
 
 export default function CommitmentCard({
   category, name, definition, required, state, onChange, readonly, photoUrl, uploading,
-  targetValue, targetUnit, currentValue = 0, onAddAmount, onSetValue,
+  onPhotoPreview, targetValue, targetUnit, currentValue = 0, onAddAmount, onSetValue,
 }: Props) {
   const [customInput, setCustomInput] = useState('')
   const [showCustom,  setShowCustom]  = useState(false)
@@ -169,18 +170,27 @@ export default function CommitmentCard({
   }
 
   // ── Standard / photo card ─────────────────────────────────────────────────
-  const next      = isPhoto ? NEXT_PHOTO[state] : NEXT[state]
+  const next = isPhoto ? NEXT_PHOTO[state] : NEXT[state]
+  const visualState: State = isPhoto && uploading ? 'partial' : state
   const chipLabel = uploading
-    ? 'UPLOADING…'
+    ? 'UPLOADING...'
     : isPhoto
       ? PHOTO_CHIP[state === 'partial' ? 'none' : state]
       : CHIP_LABEL[state]
 
   return (
     <button
-      onClick={() => !readonly && !uploading && onChange(next)}
+      onClick={() => {
+        if (readonly || uploading) return
+        // If a photo already exists, tap opens the viewer instead of toggling card state.
+        if (isPhoto && photoUrl && onPhotoPreview) {
+          onPhotoPreview(photoUrl)
+          return
+        }
+        onChange(next)
+      }}
       disabled={readonly || uploading}
-      className={`w-full text-left rounded-card border-[1.5px] px-4 py-3 transition-colors ${CARD_STYLE[state]} ${readonly || uploading ? 'opacity-40 cursor-default' : 'active:scale-[0.99]'}`}
+      className={`w-full text-left rounded-card border-[1.5px] px-4 py-3 transition-colors ${CARD_STYLE[visualState]} ${readonly ? 'opacity-40 cursor-default' : uploading ? 'cursor-default' : 'active:scale-[0.99]'}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
@@ -197,17 +207,14 @@ export default function CommitmentCard({
             <p className="font-sans text-sm text-ink-soft mt-0.5 leading-snug">{definition}</p>
           )}
           {isPhoto && photoUrl && (
-            <img
-              src={photoUrl}
-              alt="Progress photo"
-              className="mt-2 w-20 h-20 rounded-lg object-cover"
-            />
+            <p className="font-sans text-xs text-ink-soft mt-1">Photo saved - tap card to view</p>
           )}
         </div>
-        <span className={`font-mono text-[9px] font-medium tracking-widest mt-0.5 shrink-0 ${CHIP_STYLE[state]}`}>
+        <span className={`font-mono text-[9px] font-medium tracking-widest mt-0.5 shrink-0 ${CHIP_STYLE[visualState]}`}>
           {chipLabel}
         </span>
       </div>
     </button>
   )
 }
+

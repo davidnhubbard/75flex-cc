@@ -4,9 +4,11 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import CommitmentCard from '@/components/CommitmentCard'
 import CameraSheet from '@/components/CameraSheet'
+import PhotoViewerSheet from '@/components/PhotoViewerSheet'
 import LockedDayOverlay from '@/components/LockedDayOverlay'
 import PageHeader from '@/components/PageHeader'
 import Btn from '@/components/ui/Btn'
+import Sheet from '@/components/ui/Sheet'
 import Textarea from '@/components/ui/Textarea'
 import StatCard from '@/components/ui/StatCard'
 import Toast from '@/components/ui/Toast'
@@ -64,6 +66,7 @@ export default function TodayContent() {
   const [commitments,   setCommitments]  = useState<Commitment[]>([])
   const [greet,         setGreet]        = useState('Good morning')
   const [reengaged,     setReengaged]    = useState(false)
+  const [reengagementEpisodeKey, setReengagementEpisodeKey] = useState<string | null>(null)
   const [showUpRate,    setShowUpRate]   = useState(0)
   const [daysLogged,    setDaysLogged]   = useState(0)
   const [challengeDone, setChallengeDone] = useState(false)  // C32: Day 76+
@@ -81,8 +84,11 @@ export default function TodayContent() {
   const [savedFlash,     setSavedFlash] = useState(false)
 
   // ── Sheets ────────────────────────────────────────────────────────────────
-  const [noteOpen,     setNoteOpen]     = useState(false)
+  const [noteEditorOpen, setNoteEditorOpen] = useState(false)
+  const [noteDraft,      setNoteDraft]      = useState('')
+  const [noteSaving,     setNoteSaving]     = useState(false)
   const [cameraForId,  setCameraForId]  = useState<string | null>(null)
+  const [photoViewer,  setPhotoViewer]  = useState<{ commitmentId: string; photoUrl: string } | null>(null)
 
   const [uploadingPhotoId, setUploadingPhotoId] = useState<string | null>(null)
   const [reflection,       setReflection]       = useState<Reflection | null>(null)
@@ -93,6 +99,37 @@ export default function TodayContent() {
 
   useEffect(() => { setGreet(greeting()) }, [])
   useEffect(() => { init().catch((e: any) => showToast(e?.message ?? 'Failed to load')) }, [])
+
+  // Expose unsaved backdate state so BottomNav can warn before leaving /today.
+  useEffect(() => {
+    ;(window as any).__today_has_unsaved_backdate = tab !== 'today' && hasChanges
+    return () => {
+      ;(window as any).__today_has_unsaved_backdate = false
+    }
+  }, [tab, hasChanges])
+
+  // Bottom nav "Today" tap should switch internal tab back to today.
+  useEffect(() => {
+    const onTodayNavClick = () => {
+      if (tab === 'today') {
+        setNoteEditorOpen(false)
+        return
+      }
+
+      if (hasChanges) {
+        const ok = window.confirm('You have unsaved backdate changes. Discard them and switch to Today?')
+        if (!ok) return
+        setPending({})
+        setHasChanges(false)
+      }
+
+      setNoteEditorOpen(false)
+      setTab('today')
+    }
+
+    window.addEventListener('today-nav-click', onTodayNavClick)
+    return () => window.removeEventListener('today-nav-click', onTodayNavClick)
+  }, [tab, hasChanges])
 
   // C27: day rollover — re-init when app comes back to foreground after midnight
   useEffect(() => {
@@ -132,6 +169,13 @@ export default function TodayContent() {
       getOrCreateDailyLog(supabase, challenge.id, day, today),
       getAllDailyLogs(supabase, challenge.id),
     ])
+
+    const nonPhotoCount = comms.filter(c => c.category !== 'photo').length
+    if (nonPhotoCount < 2) {
+      router.push('/profile/plan?enforce=min2')
+      return
+    }
+
     const [logs, note] = await Promise.all([
       getCommitmentLogs(supabase, dailyLog.id),
       getNote(supabase, dailyLog.id),
@@ -151,6 +195,20 @@ export default function TodayContent() {
       const log = allLogs.find(l => l.day_number === d)
       return !log || log.overall_state === 'none'
     })
+    const lastActiveDay = allLogs.reduce((max, log) => {
+      if (log.day_number < day && log.overall_state !== 'none' && log.day_number > max) return log.day_number
+      return max
+    }, 0)
+    const episodeStartDay = lastActiveDay + 1
+    const episodeKey = `reengagement:${challenge.id}:${episodeStartDay}`
+    const episodeResolved = (() => {
+      try { return window.localStorage.getItem(episodeKey) === 'resolved' } catch { return false }
+    })()
+    const shouldShowReengagement =
+      !done &&
+      missedRecent &&
+      dailyLog.overall_state === 'none' &&
+      !episodeResolved
 
     // C31: already complete on final day → celebration screen
     if (day === duration && dailyLog.overall_state === 'complete' && !done) {
@@ -165,7 +223,8 @@ export default function TodayContent() {
     setDurationDays(duration)
     setCommitments(comms)
     setChallengeDone(done)
-    setReengaged(!done && missedRecent)
+    setReengaged(shouldShowReengagement)
+    setReengagementEpisodeKey(missedRecent ? episodeKey : null)
     setShowUpRate(calcShowUpRate(allLogs, day))
     setDaysLogged(allLogs.filter(l => l.overall_state !== 'none').length)
     setReflection((dailyLog.reflection as Reflection | null) ?? null)
@@ -175,6 +234,14 @@ export default function TodayContent() {
     }))
     loadedTabs.current.add('today')
     setLoading(false)
+  }
+
+  function markReengagementResolved() {
+    if (!reengaged || !reengagementEpisodeKey) return
+    try {
+      window.localStorage.setItem(reengagementEpisodeKey, 'resolved')
+    } catch {}
+    setReengaged(false)
   }
 
   // ── Load a backdate tab on first visit ───────────────────────────────────
@@ -215,7 +282,7 @@ export default function TodayContent() {
       setPending({})
       setHasChanges(false)
     }
-    setNoteOpen(false)
+    setNoteEditorOpen(false)
     setTab(next)
     if (next !== 'today') {
       try {
@@ -238,6 +305,7 @@ export default function TodayContent() {
       await saveCommitmentLog(supabase, dailyLogId, commitmentId, next)
       const coreStates = commitments.filter(c => c.category !== 'photo' || c.required).map(c => newStates[c.id] ?? 'none')
       const overall    = await recalcOverallState(supabase, dailyLogId, coreStates)
+      if (next !== 'none') markReengagementResolved()
       if (overall === 'complete' && currentDay === durationDays) router.push('/complete')
     } catch {
       setTabData(p => ({ ...p, today: { ...p.today, states: { ...p.today.states, [commitmentId]: prev } } }))
@@ -266,6 +334,7 @@ export default function TodayContent() {
       ])
       const coreComms = commitments.filter(c => c.category !== 'photo' || c.required)
       await recalcOverallState(supabase, dailyLogId, coreComms.map(c => merged[c.id] ?? 'none'))
+      if (Object.values(pendingStates).some(s => s !== 'none')) markReengagementResolved()
       setTabData(prev => ({ ...prev, [tab]: { ...prev[tab], states: merged } }))
       setPending({})
       setHasChanges(false)
@@ -289,6 +358,7 @@ export default function TodayContent() {
       setTabData(prev => ({ ...prev, today: { ...prev.today, states: { ...prev.today.states, ...all } } }))
       await Promise.all(nonPhotoComms.map(c => saveCommitmentLog(supabase, dailyLogId, c.id, 'complete')))
       await recalcOverallState(supabase, dailyLogId, nonPhotoComms.map(() => 'complete'))
+      markReengagementResolved()
       if (currentDay === durationDays) { router.push('/complete'); return }
     } else {
       const all = Object.fromEntries(nonPhotoComms.map(c => [c.id, 'complete' as DayState]))
@@ -318,8 +388,31 @@ export default function TodayContent() {
     if (next === 'complete') {
       setCameraForId(commitmentId)
     } else {
-      handlePhotoRemove(commitmentId)
+      handlePhotoRemove(commitmentId).catch(() => {
+        showToast("Couldn't update photo - try again")
+      })
     }
+  }
+
+  function openPhotoViewer(commitmentId: string, photoUrl: string) {
+    setPhotoViewer({ commitmentId, photoUrl })
+  }
+
+  async function handleDeleteFromViewer() {
+    if (!photoViewer) return
+    try {
+      await handlePhotoRemove(photoViewer.commitmentId)
+      setPhotoViewer(null)
+    } catch {
+      showToast("Couldn't update photo - try again")
+    }
+  }
+
+  function handleReplaceFromViewer() {
+    if (!photoViewer) return
+    const commitmentId = photoViewer.commitmentId
+    setPhotoViewer(null)
+    setCameraForId(commitmentId)
   }
 
   async function handlePhotoRemove(commitmentId: string) {
@@ -357,6 +450,7 @@ export default function TodayContent() {
       const newStates = { ...tabData.today.states, [commitmentId]: state }
       const coreStates = commitments.filter(c => c.category !== 'photo' || c.required).map(c => newStates[c.id] ?? 'none')
       const overall = await recalcOverallState(supabase, dailyLogId, coreStates)
+      markReengagementResolved()
       if (overall === 'complete' && currentDay === durationDays) router.push('/complete')
     } catch {
       setTabData(p => ({ ...p, today: { ...p.today,
@@ -386,6 +480,7 @@ export default function TodayContent() {
       const newStates = { ...tabData.today.states, [commitmentId]: state }
       const coreStates = commitments.filter(c => c.category !== 'photo' || c.required).map(c => newStates[c.id] ?? 'none')
       const overall = await recalcOverallState(supabase, dailyLogId, coreStates)
+      if (value > 0) markReengagementResolved()
       if (overall === 'complete' && currentDay === durationDays) router.push('/complete')
     } catch {
       setTabData(p => ({ ...p, today: { ...p.today,
@@ -409,6 +504,33 @@ export default function TodayContent() {
     }
   }
 
+  function openNoteEditor() {
+    setNoteDraft(activeData.note ?? '')
+    setNoteEditorOpen(true)
+  }
+
+  async function saveNoteFromEditor() {
+    const trimmed = noteDraft.trim()
+    setTabData(prev => ({ ...prev, [tab]: { ...prev[tab], note: trimmed } }))
+
+    if (!isToday) {
+      setHasChanges(true)
+      setNoteEditorOpen(false)
+      return
+    }
+
+    if (!activeData.dailyLogId) return
+    setNoteSaving(true)
+    try {
+      await saveNote(supabase, activeData.dailyLogId, trimmed)
+      setNoteEditorOpen(false)
+    } catch {
+      showToast("Couldn't save note — check your connection")
+    } finally {
+      setNoteSaving(false)
+    }
+  }
+
   async function handleCameraCapture(file: File) {
     const commitmentId = cameraForId
     setCameraForId(null)
@@ -428,6 +550,7 @@ export default function TodayContent() {
       setTabData(prev => ({ ...prev, [tab]: { ...prev[tab], states: newStates, photoUrls: newPhotos } }))
       const coreStates = commitments.filter(c => c.category !== 'photo' || c.required).map(c => newStates[c.id] ?? 'none')
       const overall = await recalcOverallState(supabase, dailyLogId, coreStates)
+      markReengagementResolved()
       if (tab === 'today' && overall === 'complete' && currentDay === durationDays) router.push('/complete')
     } catch {
       showToast("Photo didn't upload — try again")
@@ -444,12 +567,37 @@ export default function TodayContent() {
   const liveStates    = isToday ? activeData.states : { ...activeData.states, ...pendingStates }
   const livePhotoUrls = activeData.photoUrls
   const liveValues    = activeData.values
+  const hasPhotoCommitment = commitments.some(c => c.category === 'photo')
   const coreCommitments = commitments.filter(c => c.category !== 'photo' || c.required)
   const allDone  = coreCommitments.length > 0 && coreCommitments.every(c => liveStates[c.id] === 'complete')
   const progress = Math.round((currentDay / durationDays) * 100)
   const tabs: Tab[] = challengeDone || currentDay === 1 ? [] : currentDay === 2
     ? ['today', 'yesterday']
     : ['today', 'yesterday', 'daybefore']
+  const noteText = activeData.note.trim()
+  const noteFirstLine = noteText.split(/\r?\n/)[0] ?? ''
+  const notePreview = noteFirstLine.length > 88
+    ? `${noteFirstLine.slice(0, 85).trimEnd()}...`
+    : noteFirstLine
+  const noteHasMore =
+    noteText.length > 0 &&
+    (noteText.includes('\n') || noteFirstLine.length > notePreview.length)
+  const noteVisualState: DayState = noteText.length === 0 ? 'none' : 'complete'
+  const stateCardClass: Record<DayState, string> = {
+    none: 'bg-state-none-bg border-state-none',
+    partial: 'bg-state-partial-bg border-state-partial',
+    complete: 'bg-state-done-bg border-state-done',
+  }
+  const stateChipClass: Record<DayState, string> = {
+    none: 'text-state-none-ink',
+    partial: 'text-state-partial-ink',
+    complete: 'text-state-done-ink',
+  }
+  const noteChipLabel: Record<DayState, string> = {
+    none: 'NOT STARTED',
+    partial: 'PARTIAL',
+    complete: 'DONE',
+  }
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -598,6 +746,19 @@ export default function TodayContent() {
             )
           })()}
 
+          {/* B25: photo discoverability nudge when no photo commitment exists */}
+          {isToday && !hasPhotoCommitment && commitments.length > 0 && (
+            <div className="mx-4 mt-4 rounded-card border-[1.5px] border-border bg-card px-4 py-3">
+              <p className="font-sans text-sm font-medium text-ink mb-1">Want photo tracking?</p>
+              <p className="font-sans text-sm text-ink-soft leading-snug mb-3">
+                Add a Photo commitment to capture progress pictures directly in your daily check-in.
+              </p>
+              <Btn variant="outline" onClick={() => router.push('/profile?add=photo')}>
+                Add photo commitment
+              </Btn>
+            </div>
+          )}
+
           {/* Mark all complete / Clear all */}
           {commitments.length > 0 && (
             <div className={`px-4 flex justify-end ${isToday ? 'pt-3' : ''}`}>
@@ -639,6 +800,7 @@ export default function TodayContent() {
                   currentValue={isHydration ? (liveValues[c.id] ?? 0) : undefined}
                   onAddAmount={isHydration && isToday ? amt => handleHydrationAdd(c.id, amt) : undefined}
                   onSetValue={isHydration && isToday ? val => handleHydrationSet(c.id, val) : undefined}
+                  onPhotoPreview={isPhoto ? url => openPhotoViewer(c.id, url) : undefined}
                   onChange={next =>
                     isPhoto
                       ? handlePhotoCardTap(c.id, next)
@@ -648,11 +810,34 @@ export default function TodayContent() {
               )
             })}
 
+            <button
+              type="button"
+              onClick={openNoteEditor}
+              className={`w-full text-left rounded-card border-[1.5px] px-4 py-3 transition-colors active:scale-[0.99] ${stateCardClass[noteVisualState]}`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <p className="font-sans text-sm font-medium text-ink mb-1">
+                    {noteText ? 'Your Note' : 'Add a Note'}
+                  </p>
+                  <p className="font-sans text-sm text-ink-soft leading-snug truncate">
+                    {noteText ? notePreview : 'What do you want to remember from today?'}
+                    {noteHasMore && (
+                      <span className="ml-1 font-mono text-[10px] uppercase tracking-widest text-ink">More</span>
+                    )}
+                  </p>
+                </div>
+                <span className={`font-mono text-[9px] font-medium tracking-widest mt-0.5 shrink-0 ${stateChipClass[noteVisualState]}`}>
+                  {noteChipLabel[noteVisualState]}
+                </span>
+              </div>
+            </button>
+
             {/* End-of-day reflection (B31) — today only, once something is logged */}
             {isToday && Object.values(liveStates).some(s => s !== 'none') && (
               <div className="rounded-card border-[1.5px] border-state-none bg-state-none-bg px-4 py-3 flex flex-col gap-3">
                 <p className="font-sans text-sm font-medium text-ink">How did today go?</p>
-                <div className="flex flex-col gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   {([
                     { value: 'felt_good',     emoji: '✦', label: 'Felt good' },
                     { value: 'tough_but_done', emoji: '💪', label: 'Tough, but done' },
@@ -661,68 +846,39 @@ export default function TodayContent() {
                     <button
                       key={opt.value}
                       onClick={() => handleReflection(opt.value)}
-                      className={`w-full text-left px-3 py-2.5 rounded-lg border-[1.5px] flex items-center gap-3 transition-colors ${
+                      className={`rounded-lg border-[1.5px] px-2 py-2 flex flex-col items-center justify-center gap-1 transition-colors ${
                         reflection === opt.value
                           ? 'bg-state-done-bg border-state-done'
                           : 'bg-surface border-border'
                       }`}
                     >
-                      <span className="text-base">{opt.emoji}</span>
-                      <span className={`font-sans text-sm ${reflection === opt.value ? 'font-medium text-ink' : 'text-ink-soft'}`}>
+                      <span className="text-base leading-none">{opt.emoji}</span>
+                      <span className={`font-sans text-[11px] leading-tight text-center ${reflection === opt.value ? 'font-medium text-ink' : 'text-ink-soft'}`}>
                         {opt.label}
                       </span>
                       {reflection === opt.value && (
-                        <span className="ml-auto font-mono text-[9px] text-state-done-ink uppercase tracking-widest">Selected</span>
+                        <span className="font-mono text-[8px] text-state-done-ink uppercase tracking-widest">Selected</span>
                       )}
                     </button>
                   ))}
                 </div>
               </div>
             )}
-
-            {noteOpen && (
-              <Textarea
-                variant="light"
-                autoFocus
-                value={activeData.note}
-                onChange={e => {
-                  setTabData(prev => ({ ...prev, [tab]: { ...prev[tab], note: e.target.value } }))
-                  if (!isToday) setHasChanges(true)
-                }}
-                onBlur={() => {
-                  if (isToday && activeData.dailyLogId) saveNote(supabase, activeData.dailyLogId, activeData.note)
-                }}
-                placeholder="Add a note about this day…"
-                rows={3}
-              />
-            )}
           </div>
 
           {/* Footer */}
-          <div className="sticky bottom-0 bg-surface border-t border-border px-4 py-3 flex gap-2">
-            <Btn
-              variant="outline"
-              onClick={() => setNoteOpen(o => !o)}
-              className={`px-5 border-green-600 text-green-700 ${isToday ? 'flex-1' : ''}`}
-            >
-              {noteOpen ? 'Hide note' : 'Add note'}
-            </Btn>
-
-            {!isToday && (
+          {!isToday && (
+            <div className="sticky bottom-0 bg-surface border-t border-border px-4 py-3 flex gap-2">
               <Btn
-                variant="dark"
+                variant="outline"
                 onClick={saveBackdate}
                 disabled={!hasChanges || saving}
-                className={`flex-1 ${
-                  savedFlash            ? 'bg-green-100 text-green-700 border-[1.5px] border-green-200' :
-                  !hasChanges || saving ? 'bg-border/50 text-ink-faint' :
-                                          ''
-                }`}
+                className="flex-1"
               >
-                {savedFlash ? 'Saved ✓' : saving ? 'Saving…' : 'Save'}
+                {savedFlash ? 'Saved' : saving ? 'Saving...' : 'Save'}
               </Btn>
-            )}
-          </div>
+            </div>
+          )}
         </>
       )}
 
@@ -733,7 +889,55 @@ export default function TodayContent() {
         />
       )}
 
+      {photoViewer && (
+        <PhotoViewerSheet
+          photoUrl={photoViewer.photoUrl}
+          onClose={() => setPhotoViewer(null)}
+          onReplace={handleReplaceFromViewer}
+          onDelete={handleDeleteFromViewer}
+        />
+      )}
+
+      {noteEditorOpen && (
+        <Sheet onClose={() => setNoteEditorOpen(false)}>
+          <div className="flex flex-col gap-3">
+            <p className="font-sans text-base font-semibold text-ink">
+              {activeData.note.trim() ? 'Edit Note' : 'Add Note'}
+            </p>
+            <Textarea
+              variant="light"
+              autoFocus
+              value={noteDraft}
+              onChange={e => setNoteDraft(e.target.value)}
+              placeholder="Add a note about this day..."
+              rows={5}
+            />
+            <div className="flex gap-2">
+              <Btn
+                variant="dark"
+                onClick={saveNoteFromEditor}
+                disabled={noteSaving}
+                className="flex-1"
+              >
+                {noteSaving ? 'Saving...' : 'Save Note'}
+              </Btn>
+              <Btn
+                variant="outline"
+                onClick={() => {
+                  setNoteDraft(activeData.note ?? '')
+                  setNoteEditorOpen(false)
+                }}
+                className="flex-1"
+              >
+                Cancel
+              </Btn>
+            </div>
+          </div>
+        </Sheet>
+      )}
+
       {toastMessage && <Toast message={toastMessage} onDismiss={clearToast} />}
     </div>
   )
 }
+

@@ -117,6 +117,11 @@ export default function OnboardingContent() {
   const [showWelcome, setShowWelcome] = useState(false)
 
   async function handleStart() {
+    const nonPhotoCount = selectedCategories.filter(c => c.id !== 'photo').length
+    if (nonPhotoCount < 2) {
+      setSaveError('Choose at least 2 non-photo commitments before starting.')
+      return
+    }
     setSaving(true)
     setSaveError(null)
     try {
@@ -202,7 +207,8 @@ export default function OnboardingContent() {
   // ── Render ──────────────────────────────────────────────────────────────
 
   const selectedCategories = CATEGORIES.filter(c => selected.has(c.id))
-  const canContinueStep2   = selected.size >= 2
+  const nonPhotoSelectedCount = selectedCategories.filter(c => c.id !== 'photo').length
+  const canContinueStep2   = nonPhotoSelectedCount >= 2
 
   // Dark slide screens
   if (step === 'slides') {
@@ -356,10 +362,13 @@ export default function OnboardingContent() {
           <Eyebrow color="green" className="text-[11px]">Step 2 of 3</Eyebrow>
           <h1 className="font-display text-[28px] font-semibold tracking-tight text-surface mt-1 mb-1">Choose Your Commitments</h1>
           <p className="font-sans text-sm text-green-300 mb-1">
-            Select at least 2.
-            {selected.size < 2 && (
-              <span className="text-heart"> Select at least {2 - selected.size} more to continue.</span>
+            Select at least 2 non-photo commitments.
+            {nonPhotoSelectedCount < 2 && (
+              <span className="text-heart"> Select at least {2 - nonPhotoSelectedCount} more non-photo commitment(s) to continue.</span>
             )}
+          </p>
+          <p className="font-sans text-xs text-green-400 mb-1">
+            Want progress pictures? Add the Photo category.
           </p>
         </div>
 

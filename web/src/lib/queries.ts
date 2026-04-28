@@ -1,19 +1,27 @@
 import type { Database, DayState } from './database.types'
 import type { createClient } from './supabase'
+import { normalizeCommitmentName } from './categories'
 
 // Derive DB from our own createClient wrapper — this is always in sync
 // with whatever @supabase/ssr returns, avoiding generic version-mismatch
 // errors between @supabase/ssr and @supabase/supabase-js.
 type DB = ReturnType<typeof createClient>
 
+function throwIfError(error: { message: string } | null) {
+  if (error) throw new Error(error.message)
+}
+
 // ─── Challenge ────────────────────────────────────────────────────────────────
 
 export async function getActiveChallenge(db: DB) {
-  const { data } = await db
+  const { data, error } = await db
     .from('challenges')
     .select('*')
     .eq('status', 'active')
+    .order('created_at', { ascending: false })
+    .limit(1)
     .maybeSingle()
+  throwIfError(error)
   return data
 }
 
@@ -59,12 +67,34 @@ export async function createChallenge(db: DB, payload: {
 // ─── Commitments ─────────────────────────────────────────────────────────────
 
 export async function getCommitments(db: DB, challengeId: string) {
-  const { data } = await db
+  const { data, error } = await db
     .from('commitments')
     .select('*')
     .eq('challenge_id', challengeId)
     .order('sort_order')
-  return data ?? []
+  throwIfError(error)
+  const commitments = data ?? []
+  if (commitments.length === 0) return commitments
+
+  const renamed = commitments
+    .map(c => {
+      const normalizedName = normalizeCommitmentName(c.category, c.name)
+      return normalizedName === c.name ? null : { id: c.id, name: normalizedName }
+    })
+    .filter((c): c is { id: string; name: string } => c !== null)
+
+  if (renamed.length > 0) {
+    await Promise.all(
+      renamed.map(c =>
+        db.from('commitments').update({ name: c.name }).eq('id', c.id)
+      )
+    )
+  }
+
+  return commitments.map(c => ({
+    ...c,
+    name: normalizeCommitmentName(c.category, c.name),
+  }))
 }
 
 export async function createCommitments(db: DB, challengeId: string, items: {
@@ -109,19 +139,21 @@ export async function updateCommitmentRequired(db: DB, commitmentId: string, req
 }
 
 export async function updateCommitmentDefinition(db: DB, commitmentId: string, definition: string, dayNumber: number) {
-  const { data: existing } = await db
+  const { data: existing, error: existingError } = await db
     .from('commitments')
     .select('definition')
     .eq('id', commitmentId)
     .single()
+  throwIfError(existingError)
 
-  await db.from('commitment_history').insert({
+  const { error: historyError } = await db.from('commitment_history').insert({
     commitment_id:   commitmentId,
     old_definition:  existing?.definition ?? null,
     new_definition:  definition,
     changed_on_day:  dayNumber,
     changed_at:      new Date().toISOString(),
   })
+  throwIfError(historyError)
 
   const { error } = await db
     .from('commitments')
@@ -153,22 +185,26 @@ export function dateForDay(startDate: string, dayNumber: number): string {
 }
 
 export async function hasCommitmentChangedSince(db: DB, commitmentId: string, sinceDay: number) {
-  const { data } = await db
+  const { data, error } = await db
     .from('commitment_history')
     .select('id')
     .eq('commitment_id', commitmentId)
     .gt('changed_on_day', sinceDay)
     .limit(1)
+  throwIfError(error)
   return (data?.length ?? 0) > 0
 }
 
 export async function getOrCreateDailyLog(db: DB, challengeId: string, dayNumber: number, logDate: string) {
-  const { data: existing } = await db
+  const { data: existing, error: existingError } = await db
     .from('daily_logs')
     .select('*')
     .eq('challenge_id', challengeId)
     .eq('day_number', dayNumber)
+    .order('updated_at', { ascending: false })
+    .limit(1)
     .maybeSingle()
+  throwIfError(existingError)
 
   if (existing) return existing
 
@@ -183,33 +219,39 @@ export async function getOrCreateDailyLog(db: DB, challengeId: string, dayNumber
 }
 
 export async function getAllDailyLogs(db: DB, challengeId: string) {
-  const { data } = await db
+  const { data, error } = await db
     .from('daily_logs')
     .select('*')
     .eq('challenge_id', challengeId)
     .order('day_number')
+  throwIfError(error)
   return data ?? []
 }
 
 // ─── Notes ────────────────────────────────────────────────────────────────────
 
 export async function getNote(db: DB, dailyLogId: string) {
-  const { data } = await db
+  const { data, error } = await db
     .from('day_notes')
     .select('note_text')
     .eq('daily_log_id', dailyLogId)
+    .order('updated_at', { ascending: false })
+    .limit(1)
     .maybeSingle()
+  throwIfError(error)
   return data?.note_text ?? ''
 }
 
 export async function saveNote(db: DB, dailyLogId: string, text: string) {
   if (!text.trim()) {
-    await db.from('day_notes').delete().eq('daily_log_id', dailyLogId)
+    const { error } = await db.from('day_notes').delete().eq('daily_log_id', dailyLogId)
+    throwIfError(error)
   } else {
-    await db.from('day_notes').upsert(
+    const { error } = await db.from('day_notes').upsert(
       { daily_log_id: dailyLogId, note_text: text },
       { onConflict: 'daily_log_id' }
     )
+    throwIfError(error)
   }
 }
 
@@ -245,10 +287,11 @@ export function calcShowUpRate(logs: { overall_state: string }[], currentDay: nu
 // ─── Commitment logs ──────────────────────────────────────────────────────────
 
 export async function getCommitmentLogs(db: DB, dailyLogId: string) {
-  const { data } = await db
+  const { data, error } = await db
     .from('commitment_logs')
     .select('*')
     .eq('daily_log_id', dailyLogId)
+  throwIfError(error)
   return data ?? []
 }
 
@@ -309,11 +352,14 @@ export async function setHydration(
 // ─── Benchmark ────────────────────────────────────────────────────────────────
 
 export async function getBenchmark(db: DB, challengeId: string) {
-  const { data } = await db
+  const { data, error } = await db
     .from('benchmarks')
     .select('*')
     .eq('challenge_id', challengeId)
+    .order('created_at', { ascending: false })
+    .limit(1)
     .maybeSingle()
+  throwIfError(error)
   return data
 }
 
@@ -370,16 +416,107 @@ export async function savePhotoUrl(
   if (error) throw new Error(error.message)
 }
 
+export interface PhotoGalleryEntry {
+  id: string
+  dailyLogId: string
+  commitmentId: string
+  commitmentName: string
+  commitmentCategory: string
+  dayNumber: number
+  logDate: string
+  photoUrl: string
+  noteText: string
+  reflection: Reflection | null
+  createdAt: string
+}
+
+export async function getPhotoGalleryEntries(db: DB, challengeId: string): Promise<PhotoGalleryEntry[]> {
+  const { data: dailyLogs, error: dailyErr } = await db
+    .from('daily_logs')
+    .select('id, day_number, log_date, reflection')
+    .eq('challenge_id', challengeId)
+    .order('day_number', { ascending: false })
+  throwIfError(dailyErr)
+
+  const dailyRows = dailyLogs ?? []
+  if (dailyRows.length === 0) return []
+
+  const dailyIds = dailyRows.map(d => d.id)
+  const dailyById = new Map(dailyRows.map(d => [d.id, d]))
+
+  const { data: photoLogs, error: photoErr } = await db
+    .from('commitment_logs')
+    .select('id, daily_log_id, commitment_id, photo_url, created_at')
+    .in('daily_log_id', dailyIds)
+    .not('photo_url', 'is', null)
+    .order('created_at', { ascending: false })
+  throwIfError(photoErr)
+
+  const photoRows = (photoLogs ?? []).filter(r => !!r.photo_url)
+  if (photoRows.length === 0) return []
+
+  const commitmentIds = Array.from(new Set(photoRows.map(r => r.commitment_id)))
+
+  const [{ data: commitments, error: commErr }, { data: notes, error: notesErr }] = await Promise.all([
+    db
+      .from('commitments')
+      .select('id, name, category')
+      .in('id', commitmentIds),
+    db
+      .from('day_notes')
+      .select('daily_log_id, note_text, updated_at')
+      .in('daily_log_id', dailyIds)
+      .order('updated_at', { ascending: false }),
+  ])
+  throwIfError(commErr)
+  throwIfError(notesErr)
+
+  const commitmentById = new Map((commitments ?? []).map(c => [c.id, c]))
+  const noteByDailyId = new Map<string, string>()
+  for (const n of notes ?? []) {
+    if (!noteByDailyId.has(n.daily_log_id)) noteByDailyId.set(n.daily_log_id, n.note_text)
+  }
+
+  const entries = photoRows
+    .map(row => {
+      const daily = dailyById.get(row.daily_log_id)
+      const commitment = commitmentById.get(row.commitment_id)
+      if (!daily || !commitment || !row.photo_url) return null
+
+      return {
+        id: row.id,
+        dailyLogId: row.daily_log_id,
+        commitmentId: row.commitment_id,
+        commitmentName: commitment.name,
+        commitmentCategory: commitment.category,
+        dayNumber: daily.day_number,
+        logDate: daily.log_date,
+        photoUrl: row.photo_url,
+        noteText: noteByDailyId.get(row.daily_log_id) ?? '',
+        reflection: daily.reflection as Reflection | null,
+        createdAt: row.created_at,
+      } satisfies PhotoGalleryEntry
+    })
+    .filter((e): e is PhotoGalleryEntry => !!e)
+    .sort((a, b) => {
+      if (b.dayNumber !== a.dayNumber) return b.dayNumber - a.dayNumber
+      return b.createdAt.localeCompare(a.createdAt)
+    })
+
+  return entries
+}
+
 export async function recalcOverallState(db: DB, dailyLogId: string, allStates: DayState[]) {
   const overall: DayState =
     allStates.every(s => s === 'complete') ? 'complete'
     : allStates.every(s => s === 'none')   ? 'none'
     : 'partial'
 
-  await db
+  const { error } = await db
     .from('daily_logs')
     .update({ overall_state: overall, logged_at: new Date().toISOString() })
     .eq('id', dailyLogId)
+  throwIfError(error)
 
   return overall
 }

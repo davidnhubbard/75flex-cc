@@ -197,6 +197,16 @@ All three state backgrounds differ from both `surface` and `card`, satisfying §
 
 Each card: category eyebrow (mono) → name (body medium) → optional definition (body small soft) → state chip (mono, top-right).
 
+### Cross-card state consistency (required)
+
+Any progress card that represents completion status, including **Photo** and **Note**, must use the same state surfaces:
+
+- `none` → `bg-state-none-bg border-state-none`
+- `partial` → `bg-state-partial-bg border-state-partial`
+- `complete` → `bg-state-done-bg border-state-done`
+
+Do not use neutral `bg-card` for these status cards. If a card is in-progress (for example photo upload or a short draft note), map it to `partial` instead of inventing a new color treatment.
+
 ### Buttons
 
 - **Primary:** `bg-heart text-surface hover:bg-heart-deep` (rare — only for the most important action on a screen)
@@ -248,6 +258,7 @@ Never more than **one heart button per screen** (see §6.2).
 
 - Tokens live in **`web/tailwind.config.ts`** — never hardcode hex values in components
 - Fonts are **CSS variables** wired in `web/src/app/layout.tsx` via `next/font/google` — don't import fonts elsewhere
+- Commitment category names are canonical and fixed in **`web/src/lib/categories.ts`**. Do not introduce per-user custom category titles for system categories.
 - Use Tailwind classes, not inline style objects
 - When adding a new surface color, add it to `theme.extend.colors` first, then use it
 - State colors use the `state-*` token family — never raw hex, never `heart-soft` for partial state

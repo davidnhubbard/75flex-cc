@@ -20,7 +20,7 @@
 **Styling approach:**
 NativeWind brings Tailwind CSS utility classes to React Native. Familiar syntax for web developers. Compiled to React Native stylesheet format at build time.
 
-### Web: Next.js (App Router)
+### Web: Next.js 15 (App Router)
 
 **Why Next.js?**
 - Server-side rendering + static export
@@ -29,14 +29,16 @@ NativeWind brings Tailwind CSS utility classes to React Native. Familiar syntax 
 - Vercel deployment ready
 - Ecosystem (Tailwind, TypeScript, etc.)
 
-**Key libraries:**
-- React Context or SWR (state management)
-- Tailwind CSS (styling)
-- react-query or SWR (server state)
-- next/image (image optimization)
+**Key libraries (current):**
+- `next` 15
+- `react` 19
+- `react-dom` 19
+- `@supabase/ssr` + `@supabase/supabase-js`
+- Tailwind CSS
+- SWR (available for server state patterns)
 
 **Styling approach:**
-Tailwind CSS. Same design tokens as mobile (see `05-visual-system.md`). Theme variables defined in tailwind.config.js.
+Tailwind CSS. Tokens are defined in `web/tailwind.config.ts`. Brand direction is in `docs/brand-guide.md`.
 
 ## Backend
 
@@ -81,9 +83,9 @@ AsyncStorage / LocalStorage (persistence)
 
 **Strongly recommended: TypeScript**
 
-Generate types from Supabase schema using Supabase CLI:
+Generate types from Supabase schema:
 ```bash
-npx supabase gen types typescript --schema public > types/supabase.ts
+npx supabase gen types typescript --schema public > web/src/lib/database.types.ts
 ```
 
 This ensures frontend types match database schema automatically.
@@ -100,7 +102,7 @@ Redux Toolkit for:
 Persist to AsyncStorage after every save.
 
 ### Web (Next.js)
-React Context for session state, SWR or React Query for server state.
+Local component state + query helper functions in `web/src/lib/queries.ts`, with SWR available where useful.
 
 ## Build & Deployment
 
@@ -124,7 +126,8 @@ React Context for session state, SWR or React Query for server state.
    - Create Supabase project
    - Run migrations (in /supabase/migrations)
    - Set environment variables
-4. Generate types: supabase gen types typescript
+4. Generate types (optional but recommended after schema changes):
+   - `supabase gen types typescript --schema public > web/src/lib/database.types.ts`
 5. Dev server:
    - Mobile: expo start
    - Web: npm run dev
@@ -132,15 +135,15 @@ React Context for session state, SWR or React Query for server state.
 
 ## Environment Variables
 
-**Required (all platforms):**
+**Required (web):**
 ```
-REACT_APP_SUPABASE_URL=<your-project>.supabase.co
-REACT_APP_SUPABASE_ANON_KEY=<your-anon-key>
+NEXT_PUBLIC_SUPABASE_URL=<your-project>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>
 ```
 
 **Optional:**
 ```
-REACT_APP_ENV=development|staging|production
+NEXT_PUBLIC_ENV=development|staging|production
 ```
 
 ## Performance Considerations

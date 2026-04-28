@@ -29,6 +29,11 @@ const config: Config = {
           'none-bg':      '#E4EADD',
           'none-ink':     '#1E4434',
         },
+        action: {
+          bg:     '#D7E4D6',
+          border: '#6E927C',
+          ink:    '#1E4434',
+        },
         surface: '#F4F1EA',
         card:    '#FBF8F1',
         ink: {

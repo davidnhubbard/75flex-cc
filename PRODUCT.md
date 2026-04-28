@@ -3,6 +3,18 @@
 This file captures positioning, monetization thinking, and strategic decisions.
 It is a living document — update it as thinking evolves.
 
+Related: detailed implementation/product decision history lives in `docs/decision-log.md`.
+
+---
+
+## Domain status
+
+- Domain purchased: `75flex.fit`
+- Remaining launch wiring:
+  - attach `75flex.fit` in Vercel project domains
+  - point DNS records to Vercel
+  - update Supabase Auth Site URL and redirect/callback URLs to production domain(s)
+
 ---
 
 ## What this app is (positioning)
@@ -186,3 +198,59 @@ real life."
 - What is the minimum viable export for the free tier? (notes + logs but not photos?)
 - At what point does "calm and flexible" need to be more explicitly named in marketing copy?
 - App store timing: what milestone triggers the decision to publish to iOS/Android?
+
+## Profile IA direction (productized, post-MVP)
+
+Decision: **Profile should be a control hub**, not a long single-page editor.
+
+### Profile hub (`/profile`)
+- Benchmark: baseline snapshot (photo, measurements, short note preview)
+- Plan: commitment configuration (edited intentionally, not daily)
+- Reports: gallery, insights, and export tools
+
+Each section should be a compact card with a short explainer + CTA.
+
+### Dedicated pages
+- `/profile/benchmark`: full editor + guidance copy
+- `/profile/plan`: full editor + intentional-change guidance
+- `/profile/reports`: photo diary/gallery + analytics + export
+
+Why:
+- Better "what can I do here?" clarity
+- Avoids long-scroll cognitive overload
+- Lets reporting/gallery expand without bloating Profile
+
+### Reporting and gallery notes
+- Photo diary gallery should be mobile-first: 2-column grid
+- Desktop web can become responsive wider rows (3-5 columns)
+- Optional note snippet per photo card; tap opens full detail
+
+## Personal profile expansion (full product, not MVP gate)
+
+This is strategically strong for stickiness and personalization, but should be rolled out in phases.
+
+### Candidate fields
+- Birthday (month/day/year)
+- Short bio
+- Goal statement ("why this challenge matters now")
+- Communication preferences
+- Optional social links
+
+### Product value
+- Birthday moments (in-app celebration/message)
+- Future age-aware insights/benchmarks
+- Better personalization and motivational copy
+- Stronger "identity + intention" commitment effect at onboarding/profile
+
+### Guardrails
+- Keep all personal fields optional at first
+- Do not block core challenge logging behind profile completion
+- Use progressive completion prompts (gentle nudges, not hard gates)
+- Add clear privacy language near data-entry points
+- Separate communication consent from core profile data
+
+### Suggested rollout
+1. Phase 1: goal statement + short bio (highest behavior impact, lowest sensitivity)
+2. Phase 2: birthday + celebration moments
+3. Phase 3: communication prefs + optional social links
+4. Phase 4: personalized reporting/messaging based on profile data

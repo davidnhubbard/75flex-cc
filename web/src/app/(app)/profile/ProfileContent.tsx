@@ -1,221 +1,59 @@
-'use client'
+﻿'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import EditCommitmentSheet from '@/components/EditCommitmentSheet'
-import RestartSheet from '@/components/RestartSheet'
-import BenchmarkSheet from '@/components/BenchmarkSheet'
-import AddCommitmentSheet from '@/components/AddCommitmentSheet'
+import { useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import PageHeader from '@/components/PageHeader'
 import Btn from '@/components/ui/Btn'
-import Eyebrow from '@/components/ui/Eyebrow'
 import Toast from '@/components/ui/Toast'
 import { useToast } from '@/hooks/useToast'
 import { createClient } from '@/lib/supabase'
-import { CATEGORIES } from '@/lib/categories'
-import {
-  getActiveChallenge, getCommitments, updateCommitmentDefinition, updateCommitmentRequired,
-  archiveChallenge, calcDayNumber, getBenchmark, saveBenchmark, uploadBenchmarkPhoto,
-  createCommitments, updateHydrationGoal,
-} from '@/lib/queries'
+import { getActiveChallenge, getBenchmark, getCommitments } from '@/lib/queries'
 import type { Database } from '@/lib/database.types'
 
-type Commitment = Database['public']['Tables']['commitments']['Row'] & {
-  changeLog?: { day: number; from: string; to: string }[]
-}
+type Commitment = Database['public']['Tables']['commitments']['Row']
 type Benchmark = Database['public']['Tables']['benchmarks']['Row']
 
-const FREE_TIER_MAX = 4
-
 export default function ProfileContent() {
-  const router   = useRouter()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createClient()
 
-  const [loading,     setLoading]     = useState(true)
-  const [dayNumber,   setDayNumber]   = useState(1)
+  const [loading, setLoading] = useState(true)
   const [commitments, setCommitments] = useState<Commitment[]>([])
-  const [challengeId,    setChallengeId]    = useState<string | null>(null)
-  const [userId,         setUserId]         = useState('')
-  const [benchmark,      setBenchmark]      = useState<Benchmark | null>(null)
-  const [editing,        setEditing]        = useState<Commitment | null>(null)
-  const [todayLogged,    setTodayLogged]    = useState(false)
-  const [showRestart,    setShowRestart]    = useState(false)
-  const [restarting,     setRestarting]     = useState(false)
-  const [showBenchmark,  setShowBenchmark]  = useState(false)
-  const [showAddCommit,  setShowAddCommit]  = useState(false)
-  const [planEditMode,   setPlanEditMode]   = useState(false)
-  const [planSnapshot,   setPlanSnapshot]   = useState<Commitment[]>([])
-  const [planSaving,     setPlanSaving]     = useState(false)
+  const [benchmark, setBenchmark] = useState<Benchmark | null>(null)
   const { toastMessage, showToast, clearToast } = useToast()
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    load()
+  }, [])
+
+  useEffect(() => {
+    if (loading) return
+    const addParam = searchParams.get('add')
+    if (addParam === 'photo') {
+      router.replace('/profile/plan?add=photo')
+    }
+  }, [loading, searchParams])
 
   async function load() {
-    const challenge = await getActiveChallenge(supabase)
-    if (!challenge) { router.push('/onboarding'); return }
-
-    const day   = calcDayNumber(challenge.start_date)
-    const { data: { user } } = await supabase.auth.getUser()
-
-    const [comms, bench] = await Promise.all([
-      getCommitments(supabase, challenge.id),
-      getBenchmark(supabase, challenge.id),
-    ])
-
-    // Check if today already has a log
-    const today = new Date().toISOString().split('T')[0]
-    const { data: log } = await supabase
-      .from('daily_logs')
-      .select('id')
-      .eq('challenge_id', challenge.id)
-      .eq('log_date', today)
-      .maybeSingle()
-
-    setChallengeId(challenge.id)
-    setUserId(user?.id ?? '')
-    setDayNumber(day)
-    setCommitments(comms)
-    setBenchmark(bench)
-    setTodayLogged(!!log)
-    setLoading(false)
-  }
-
-  function enterEditMode() {
-    setPlanSnapshot(commitments.map(c => ({ ...c })))
-    setPlanEditMode(true)
-  }
-
-  function cancelEditMode() {
-    setCommitments([...planSnapshot])
-    setEditing(null)
-    setShowAddCommit(false)
-    setPlanEditMode(false)
-    setPlanSnapshot([])
-  }
-
-  async function savePlan() {
-    if (!challengeId) return
-    setPlanSaving(true)
     try {
-      const snapshotMap = Object.fromEntries(planSnapshot.map(c => [c.id, c]))
-
-      // Removals: in snapshot but gone from current
-      const removedIds = planSnapshot
-        .map(c => c.id)
-        .filter(id => !commitments.find(c => c.id === id))
-      await Promise.all(removedIds.map(id =>
-        supabase.from('commitments').delete().eq('id', id)
-      ))
-
-      // Edits: present in both but changed
-      const edited = commitments.filter(c => {
-        const orig = snapshotMap[c.id]
-        return orig && (
-          orig.definition !== c.definition ||
-          orig.required !== c.required ||
-          orig.target_value !== c.target_value ||
-          orig.target_unit !== c.target_unit
-        )
-      })
-      await Promise.all(edited.map(async c => {
-        const orig = snapshotMap[c.id]
-        if (c.category === 'hydration' && (orig.target_value !== c.target_value || orig.target_unit !== c.target_unit)) {
-          await updateHydrationGoal(supabase, c.id, c.target_value!, c.target_unit as 'oz' | 'ml')
-        } else {
-          if (orig.definition !== c.definition) {
-            await updateCommitmentDefinition(supabase, c.id, c.definition ?? '', dayNumber)
-          }
-          if (c.category === 'photo' && orig.required !== c.required) {
-            await updateCommitmentRequired(supabase, c.id, c.required)
-          }
-        }
-      }))
-
-      // Adds: temp IDs written during edit mode
-      const added = commitments.filter(c => c.id.startsWith('new-'))
-      if (added.length > 0) {
-        await createCommitments(supabase, challengeId, added.map((c, i) => ({
-          category:    c.category,
-          name:        c.name,
-          definition:  c.definition ?? '',
-          required:    c.required,
-          sortOrder:   planSnapshot.length - removedIds.length + i,
-          targetValue: c.target_value ?? undefined,
-          targetUnit:  (c.target_unit as 'oz' | 'ml' | null) ?? undefined,
-        })))
-        const updated = await getCommitments(supabase, challengeId)
-        setCommitments(updated)
+      const challenge = await getActiveChallenge(supabase)
+      if (!challenge) {
+        router.push('/onboarding')
+        return
       }
 
-      setPlanEditMode(false)
-      setPlanSnapshot([])
+      const [comms, bench] = await Promise.all([
+        getCommitments(supabase, challenge.id),
+        getBenchmark(supabase, challenge.id),
+      ])
+
+      setCommitments(comms)
+      setBenchmark(bench)
     } catch {
-      showToast("Couldn't save — check your connection")
+      showToast('Failed to load profile')
     } finally {
-      setPlanSaving(false)
-    }
-  }
-
-  async function handleAddCommitment(categoryId: string, definition: string, required: boolean, targetValue?: number, targetUnit?: 'oz' | 'ml') {
-    const { CATEGORIES } = await import('@/lib/categories')
-    const cat = CATEGORIES.find(c => c.id === categoryId)!
-    const temp: Commitment = {
-      id:           `new-${Date.now()}`,
-      challenge_id: challengeId ?? '',
-      category:     categoryId,
-      name:         cat.defaultName,
-      definition,
-      sort_order:   commitments.length,
-      required,
-      active_from:  dayNumber,
-      target_value: targetValue ?? null,
-      target_unit:  targetUnit ?? null,
-      created_at:   new Date().toISOString(),
-    }
-    setCommitments(prev => [...prev, temp])
-    setShowAddCommit(false)
-  }
-
-  async function handleBenchmarkSave(notes: string, file: File | null) {
-    if (!challengeId) return
-    try {
-      let photoUrl = benchmark?.photo_url ?? null
-      if (file) photoUrl = await uploadBenchmarkPhoto(supabase, userId, challengeId, file)
-      await saveBenchmark(supabase, challengeId, { notesText: notes, photoUrl })
-      setBenchmark(prev => prev
-        ? { ...prev, notes_text: notes || null, photo_url: photoUrl }
-        : { id: '', challenge_id: challengeId, notes_text: notes || null, photo_url: photoUrl, created_at: '' }
-      )
-      setShowBenchmark(false)
-    } catch {
-      showToast("Couldn't save benchmark — check your connection")
-    }
-  }
-
-  function handleSave(id: string, definition: string, required: boolean, targetValue?: number, targetUnit?: 'oz' | 'ml') {
-    setCommitments(prev => prev.map(c =>
-      c.id === id
-        ? { ...c, definition, required, target_value: targetValue ?? c.target_value, target_unit: targetUnit ?? c.target_unit }
-        : c
-    ))
-    setEditing(null)
-  }
-
-  function handleRemove(id: string) {
-    setCommitments(prev => prev.filter(c => c.id !== id))
-    setEditing(null)
-  }
-
-  async function handleRestart() {
-    if (!challengeId) return
-    setRestarting(true)
-    try {
-      await archiveChallenge(supabase, challengeId)
-      router.push('/onboarding')
-    } catch {
-      setRestarting(false)
-      setShowRestart(false)
-      showToast("Couldn't restart — check your connection")
+      setLoading(false)
     }
   }
 
@@ -225,7 +63,8 @@ export default function ProfileContent() {
     router.refresh()
   }
 
-  const atCap = commitments.length >= FREE_TIER_MAX
+  const requiredCount = commitments.filter(c => c.required).length
+  const hasPhotoCommitment = commitments.some(c => c.category === 'photo')
 
   if (loading) {
     return (
@@ -234,7 +73,7 @@ export default function ProfileContent() {
           <div className="h-7 w-24 bg-green-700 rounded" />
         </div>
         <div className="px-4 py-5 flex flex-col gap-3">
-          {[1, 2, 3].map(i => <div key={i} className="h-16 bg-border/50 rounded-card animate-pulse" />)}
+          {[1, 2, 3, 4].map(i => <div key={i} className="h-24 bg-border/50 rounded-card animate-pulse" />)}
         </div>
       </div>
     )
@@ -244,197 +83,105 @@ export default function ProfileContent() {
     <div className="flex flex-col min-h-full">
       <PageHeader title="Profile" />
 
-      <div className="px-4 py-5 flex flex-col gap-6">
+      <div className="px-4 py-5 flex flex-col gap-4">
+        <p className="font-sans text-sm text-ink-soft">
+          Manage your baseline, plan, and progress tools from one place.
+        </p>
 
-        {/* Benchmark */}
-        <section>
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="font-sans text-base font-semibold text-ink">Starting Benchmark</h2>
-            <button
-              onClick={() => setShowBenchmark(true)}
-              className="font-sans text-xs text-ink-soft"
-            >
-              {benchmark ? 'Edit' : '+ Add'}
-            </button>
-          </div>
-
-          {benchmark ? (
-            <button
-              onClick={() => setShowBenchmark(true)}
-              className="w-full text-left bg-state-none-bg border-[1.5px] border-state-none rounded-card overflow-hidden"
-            >
-              {benchmark.photo_url && (
-                <img
-                  src={benchmark.photo_url}
-                  alt="Starting benchmark"
-                  className="w-full aspect-video object-cover"
-                />
+        <button
+          type="button"
+          onClick={() => router.push('/profile/benchmark')}
+          className="w-full text-left rounded-card border-[1.5px] border-state-none bg-state-none-bg px-4 py-3"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="font-sans text-sm font-semibold text-ink">Benchmark</p>
+              <p className="font-sans text-sm text-ink-soft leading-snug mt-0.5">
+                Create or edit your baseline snapshot (photo + notes) so progress is easy to see later.
+              </p>
+              {benchmark?.notes_text && (
+                <p className="font-sans text-xs text-ink-soft mt-2 line-clamp-2">{benchmark.notes_text}</p>
               )}
-              <div className="px-4 py-3">
-                {benchmark.notes_text ? (
-                  <p className="font-sans text-sm text-ink leading-snug line-clamp-3">
-                    {benchmark.notes_text}
-                  </p>
-                ) : (
-                  <p className="font-sans text-sm text-ink-soft">No notes — tap to add</p>
-                )}
-              </div>
-            </button>
-          ) : (
-            <button
-              onClick={() => setShowBenchmark(true)}
-              className="w-full bg-state-none-bg border-[1.5px] border-dashed border-state-none rounded-card px-4 py-5 flex flex-col items-center text-center gap-1"
-            >
-              <p className="font-sans text-sm font-medium text-ink">No starting benchmark</p>
-              <p className="font-sans text-sm text-ink-soft">Add a photo and notes to remember where you started.</p>
-            </button>
-          )}
-        </section>
-
-        {/* My Plan */}
-        <section>
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="font-sans text-base font-semibold text-ink">
-              {planEditMode ? 'Editing Plan' : 'My Plan'}
-            </h2>
-            {!planEditMode && (
-              <button
-                onClick={enterEditMode}
-                className="font-sans text-xs text-ink-soft"
-              >
-                Edit
-              </button>
-            )}
+            </div>
+            <span className="font-mono text-[9px] text-state-none-ink uppercase tracking-widest shrink-0 mt-0.5">
+              {benchmark ? 'SET' : 'EMPTY'}
+            </span>
           </div>
+        </button>
 
-          <div className="flex flex-col gap-2">
-            {commitments.map(c => (
-              planEditMode ? (
-                <button
-                  key={c.id}
-                  onClick={() => setEditing(c)}
-                  className="w-full bg-state-none-bg border-[1.5px] border-state-none rounded-card px-4 py-3 flex items-center justify-between"
-                >
-                  <div className="text-left">
-                    <p className="font-sans text-sm font-medium text-ink">{c.name}</p>
-                    {c.category === 'photo' ? (
-                      <p className="font-sans text-sm text-ink-soft mt-0.5">{c.required ? 'Required' : 'Optional'}</p>
-                    ) : c.category === 'hydration' && c.target_value ? (
-                      <p className="font-sans text-sm text-ink-soft mt-0.5">Goal: {c.target_value} {c.target_unit ?? 'oz'}</p>
-                    ) : c.definition ? (
-                      <p className="font-sans text-sm text-ink-soft mt-0.5 leading-snug">{c.definition}</p>
-                    ) : null}
-                  </div>
-                  <span className="text-ink-faint ml-3 shrink-0">›</span>
-                </button>
-              ) : (
-                <div
-                  key={c.id}
-                  className="w-full bg-state-none-bg border-[1.5px] border-state-none rounded-card px-4 py-3"
-                >
-                  <p className="font-sans text-sm font-medium text-ink">{c.name}</p>
-                  {c.category === 'photo' ? (
-                    <p className="font-sans text-sm text-ink-soft mt-0.5">{c.required ? 'Required' : 'Optional'}</p>
-                  ) : c.category === 'hydration' && c.target_value ? (
-                    <p className="font-sans text-sm text-ink-soft mt-0.5">Goal: {c.target_value} {c.target_unit ?? 'oz'}</p>
-                  ) : c.definition ? (
-                    <p className="font-sans text-sm text-ink-soft mt-0.5 leading-snug">{c.definition}</p>
-                  ) : null}
-                </div>
-              )
-            ))}
-
-            {planEditMode && (
-              <Btn
-                variant="outline"
-                disabled={atCap}
-                onClick={() => !atCap && setShowAddCommit(true)}
-                className={`flex items-center justify-center gap-2 py-3 rounded-card border-[1.5px] border-dashed ${
-                  atCap ? 'border-border text-ink-faint' : ''
-                }`}
-              >
-                {atCap ? (
-                  <><span>Add commitment</span><span className="font-mono text-[9px] bg-ink-faint/10 text-ink-faint px-1.5 py-0.5 rounded">FREE</span></>
-                ) : '+ Add commitment'}
-              </Btn>
-            )}
-
-            {planEditMode && (
-              <div className="flex flex-col gap-2 pt-1">
-                <Btn variant="dark" onClick={savePlan} disabled={planSaving}>
-                  {planSaving ? 'Saving…' : 'Save plan'}
-                </Btn>
-                <Btn variant="ghost" onClick={cancelEditMode} disabled={planSaving}>
-                  Cancel
-                </Btn>
-              </div>
-            )}
+        <button
+          type="button"
+          onClick={() => router.push('/profile/plan')}
+          className="w-full text-left rounded-card border-[1.5px] border-state-none bg-state-none-bg px-4 py-3"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="font-sans text-sm font-semibold text-ink">Plan</p>
+              <p className="font-sans text-sm text-ink-soft leading-snug mt-0.5">
+                Review or edit your commitments intentionally. Plan changes should be conscious, not daily tweaks.
+              </p>
+              <p className="font-sans text-xs text-ink-soft mt-2">
+                {commitments.length} commitments - {requiredCount} required
+              </p>
+            </div>
+            <span className="font-mono text-[9px] text-state-none-ink uppercase tracking-widest shrink-0 mt-0.5">
+              ACTIVE
+            </span>
           </div>
-        </section>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => router.push('/profile/personal')}
+          className="w-full text-left rounded-card border-[1.5px] border-state-none bg-state-none-bg px-4 py-3"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="font-sans text-sm font-semibold text-ink">About You</p>
+              <p className="font-sans text-sm text-ink-soft leading-snug mt-0.5">
+                Add your full name, birthday, goals, bio, and optional contact preferences.
+              </p>
+            </div>
+            <span className="font-mono text-[9px] text-state-none-ink uppercase tracking-widest shrink-0 mt-0.5">
+              OPEN
+            </span>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => router.push('/profile/reports')}
+          className="w-full text-left rounded-card border-[1.5px] border-state-none bg-state-none-bg px-4 py-3"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="font-sans text-sm font-semibold text-ink">Reports</p>
+              <p className="font-sans text-sm text-ink-soft leading-snug mt-0.5">
+                Open your reporting tools for gallery, trends, and export options.
+              </p>
+              <p className="font-sans text-xs text-ink-soft mt-2">
+                {hasPhotoCommitment ? 'Photo-ready' : 'Add photo commitment for gallery'}
+              </p>
+            </div>
+            <span className="font-mono text-[9px] text-state-none-ink uppercase tracking-widest shrink-0 mt-0.5">
+              OPEN
+            </span>
+          </div>
+        </button>
 
         <section className="border-t border-border pt-4 flex flex-col gap-2">
-          <div className="flex flex-col items-center gap-0.5">
-            <Btn
-              variant="ghost"
-              onClick={() => setShowRestart(true)}
-              className="w-full justify-center px-0 !text-red-500"
-            >
-              Restart challenge from Day 1
-            </Btn>
-            <p className="font-sans text-xs text-ink-faint">You'll be asked to confirm — nothing is lost.</p>
-          </div>
           <Btn
             variant="ghost"
             onClick={handleSignOut}
             className="w-full justify-center px-0"
           >
-            Sign out
+            Sign Out
           </Btn>
         </section>
       </div>
-
-      {showAddCommit && (
-        <AddCommitmentSheet
-          usedCategoryIds={commitments.map(c => c.category)}
-          onAdd={handleAddCommitment}
-          onClose={() => setShowAddCommit(false)}
-        />
-      )}
-
-      {showBenchmark && (
-        <BenchmarkSheet
-          initialPhotoUrl={benchmark?.photo_url}
-          initialNotes={benchmark?.notes_text}
-          onSave={handleBenchmarkSave}
-          onClose={() => setShowBenchmark(false)}
-        />
-      )}
-
-      {showRestart && (
-        <RestartSheet
-          onConfirm={handleRestart}
-          onCancel={() => setShowRestart(false)}
-          confirming={restarting}
-        />
-      )}
-
-      {editing && (
-        <EditCommitmentSheet
-          commitment={{
-            ...editing,
-            definition:  editing.definition ?? '',
-            targetValue: editing.target_value ?? undefined,
-            targetUnit:  (editing.target_unit as 'oz' | 'ml' | null) ?? undefined,
-          }}
-          totalCommitments={commitments.length}
-          todayLogged={todayLogged}
-          onSave={handleSave}
-          onRemove={handleRemove}
-          onClose={() => setEditing(null)}
-        />
-      )}
 
       {toastMessage && <Toast message={toastMessage} onDismiss={clearToast} />}
     </div>
   )
 }
+

@@ -11,7 +11,7 @@ interface BtnProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const variantClasses: Record<BtnVariant, string> = {
   primary: 'bg-heart text-surface hover:bg-heart-deep font-sans text-sm font-semibold py-3.5 rounded-xl w-full',
   dark: 'bg-green-700 text-surface font-sans text-sm font-semibold py-3 rounded-xl w-full',
-  outline: 'bg-card border-[1.5px] border-border text-ink font-sans text-sm font-medium rounded-xl py-3',
+  outline: 'bg-[#A8D7B2] border-[1.5px] border-[#4F8C60] text-[#1E4A2A] font-sans text-sm font-medium rounded-xl py-3',
   destructive: 'bg-heart-deep text-surface font-sans text-sm font-semibold py-2.5 rounded-xl w-full',
   ghost: 'text-ink-faint font-sans text-sm font-medium',
 };
